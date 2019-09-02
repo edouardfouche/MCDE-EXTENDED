@@ -1,4 +1,4 @@
-name := "MCDE"
+name := "MCDE-PLUS"
 organization:= "io.github.edouardfouche"
 
 version := "0.1.0"
@@ -43,7 +43,7 @@ javacOptions ++= Seq("-encoding", "UTF-8")
 
 ////// Sonatype
 
-useGpg := true
+/*useGpg := true
 pgpReadOnly := false
 
 ThisBuild / organization := "io.github.edouardfouche.MCDE"
@@ -79,6 +79,6 @@ ThisBuild / publishTo := {
 ThisBuild /publishMavenStyle := true
 
 publishConfiguration := publishConfiguration.value.withOverwrite(true)
-publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
+publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)*/
 
 //publishArtifact in Test := false

@@ -1,12 +1,12 @@
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.{DoubleIndex, Index}
 
 /**
   * Created by fouchee on 07.07.17.
   */
 trait Stats {
-  type PreprocessedData <: Index // PreprocessedData are subtypes of Index, which are column oriented structures
+  type PreprocessedData = DoubleIndex //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
   val id: String
   val alpha: Double
   val beta: Double

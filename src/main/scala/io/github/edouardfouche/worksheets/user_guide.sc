@@ -101,16 +101,16 @@ println(mwp.contrastMatrix(independent))
   */
 
 // MWPi: Like MWP but not adjusting for ties (but still adjusting for ranks)
-val mwpi = MWPi()
+// val mwpi = MWPi()
 
 // MWPr: Like MWP but not adjusting and not correcting for ties (see Paper, Algorithm description)
 val mwpr = MWPr()
 
 // MWPs: Like MWP but also adjusting for ties in the slicing process
-val mwps = MWPs()
+// val mwps = MWPs()
 
 // MWPu: Like MWP but without border effects
-val mwpu = MWPu()
+// val mwpu = MWPu()
 
 /**
   * KSP: Like MWP but using Kolmogorow-Smirnow-Test for dependency estimation instead of Mann–Whitney P test

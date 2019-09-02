@@ -31,11 +31,11 @@ import scala.math.{E, pow, sqrt}
   *
   */
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
-case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = RankIndex
-  val id = "KSP"
+  val id = "KSPP"
 
-  def preprocess(input: Array[Array[Double]]): DoubleIndex = {
+  def preprocess(input: Array[Array[Double]]): PreprocessedData = {
     new DoubleIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
@@ -56,11 +56,10 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     val inSlize = indexSelection.count(_ == true)
     val outSlize = ref.length - inSlize
 
-    if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly diffrent --> score = 1 (and no prob with division by 0)
+    if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and we also avoid divisions by 0)
 
     val selectIncrement = 1.0 / inSlize
     val refIncrement = 1.0 / outSlize
-
 
     // This step is impossible (or difficult) to parallelize, but at least it is tail recursive
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
@@ -78,26 +77,41 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   /**
     * Convert the D value into a p-value
     *
+    * Note: This function is basically a transcription from psmirnov2x (standart R source in C)
+    *
     * @param D  D value from KSP test
     * @param n1 n Datapoints in first sample
     * @param n2 n Datapoints in second sample
     * @return p-value of two-sided two-sample KSP
     */
   def get_p_from_D(D: Double, n1: Long, n2: Long): Double = {
-    lazy val z = D * sqrt(n1 * n2 / (n1 + n2))
+    val (m,n) = if(n1 > n2) (n2,n1) else (n1,n2)
+    val md = m.toDouble
+    val nd = n.toDouble
+    /*
+    q has 0.5/mn added to ensure that rounding error doesn't
+    turn an equality into an inequality, eg abs(1/2-4/5)>3/10
+    */
+    val q = (0.5 + math.floor(D * md * nd - pow(10,-7))) / (md * nd)
+    //val u = new Array[Double](n.toInt+1)
+    //u.indices.foreach(j => if((j /nd)> q) u(j) = 0 else u(j) = 1)
+    val u = (0 to n.toInt).map(j => if((j /nd)> q) 0.0 else 1.0).toArray
 
-    def exp(k: Int): Double = pow(-1, k - 1) * pow(E, -2 * pow(k, 2) * pow(z, 2))
-
-    def infi_exp(k: Int): Double = pow(-1, k-1) * pow(E, 2 * pow(k,2) * pow(D, 2)) // in case lim n1, n2 -> infi
-
-    // TODO: The part inside the summation could be done easily in parallel
-    @tailrec
-    def loop(summation: Double, i: Int, end: Int, f: Int => Double): Double = {
-      if (i == end) f(i) + summation
-      else loop(f(i) + summation, i + 1, end, f)
+    for(i <- 1 to m.toInt){
+      val w = i.toDouble / (i+n).toDouble
+      if((i/md) > q) {
+        u(0) = 0
+      } else {
+        u(0) = w * u(0)
+      }
+      (1 to n.toInt).foreach{j =>
+        if(math.abs(i/md - j/nd) > q) {
+          u(j) = 0
+        } else {
+          u(j) = w * u(j) + u(j-1)
+        }
+      }
     }
-
-    if(n1 >= 3037000499L && n2 >= 3037000499L) 1 - 2 * loop(0, 1, 1000, infi_exp) // squaring n1,n2 will reach the limit of Long
-    else 1 - 2 * loop(0, 1, 1000, exp)
+    u(n.toInt)
   }
 }

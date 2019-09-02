@@ -16,40 +16,13 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.tuple.{NonTupleIndex, TupleIndex}
+
 /**
   * A dummy index structure
+  *
   * @param values
-  * @param parallelize
   */
-class NonIndex(val values: Array[Array[Double]], val parallelize: Int = 0) extends Index {
-  type T = Double
-
-  def createIndex(input: Array[Array[Double]]): Array[Array[T]] = input
-
-  def randomSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
-    Array.fill[Boolean](this.numRows)(true)
-  }
-
-  def allSlice(dimensions: Set[Int], sliceSize: Int): Array[Boolean] = {
-    Array.fill[Boolean](this.numRows)(true)
-  }
-
-  def safeSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
-    Array.fill[Boolean](this.numRows)(true)
-  }
-
-  // the slicing scheme used for conditional independence
-  def simpleSlice(dimension: Int, sliceSize: Int): this.type = {
-    this
-  }
-
-  def restrictedSafeRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean] = {
-    Array.fill[Boolean](this.numRows)(true)
-  }
-
-  def restrictedRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean] = {
-    Array.fill[Boolean](this.numRows)(true)
-  }
-
-  def getSafeCut(cut: Int, reference: Int): Int = cut
+class NonIndex(val values: Array[Double]) extends DimensionIndex[Double] {
+  def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x))
 }

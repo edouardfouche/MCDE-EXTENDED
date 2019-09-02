@@ -16,6 +16,7 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.tuple.TupleIndex
 import io.github.edouardfouche.preprocess.Preprocess
 
 /**
@@ -25,46 +26,12 @@ import io.github.edouardfouche.preprocess.Preprocess
   * The correction is computed as a cumulative value.
   *
   * @param values A row-oriented data set
-  * @param parallelize Whether to parallelize or not the index computation (beta)
   */
-class CorrectedRankIndex(val values: Array[Array[Double]], val parallelize: Int = 0) extends Index  {
-  type T = (Int, Float, Double)
+class CorrectedRankIndex(val values: Array[Double]) extends DimensionIndex[Double]  {
 
-  def createIndex(input: Array[Array[Double]]): Array[Array[T]]= {
-    val i = Preprocess.mwRankCorrectionCumulative(input, parallelize)
+  def createIndex(input: Array[Double]): Array[_ <: TupleIndex]= {
+    val i = Process.mwRankCorrectionCumulative(input)
     //println(s"i.length: ${i.length}, i(0).length: ${i(0).length}, i(0): ${i(0)}")
     i
   }
-
-  def randomSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
-    Slicing3.randomSlice(this.index, dimensions, referenceDim, sliceSize)
-  }
-
-  def randomUniformSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
-    Slicing3.randomUniformSlice(this.index, dimensions, referenceDim, sliceSize)
-  }
-
-  def allSlice(dimensions: Set[Int], sliceSize: Int): Array[Boolean] = {
-    Slicing3.allSlice(this.index, dimensions, sliceSize)
-  }
-
-  def safeSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
-    Slicing3.safeSlice(this.index, dimensions, referenceDim, sliceSize)
-  }
-
-  // the slicing scheme used for conditional independence
-  def simpleSlice(dimension: Int, sliceSize: Int): this.type = {
-    //Slicing3.simpleSlice(this.index, dimension, sliceSize)
-    this
-  }
-
-  def restrictedSafeRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean] = {
-    Slicing3.restrictedSafeRandomSlice(this.index, dimensions, referenceDim, alpha)
-  }
-
-  def restrictedRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean] = {
-    Slicing3.restrictedRandomSlice(this.index, dimensions, referenceDim, alpha)
-  }
-
-  def getSafeCut(cut: Int, reference: Int): Int = Slicing3.getSafeCut(cut, this.index, reference)
 }

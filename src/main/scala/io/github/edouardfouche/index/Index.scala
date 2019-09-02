@@ -18,19 +18,19 @@ package io.github.edouardfouche.index
 
 import scala.annotation.tailrec
 
-trait Index {
-  val values: Array[Array[Double]]
+trait Index[U] {
+  val values: Array[Array[U]]
   val parallelize:Int
 
-  type T
-  val index: Array[Array[T]] = createIndex(values.transpose) // IMPORTANT: The transpose, makes the input column-oriented
+  //type T
+  val index: Array[DimensionIndex[U]] = createIndex(values.transpose) // IMPORTANT: The transpose, makes the input column-oriented
 
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[Double]]): Array[Array[T]]
+  protected def createIndex(data: Array[Array[U]]): Array[DimensionIndex[U]]
 
   def apply(n: Int) = index(n) // access the columns of the index
 
@@ -43,29 +43,32 @@ trait Index {
 
   /**
     * Produce a subspace slice by conditioning on all dimensions, except a reference dimension
-    * @param m An index structure. Array of 2-D Tuple where the first element in the index, the second the rank
     * @param dimensions The set of dimensions of the subspaces
     * @param referenceDim The dimension that is considered as reference
     * @param sliceSize The size of the slice for each dimensions, determined by alpha
     * @return Returns an array of booleans. True corresponds to indexes included in the slice.
     */
   //TODO: Question : Is it problematic to slice on ties? Its seems not.
-  def randomSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean]
+  def randomSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
+    dimensions.filter(_ != referenceDim).map(x => index(x).slice(sliceSize)).toArray.transpose.map(x => !x.contains(false))
+  }
 
-  def allSlice(dimensions: Set[Int], sliceSize: Int): Array[Boolean]
-
-  def safeSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean]
-
-  // the slicing scheme used for conditional independence
-  def simpleSlice(dimension: Int, sliceSize: Int): this.type
-
-  def getSafeCut(cut: Int, reference: Int): Int
-
-  def mean(xs: Array[Int]): Float = xs.sum / xs.length.toFloat
-
-  def restrictedSafeRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean]
-
-  def restrictedRandomSlice(dimensions: Set[Int], referenceDim: Int, alpha: Double): Array[Boolean]
+  def getSafeCut(cut: Int, reference: Int): Int = {
+    //require(cut >= 0 & cut <= reference.length)
+    val ref = index(reference)
+    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex[U]): Int = {
+      // "It's easier to ask forgiveness than it is to get permission"
+      try if(ref(a+inc).rank != ref(a+inc-1).rank) return a+inc
+      else {
+        try if (ref(a - inc).rank != ref(a - inc - 1).rank) return a - inc
+        catch{case _: Throwable => return a-inc}
+      }
+      catch {case _: Throwable => return a+inc}
+      cutSearch(a, inc+1, ref)
+    }
+    cutSearch(cut, 0, ref)
+  }
 
   /**
     * Find the greatest common divisor of a and b

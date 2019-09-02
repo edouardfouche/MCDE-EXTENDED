@@ -20,14 +20,14 @@ class TestDimensions extends FunSuite {
   val bivar_arr = Independent(2, 0.0,"gaussian", 0).generate(rows)
 
   // TODO: What if new Tests / Generators?
-  val all_mcde_stats:List[Stats] = List(KSP(), MWP(), MWPi(), MWPr(), MWPs(), MWPu())
+  val all_mcde_stats:List[Stats] = List(KSP(), MWP())
 
 
-  val all_indices = List(new AdjustedRankIndex(arr), new CorrectedRankIndex(arr),
-    new NonIndex(arr), new RankIndex(arr))
+  val all_indices = List(new DoubleIndex(arr))//, new CorrectedRankIndex(arr),
+    //new NonIndex(arr), new RankIndex(arr))
 
-  val all_bivar_indices = List(new AdjustedRankIndex(bivar_arr), new CorrectedRankIndex(bivar_arr),
-    new NonIndex(bivar_arr), new RankIndex(bivar_arr))
+  val all_bivar_indices = List(new DoubleIndex(bivar_arr))//, new CorrectedRankIndex(bivar_arr),
+    //new NonIndex(bivar_arr), new RankIndex(bivar_arr))
 
   val all_gens = List(
     Cross(dims, 0.0,"gaussian", 0).generate(rows),
@@ -62,7 +62,7 @@ class TestDimensions extends FunSuite {
 
 
 
-  def get_dim[T](arr: Array[Array[T]]): (Int, Int) = {
+  def get_dim[T](arr: Array[DimensionIndex[Double]]): (Int, Int) = {
     (arr.length, arr(0).length)
   }
 
@@ -80,7 +80,7 @@ class TestDimensions extends FunSuite {
     } yield get_dim(data.index)}.map(x => x == (2, rows))
   }
 
-  def which_row_orient_index(ind: List[Index]):List[Boolean] = {
+  def which_row_orient_index(ind: List[Index[Double]]):List[Boolean] = {
       {for {
         index <- ind
       } yield get_dim(index.index)}.map(x => x == (dims, rows))
@@ -92,7 +92,7 @@ class TestDimensions extends FunSuite {
 
     def test_dim (arr_l: List[Array[Array[Double]]], size: Int = 0, tru: Int = 0): Boolean = {
       if(arr_l == Nil) size == tru
-      else if (get_dim(arr_l.head) == (rows, dims)) test_dim(arr_l.tail, size + 1 , tru + 1)
+      else if ((arr_l.head.length, arr_l.head(0).length) == (rows, dims)) test_dim(arr_l.tail, size + 1 , tru + 1)
       else test_dim(arr_l.tail, size +1, tru)
     }
 
@@ -110,13 +110,13 @@ class TestDimensions extends FunSuite {
   }
 
   test("Checking if no of rows in saved data by saveSample != dims"){
-    assert(get_dim(data)._1 != dims)
+    assert(data.length != dims)
   }
 
   test("Checking if saved data using DataGenerator.saveSample loads row oriented using Preprocess.open() and DataRef(...).open()"){
     val dataclassData = dataclass.open()
-    assert(get_dim(data)._2 == dims)
-    assert(get_dim(dataclassData)._2 == dims)
+    assert(data(0).length== dims)
+    assert(dataclassData(0).length == dims)
   }
 
   test("Checking if DataRef(...).openAndPreprocess() loads col oriented data"){

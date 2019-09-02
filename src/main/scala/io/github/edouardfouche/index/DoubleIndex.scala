@@ -16,15 +16,16 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.TupleIndex
-import io.github.edouardfouche.preprocess.Preprocess
 
-/**
-  * A very simple index structure will only the ranks (convenient for HiCS for example)
-  * @param values
-  */
-class RankIndex(val values: Array[Double]) extends DimensionIndex[Double] {
-  def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = {
-    Process.ksRankSimple(input)
+// Here the inputs may be row-oriented
+class DoubleIndex(val values: Array[Array[Double]], val parallelize: Int = 0) extends Index[Double] {
+  /**
+    *
+    * @param data a data set (column-oriented!)
+    * @return An index, which is also column-oriented
+    */
+  protected def createIndex(data: Array[Array[Double]]): Array[DimensionIndex[Double]] = {
+    data.map(x => new CorrectedRankIndex(x))
   }
+
 }

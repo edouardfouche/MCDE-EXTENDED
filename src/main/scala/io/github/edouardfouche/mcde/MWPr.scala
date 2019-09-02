@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.RankIndex
+import io.github.edouardfouche.index.{DoubleIndex, RankIndex}
 import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
@@ -28,11 +28,11 @@ import scala.annotation.tailrec
   *        Added with respect to the original paper to loose the dependence of beta from alpha.
   */
 case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
-  override type PreprocessedData = RankIndex
+  //override type PreprocessedData = RankIndex
   val id = "MWPr"
 
   def preprocess(input: Array[Array[Double]]): PreprocessedData = {
-    new RankIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+    new DoubleIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
 
   }
 
@@ -63,7 +63,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n))) cumulative(n + 1, acc + n, count + 1)
+        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + n, count + 1)
         else cumulative(n + 1, acc, count)
       }
 

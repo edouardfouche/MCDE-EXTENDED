@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.CorrectedRankIndex
+import io.github.edouardfouche.index.{CorrectedRankIndex, DoubleIndex}
 import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
@@ -31,12 +31,11 @@ import scala.annotation.tailrec
   */
 
 case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
-  type PreprocessedData = CorrectedRankIndex
+  //type PreprocessedData = CorrectedRankIndex
   val id = "MWP"
-  //val slicer = Slicing3
 
   def preprocess(input: Array[Array[Double]]): PreprocessedData = {
-    new CorrectedRankIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+    new DoubleIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**
@@ -62,7 +61,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n)._1)) cumulative(n + 1, acc + ref(n)._2, count + 1)
+        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).rank, count + 1)
         else cumulative(n + 1, acc, count)
       }
 
@@ -74,10 +73,10 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       }
       else {
         val n2:Long = cutLength - n1
-        if(n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Dataset has to many dataobjects. Please subsample and try again with smaller dataset.")
+        if(n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0
-        val corrMax = ref(cutEnd-1)._3
-        val corrMin = if(cutStart == 0) 0.0 else ref(cutStart-1)._3
+        val corrMax = ref(cutEnd-1).correction
+        val corrMin = if(cutStart == 0) 0.0 else ref(cutStart-1).correction
         val correction = (corrMax - corrMin) / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
         
@@ -87,7 +86,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
           val Z = math.abs((U1 - mean) / std)
           val res = HalfGaussian.cdf(Z)
           if (res.isNaN) {
-            print(s"reference: ${ref.slice(cutStart, cutEnd).take(5) mkString ","}")
+            print(s"reference: ${ref.dindex.slice(cutStart, cutEnd).take(5) mkString ","}")
             println(s"U1: $U1, U2: ${n1 * n2 - U1}, n1: $n1, n2: $n2, std: $std, correction: $correction -> res: $res")
           }
           res

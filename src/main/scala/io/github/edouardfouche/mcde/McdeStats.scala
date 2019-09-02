@@ -166,21 +166,6 @@ trait McdeStats extends Stats {
     result
   }
 
-  def conditionalIndependence(m: PreprocessedData, dimensions: Set[Int]): Double = {
-    val otherdimensions = m.indices.toSet -- dimensions
-    val independences = for {
-      dim <- otherdimensions
-    } yield {
-      val result = (1 to M).map(i => {
-        val sliceSize = (m(0).length * 0.1).toInt //(values(scala.util.Random.nextInt(values.length)) * m(0).length).toInt  // (m(0).length * alpha).toInt // I've put alpha, but a scala.util.Random.nextInt(m(0).length)
-        val mm = m.simpleSlice(dim, sliceSize)
-        contrast(mm, dimensions)
-      }).sum / M
-      result
-    }
-    independences.min
-  }
-
 
   def deviation(m: Array[Array[Double]], dimensions: Set[Int], referenceDim: Int): Double = {
     this.deviation(this.preprocess(m), dimensions, referenceDim)
