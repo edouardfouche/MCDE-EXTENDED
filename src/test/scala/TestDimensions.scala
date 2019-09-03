@@ -23,11 +23,11 @@ class TestDimensions extends FunSuite {
   val all_mcde_stats:List[Stats] = List(KSP(), MWP())
 
 
-  val all_indices = List(new DoubleIndex(arr))//, new CorrectedRankIndex(arr),
-    //new NonIndex(arr), new RankIndex(arr))
+  val all_indices = List(new Index_Double(arr))//, new DimensionIndex_CorrectedRank(arr),
+    //new DimensionIndex_Dummy(arr), new DImensionIndex_Rank(arr))
 
-  val all_bivar_indices = List(new DoubleIndex(bivar_arr))//, new CorrectedRankIndex(bivar_arr),
-    //new NonIndex(bivar_arr), new RankIndex(bivar_arr))
+  val all_bivar_indices = List(new Index_Double(bivar_arr))//, new DimensionIndex_CorrectedRank(bivar_arr),
+    //new DimensionIndex_Dummy(bivar_arr), new DImensionIndex_Rank(bivar_arr))
 
   val all_gens = List(
     Cross(dims, 0.0,"gaussian", 0).generate(rows),

@@ -1,5 +1,5 @@
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.MWPIndex
+import io.github.edouardfouche.index.Index_CorrectedRank
 import io.github.edouardfouche.mcde.{KSP, KSPP, MWP}
 import io.github.edouardfouche.utils.StopWatch
 
@@ -17,9 +17,9 @@ val result = test.contrastMatrix(data)
 result
 
 val d1 = Array(Array(1,3,2), Array(4,6,5), Array(8,9,7))
-new MWPIndex(d1)
+new Index_CorrectedRank(d1)
 val d2 = Array(Array("a", "b", "c"), Array("c", "e", "a"), Array("a", "x", "z"))
-new MWPIndex(d2)
+new Index_CorrectedRank(d2)
 
 val d = Independent(3, 0.6, "gaussian", 0).generate(1000)
 val dp = MWP().preprocess(d)

@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DoubleIndex, Index, MWPIndex, RankIndex}
+import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_CorrectedRank, Index_Double, Index_Rank}
 import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
@@ -29,11 +29,11 @@ import scala.annotation.tailrec
   */
 case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats{
   //type U = Double
-  //override type PreprocessedData = RankIndex
+  //override type PreprocessedData = DimensionIndex_Rank
   val id = "MWPr"
 
   def preprocess[U](input: Array[Array[U]])(implicit ord: U => Ordered[U]): Index[U] = {
-    new MWPIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+    new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**

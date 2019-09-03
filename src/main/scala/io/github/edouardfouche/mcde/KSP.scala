@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DoubleIndex, Index, MWPIndex, RankIndex}
+import io.github.edouardfouche.index.{Index_Double, Index, Index_Rank, DimensionIndex_Rank}
 
 import scala.annotation.tailrec
 import scala.math.{E, pow, sqrt}
@@ -33,11 +33,11 @@ import scala.math.{E, pow, sqrt}
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
-  //type PreprocessedData = RankIndex
+  //type PreprocessedData = DimensionIndex_Rank
   val id = "KSP"
 
   def preprocess[U](input: Array[Array[U]])(implicit ord: U => Ordered[U]): Index[U] = {
-    new MWPIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+    new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**

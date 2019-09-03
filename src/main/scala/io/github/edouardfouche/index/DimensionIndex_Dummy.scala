@@ -16,18 +16,13 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.TupleIndex
-import io.github.edouardfouche.preprocess.Preprocess
+import io.github.edouardfouche.index.tuple.{NonTupleIndex, TupleIndex}
 
-//TODO: Refactor the Slice1, Slice2, Slice3
 /**
-  * Compute an adjusted rank index from a given data set
-  * The "adjusted rank" means that in the case of ties, the rank is defined as the average rank of the tying values
+  * A dummy index structure
   *
-  * @param values A row-oriented data set
+  * @param values
   */
-class AdjustedRankIndex(val values: Array[Double]) extends DimensionIndex[Double]  {
-   def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = {
-    Process.mwRank(input)
-  }
+class DimensionIndex_Dummy(val values: Array[Double]) extends DimensionIndex[Double] {
+  def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x))
 }

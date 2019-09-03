@@ -16,15 +16,16 @@
  */
 package io.github.edouardfouche.index
 
+
 // Here the inputs may be row-oriented
-class MWPIndex[U](val values: Array[Array[U]], val parallelize: Int = 0)(implicit ev$1: U => Ordered[U]) extends Index[U] {
+class Index_Double(val values: Array[Array[Double]], val parallelize: Int = 0) extends Index[Double] {
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[U]]): Array[DimensionIndex[U]] = {
-    data.map(x => new CorrectedRankIndex(x))
+  protected def createIndex(data: Array[Array[Double]]): Array[DimensionIndex[Double]] = {
+    data.map(x => new DimensionIndex_CorrectedRank(x))
   }
 
 }

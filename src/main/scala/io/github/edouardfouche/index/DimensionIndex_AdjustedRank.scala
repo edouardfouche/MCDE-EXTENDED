@@ -16,16 +16,18 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.tuple.TupleIndex
+import io.github.edouardfouche.preprocess.Preprocess
 
-// Here the inputs may be row-oriented
-class DoubleIndex(val values: Array[Array[Double]], val parallelize: Int = 0) extends Index[Double] {
-  /**
-    *
-    * @param data a data set (column-oriented!)
-    * @return An index, which is also column-oriented
-    */
-  protected def createIndex(data: Array[Array[Double]]): Array[DimensionIndex[Double]] = {
-    data.map(x => new CorrectedRankIndex(x))
+//TODO: Refactor the Slice1, Slice2, Slice3
+/**
+  * Compute an adjusted rank index from a given data set
+  * The "adjusted rank" means that in the case of ties, the rank is defined as the average rank of the tying values
+  *
+  * @param values A row-oriented data set
+  */
+class DimensionIndex_AdjustedRank(val values: Array[Double]) extends DimensionIndex[Double]  {
+   def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = {
+    Process.mwRank(input)
   }
-
 }

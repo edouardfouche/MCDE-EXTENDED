@@ -27,13 +27,11 @@ import io.github.edouardfouche.preprocess.Preprocess
   *
   * @param values A row-oriented data set
   */
-class CorrectedRankIndex[U](val values: Array[U])(implicit ev$1: U => Ordered[U]) extends DimensionIndex[U]  {
+class DimensionIndex_CorrectedRank[U](val values: Array[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U]  {
 
-  //def apply[U](implicit ord: Ordering[U]) = new CorrectedRankIndex[U]
+  //def apply[U](implicit ord: Ordering[U]) = new DimensionIndex_CorrectedRank[U]
 
   def createIndex(input: Array[U]): Array[_ <: TupleIndex]= {
-    val i = mwRankCorrectionCumulative(input)
-    //println(s"i.length: ${i.length}, i(0).length: ${i(0).length}, i(0): ${i(0)}")
-    i
+    mwRankCorrectionCumulative(input)
   }
 }

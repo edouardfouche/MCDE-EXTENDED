@@ -118,7 +118,7 @@ abstract class DimensionIndex[U](implicit ev$1: U => Ordered[U]){
     * @param input A 2-D Array of Double (data set, column-oriented).
     * @return A 2-D Array of Int, where the element is the original index in the unsorted data set
     */
-  def ksRankSimple(input: Array[Double]): Array[RankTupleIndex] = {
+  def ksRankSimple(input: Array[U]): Array[RankTupleIndex] = {
     input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2))
   }
 

@@ -1,13 +1,13 @@
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DoubleIndex, Index}
+import io.github.edouardfouche.index.{Index_Double, Index}
 
 /**
   * Created by fouchee on 07.07.17.
   */
 abstract class Stats{
   //type U = Double with Int
-  //type PreprocessedData = DoubleIndex //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
+  //type PreprocessedData = Index_Double //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
   //type U = _ <: Ordered[U]
   // type PreprocessedData = _ <: Index[U]
 

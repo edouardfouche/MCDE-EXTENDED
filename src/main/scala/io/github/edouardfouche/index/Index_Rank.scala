@@ -16,13 +16,15 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{NonTupleIndex, TupleIndex}
+// Here the inputs may be row-oriented
+class Index_Rank[U](val values: Array[Array[U]], val parallelize: Int = 0)(implicit ev$1: U => Ordered[U]) extends Index[U] {
+  /**
+    *
+    * @param data a data set (column-oriented!)
+    * @return An index, which is also column-oriented
+    */
+  protected def createIndex(data: Array[Array[U]]): Array[DimensionIndex[U]] = {
+    data.map(x => new DimensionIndex_Rank(x))
+  }
 
-/**
-  * A dummy index structure
-  *
-  * @param values
-  */
-class NonIndex(val values: Array[Double]) extends DimensionIndex[Double] {
-  def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x))
 }
