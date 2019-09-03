@@ -28,6 +28,6 @@ import io.github.edouardfouche.preprocess.Preprocess
   */
 class DimensionIndex_AdjustedRank(val values: Array[Double]) extends DimensionIndex[Double]  {
    def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = {
-    Process.mwRank(input)
+    mwRank(input)
   }
 }
