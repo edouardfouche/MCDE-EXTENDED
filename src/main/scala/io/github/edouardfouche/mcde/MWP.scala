@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{CorrectedRankIndex, DoubleIndex}
+import io.github.edouardfouche.index.{CorrectedRankIndex, DimensionIndex, DoubleIndex, Index, MWPIndex}
 import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
@@ -30,12 +30,14 @@ import scala.annotation.tailrec
   *        Added with respect to the original paper to loose the dependence of beta from alpha.
   */
 
-case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
+                  var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = CorrectedRankIndex
+  //type U = Double
   val id = "MWP"
 
-  def preprocess(input: Array[Array[Double]]): PreprocessedData = {
-    new DoubleIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: Array[Array[Double]]): Index[Double] = {
+    new MWPIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**
@@ -47,7 +49,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(index: PreprocessedData, reference: Int, indexSelection: Array[Boolean]): Double = {
+  def twoSample(index: Index[Double], reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
     val sliceStart = index.getSafeCut(start, reference)

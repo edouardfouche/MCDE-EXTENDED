@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DoubleIndex, RankIndex}
+import io.github.edouardfouche.index.{DoubleIndex, Index, RankIndex}
 
 import scala.annotation.tailrec
 import scala.math.{E, pow, sqrt}
@@ -32,6 +32,7 @@ import scala.math.{E, pow, sqrt}
   */
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+  //type U = Double
   //type PreprocessedData = RankIndex
   val id = "KSP"
 
@@ -48,7 +49,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample(index: PreprocessedData, reference: Int, indexSelection: Array[Boolean]): Double = {
+  def twoSample(index: Index[Double], reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     val ref = index(reference)

@@ -18,19 +18,19 @@ package io.github.edouardfouche.index
 
 import scala.annotation.tailrec
 
-trait Index[U] {
+abstract class Index[U](implicit ev$1: U => Ordered[U]){
   val values: Array[Array[U]]
   val parallelize:Int
 
   //type T
-  val index: Array[DimensionIndex[U]] = createIndex(values.transpose) // IMPORTANT: The transpose, makes the input column-oriented
+  val index: Array[_ <: DimensionIndex[U]] = createIndex(values.transpose) // IMPORTANT: The transpose, makes the input column-oriented
 
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[U]]): Array[DimensionIndex[U]]
+  protected def createIndex(data: Array[Array[U]]): Array[_ <: DimensionIndex[U]]
 
   def apply(n: Int) = index(n) // access the columns of the index
 
@@ -40,6 +40,8 @@ trait Index[U] {
   def numRows = index(0).length
 
   def isEmpty: Boolean = index.length == 0
+
+
 
   /**
     * Produce a subspace slice by conditioning on all dimensions, except a reference dimension

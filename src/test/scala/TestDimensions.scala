@@ -62,7 +62,7 @@ class TestDimensions extends FunSuite {
 
 
 
-  def get_dim[T](arr: Array[DimensionIndex[Double]]): (Int, Int) = {
+  def get_dim[T](arr: Array[_ <: DimensionIndex[Double]]): (Int, Int) = {
     (arr.length, arr(0).length)
   }
 

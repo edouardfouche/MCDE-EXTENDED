@@ -16,9 +16,11 @@
  */
 package io.github.edouardfouche.preprocess
 
+import io.github.edouardfouche.index.Index
 import io.github.edouardfouche.mcde.Stats
 
-case class DataRef(id: String, path: String, header: Int, separator: String, category: String, excludeIndex: Boolean = false) {
+case class DataRef(id: String, path: String,
+                      header: Int, separator: String, category: String, excludeIndex: Boolean = false) {
 
   /**
     * Open the data ref
@@ -42,7 +44,7 @@ case class DataRef(id: String, path: String, header: Int, separator: String, cat
     * @param max1000   cap the opened data to 1000 rows. If the original data has more rows, sample 1000 without replacement
     * @return A 2-D Array of Double containing the values from the csv, preprocessed. (column oriented)
     */
-  def openAndPreprocess(test: Stats, dropClass: Boolean = true, max1000: Boolean = false): test.PreprocessedData = {
+  def openAndPreprocess(test: Stats, dropClass: Boolean = true, max1000: Boolean = false): Index[Double] = {
     test.preprocess(Preprocess.open(path, header, separator, excludeIndex, dropClass, max1000))
     // In case preprocess does wrong, this block becomes useful
     //try {

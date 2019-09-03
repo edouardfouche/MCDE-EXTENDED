@@ -15,6 +15,9 @@ val result = test.contrastMatrix(data)
 
 result
 
+val d1 = Array(Array(1,3,2), Array(4,6,5), Array(8,9,7))
+MWP().preprocess(d1)
+
 
 val d = Independent(3, 0.6, "gaussian", 0).generate(1000)
 val dp = MWP().preprocess(d)
