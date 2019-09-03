@@ -19,23 +19,23 @@ abstract class Stats{
   /**
     * @param input A data set (row oriented)
    */
-  def preprocess(input: Array[Array[Double]]): Index[Double]
+  def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
     * @param m A data set (row oriented)
     */
-  def contrast(m: Array[Array[Double]], dimensions: Set[Int]): Double = {
+  def contrast[U](m: Array[Array[U]], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
     this.contrast(this.preprocess(m), dimensions)
   }
 
-  def contrast(m: Index[Double], dimensions: Set[Int]): Double
+  def contrast[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double
 
   /**
     * @param m A data set (row oriented)
     */
-  def contrastMatrix(m: Array[Array[Double]]): Array[Array[Double]] = {
+  def contrastMatrix[U](m: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
     this.contrastMatrix(this.preprocess(m))
   }
 
-  def contrastMatrix(m: Index[Double]): Array[Array[Double]]
+  def contrastMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]]
 }

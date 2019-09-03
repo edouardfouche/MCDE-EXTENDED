@@ -38,7 +38,7 @@ trait McdeStats extends Stats {
 
   //def contrast(m: PreprocessedData, dimensions: Set[Int]): Double
   // I think this expected a number of records
-  def preprocess(input: Array[Array[Double]]): Index[Double]
+  def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
     * Statistical test computation
@@ -46,7 +46,7 @@ trait McdeStats extends Stats {
     * @param reference      The vector of the reference dimension as an array of 2-Tuple. First element is the index, the second is the rank
     * @param indexSelection An array of Boolean that contains the information if a given index is in the slice
     */
-  def twoSample(index: Index[Double], reference: Int, indexSelection: Array[Boolean]): Double
+  def twoSample[U](index: Index[U], reference: Int, indexSelection: Array[Boolean])(implicit ev$1: U => Ordered[U]): Double
 
   /**
     * Compute the contrast of a subspace
@@ -55,7 +55,7 @@ trait McdeStats extends Stats {
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
     */
-  def contrast(m: Index[Double], dimensions: Set[Int]): Double = {
+  def contrast[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
@@ -90,7 +90,7 @@ trait McdeStats extends Stats {
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
     */
-  def contrastAlpha(m: Index[Double], dimensions: Set[Int]): Double = {
+  def contrastAlpha[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
 
@@ -130,7 +130,7 @@ trait McdeStats extends Stats {
     * @param referenceDim The reference dimensions, should be contained in dimensions
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def deviation(m: Index[Double], dimensions: Set[Int], referenceDim: Int): Double = {
+  def deviation[U](m: Index[U], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
@@ -152,7 +152,7 @@ trait McdeStats extends Stats {
     * @param referenceDim The reference dimensions, should be contained in dimensions
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def deviationAlpha(m: Index[Double], dimensions: Set[Int], referenceDim: Int): Double = {
+  def deviationAlpha[U](m: Index[U], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
@@ -169,7 +169,7 @@ trait McdeStats extends Stats {
   }
 
 
-  def deviation(m: Array[Array[Double]], dimensions: Set[Int], referenceDim: Int): Double = {
+  def deviation[U](m: Array[Array[U]], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
     this.deviation(this.preprocess(m), dimensions, referenceDim)
   }
 
@@ -180,7 +180,7 @@ trait McdeStats extends Stats {
     * @param m The indexes from the original data ordered by the rank of the points
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def contrastMatrix(m: Index[Double]): Array[Array[Double]] = {
+  def contrastMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
     val numCols = m.numCols
     val matrix = Array.ofDim[Double](numCols, numCols)
 
@@ -215,7 +215,7 @@ trait McdeStats extends Stats {
 
 
 
-  def deviationMatrix(m: Array[Array[Double]]): Array[Array[Double]] = {
+  def deviationMatrix[U](m: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
     deviationMatrix(preprocess(m))
   }
 
@@ -226,7 +226,7 @@ trait McdeStats extends Stats {
     * @param m The indexes from the original data ordered by the rank of the points
     * @return A 2-D Array contains the deviation for each pairwise dimension
     */
-  def deviationMatrix(m: Index[Double]): Array[Array[Double]] = {
+  def deviationMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
     // Sanity check
     //require(alpha > 0 & alpha < 1, "alpha should be greater than 0 and lower than 1")
     //require(M > 0, "M should be greater than 0")

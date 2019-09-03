@@ -36,7 +36,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   //type U = Double
   val id = "MWP"
 
-  def preprocess(input: Array[Array[Double]]): Index[Double] = {
+  def preprocess[U](input: Array[Array[U]])(implicit ord: U => Ordered[U]): Index[U] = {
     new MWPIndex(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
@@ -49,7 +49,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(index: Index[Double], reference: Int, indexSelection: Array[Boolean]): Double = {
+  def twoSample[U](index: Index[U], reference: Int, indexSelection: Array[Boolean])(implicit ord: U => Ordered[U]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
     val sliceStart = index.getSafeCut(start, reference)
