@@ -17,15 +17,16 @@
 package io.github.edouardfouche.index
 
 // Here the inputs may be row-oriented
-// This is good but restricted to the same time for each Array
-class Index_CorrectedRank[U](val values: Array[Array[U]], val parallelize: Int = 0)(implicit ord: U => Ordered[U]) extends Index[U] {
+/*
+class Index_DoubleAndString(val values: Array[Array[_ >: Double with String]], val parallelize: Int = 0) extends Index[_ >: Double with String] {
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[U]]): Array[DimensionIndex[U]] = {
+  protected def createIndex(data: Array[Array[_ >: Double with String]]): Array[DimensionIndex[_ >: Double with String]] = {
     data.map(x => new DimensionIndex_CorrectedRank(x))
   }
 
 }
+*/

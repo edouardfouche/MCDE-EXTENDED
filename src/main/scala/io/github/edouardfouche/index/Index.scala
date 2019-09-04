@@ -18,7 +18,7 @@ package io.github.edouardfouche.index
 
 import scala.annotation.tailrec
 
-abstract class Index[U](implicit ev$1: U => Ordered[U]){
+abstract class Index[U]{
   val values: Array[Array[U]]
   val parallelize:Int
 

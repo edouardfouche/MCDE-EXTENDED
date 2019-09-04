@@ -26,8 +26,8 @@ import io.github.edouardfouche.preprocess.Preprocess
   *
   * @param values A row-oriented data set
   */
-class DimensionIndex_AdjustedRank(val values: Array[Double]) extends DimensionIndex[Double]  {
-   def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = {
+class DimensionIndex_AdjustedRank[U](val values: Array[U])(implicit ord: U => Ordered[U])  extends DimensionIndex[U]  {
+   def createIndex(input: Array[U]): Array[_ <: TupleIndex] = {
     mwRank(input)
   }
 }

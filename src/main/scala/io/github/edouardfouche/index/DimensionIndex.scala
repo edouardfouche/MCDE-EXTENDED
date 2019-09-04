@@ -20,7 +20,7 @@ import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, CorrectedRan
 
 import scala.annotation.tailrec
 
-abstract class DimensionIndex[U](implicit ev$1: U => Ordered[U]){
+abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
   //implicit protected val cmp: Ordering[_ >: U];
   val values: Array[U]
 

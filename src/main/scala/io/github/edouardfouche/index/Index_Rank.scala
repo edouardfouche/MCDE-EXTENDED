@@ -17,7 +17,7 @@
 package io.github.edouardfouche.index
 
 // Here the inputs may be row-oriented
-class Index_Rank[U](val values: Array[Array[U]], val parallelize: Int = 0)(implicit ev$1: U => Ordered[U]) extends Index[U] {
+class Index_Rank[U](val values: Array[Array[U]], val parallelize: Int = 0)(implicit ord: U => Ordered[U]) extends Index[U] {
   /**
     *
     * @param data a data set (column-oriented!)
