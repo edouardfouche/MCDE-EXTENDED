@@ -1,5 +1,6 @@
 package io.github.edouardfouche.preprocess
 
+// make sure the input of this is col-oriented
 class DataSet(columns: List[Vector[String]]) {
   def this(columns: Array[Array[Double]]) = this(columns.map(_.map(_.toString).toVector).toList)
   def this(columns: Array[Array[Int]]) = this(columns.map(_.map(_.toString).toVector).toList)

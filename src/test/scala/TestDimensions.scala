@@ -17,8 +17,8 @@ class TestDimensions extends FunSuite {
 
   val rows = 50
   val dims = 4
-  val arr = Independent(dims, 0.0,"gaussian", 0).generate(rows)
-  val bivar_arr = Independent(2, 0.0,"gaussian", 0).generate(rows)
+  val arr = Independent(dims, 0.0,"gaussian", 0).generate(rows).transpose
+  val bivar_arr = Independent(2, 0.0,"gaussian", 0).generate(rows).transpose
 
   // TODO: What if new Tests / Generators?
   val all_mcde_stats:List[McdeStats] = List(KSP(), MWP())
@@ -114,10 +114,11 @@ class TestDimensions extends FunSuite {
     assert(data.nrows != dims)
   }
 
-  test("Checking if saved data using DataGenerator.saveSample loads row oriented using Preprocess.open() and DataRef(...).open()"){
+  test("Checking if saved data using DataGenerator.saveSample loads with right number of cols " +
+    "using Preprocess.open() and DataRef(...).open()"){
     val dataclassData = dataclass.open()
-    assert(data(0).length== dims)
-    assert(dataclassData(0).length == dims)
+    assert(data.ncols == dims)
+    assert(dataclassData.ncols == dims)
   }
 
   test("Checking if DataRef(...).openAndPreprocess() loads col oriented data"){

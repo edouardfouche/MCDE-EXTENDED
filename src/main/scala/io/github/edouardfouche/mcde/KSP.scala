@@ -84,6 +84,13 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @param n1 n Datapoints in first sample
     * @param n2 n Datapoints in second sample
     * @return p-value of two-sided two-sample KSP
+    *
+    * This uses the approach from Marsaglia G, Tsang WW, Wang J (2003). "Evaluating Kolmogorov's Distribution". Journal of Statistical Software. 8 (18): 1–4. doi:10.18637/jss.v008.i18.
+    * See also:
+    * - https://stats.stackexchange.com/questions/389034/kolmogorov-smirnov-test-calculating-the-p-value-manually
+    * - https://stats.stackexchange.com/questions/149595/ks-test-how-is-the-p-value-calculated
+    * - https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test#Kolmogorov_distribution
+    * - https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test#cite_note-2
     */
   def get_p_from_D(D: Double, n1: Long, n2: Long): Double = {
     lazy val z = D * sqrt(n1 * n2 / (n1 + n2))

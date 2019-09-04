@@ -145,7 +145,7 @@ object Preprocess extends Preprocessing {
       }
     }
 
-    new DataSet(resultData.transpose.map(x => x.toVector).toList)
+    new DataSet(resultData.map(x => x.toVector).toList)
   }
 
 
