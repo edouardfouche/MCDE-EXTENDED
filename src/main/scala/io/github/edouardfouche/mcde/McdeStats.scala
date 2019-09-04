@@ -17,6 +17,7 @@
 package io.github.edouardfouche.mcde
 
 import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.preprocess.{DataSet, Preprocess}
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
@@ -38,15 +39,19 @@ trait McdeStats extends Stats {
 
   //def contrast(m: PreprocessedData, dimensions: Set[Int]): Double
   // I think this expected a number of records
-  def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
+  //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
+  def preprocess(input: DataSet): Index
 
+  def preprocess(input: Array[Array[_]]): Index = {
+    preprocess(new DataSet(input.map(_.map(_.toString).toVector).toList))
+  }
   /**
     * Statistical test computation
     *
     * @param reference      The vector of the reference dimension as an array of 2-Tuple. First element is the index, the second is the rank
     * @param indexSelection An array of Boolean that contains the information if a given index is in the slice
     */
-  def twoSample[U](index: Index[U], reference: Int, indexSelection: Array[Boolean])(implicit ev$1: U => Ordered[U]): Double
+  def twoSample(index: Index, reference: Int, indexSelection: Array[Boolean]): Double
 
   /**
     * Compute the contrast of a subspace
@@ -55,10 +60,10 @@ trait McdeStats extends Stats {
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
     */
-  def contrast[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
+  def contrast(m: Index, dimensions: Set[Int]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
-    val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
+    val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
     //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
 
     val result = if (parallelize == 0) {
@@ -90,7 +95,7 @@ trait McdeStats extends Stats {
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
     */
-  def contrastAlpha[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
+  def contrastAlpha(m: Index, dimensions: Set[Int]): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
 
@@ -99,7 +104,7 @@ trait McdeStats extends Stats {
     val result = if (parallelize == 0) {
       (1 to M).map(i => {
         val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
-        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
+        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
@@ -111,7 +116,7 @@ trait McdeStats extends Stats {
       }
       iterations.map(i => {
         val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
-        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
+        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
@@ -130,7 +135,7 @@ trait McdeStats extends Stats {
     * @param referenceDim The reference dimensions, should be contained in dimensions
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def deviation[U](m: Index[U], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
+  def deviation(m: Index, dimensions: Set[Int], referenceDim: Int): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
@@ -152,14 +157,14 @@ trait McdeStats extends Stats {
     * @param referenceDim The reference dimensions, should be contained in dimensions
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def deviationAlpha[U](m: Index[U], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
+  def deviationAlpha(m: Index, dimensions: Set[Int], referenceDim: Int): Double = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
 
     val result = (1 to M).map(i => {
       val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
-      val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
+      val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
       twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
     }).sum / M //, targetSampleSize))).sum / M
 
@@ -169,7 +174,7 @@ trait McdeStats extends Stats {
   }
 
 
-  def deviation[U](m: Array[Array[U]], dimensions: Set[Int], referenceDim: Int)(implicit ev$1: U => Ordered[U]): Double = {
+  def deviation(m: DataSet, dimensions: Set[Int], referenceDim: Int): Double = {
     this.deviation(this.preprocess(m), dimensions, referenceDim)
   }
 
@@ -180,8 +185,8 @@ trait McdeStats extends Stats {
     * @param m The indexes from the original data ordered by the rank of the points
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
-  def contrastMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
-    val numCols = m.numCols
+  def contrastMatrix(m: Index): Array[Array[Double]] = {
+    val numCols = m.ncols
     val matrix = Array.ofDim[Double](numCols, numCols)
 
     val cols = if (parallelize == 0) {
@@ -215,7 +220,7 @@ trait McdeStats extends Stats {
 
 
 
-  def deviationMatrix[U](m: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
+  def deviationMatrix(m: DataSet): Array[Array[Double]] = {
     deviationMatrix(preprocess(m))
   }
 
@@ -226,11 +231,11 @@ trait McdeStats extends Stats {
     * @param m The indexes from the original data ordered by the rank of the points
     * @return A 2-D Array contains the deviation for each pairwise dimension
     */
-  def deviationMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
+  def deviationMatrix(m: Index): Array[Array[Double]] = {
     // Sanity check
     //require(alpha > 0 & alpha < 1, "alpha should be greater than 0 and lower than 1")
     //require(M > 0, "M should be greater than 0")
-    val numCols = m.numCols
+    val numCols = m.ncols
     val matrix = Array.ofDim[Double](numCols, numCols)
 
     val cols = if (parallelize == 0) {

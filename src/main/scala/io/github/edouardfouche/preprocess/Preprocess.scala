@@ -30,11 +30,13 @@ object Preprocess extends Preprocessing {
     * Helper function that redirects to openArff in case an arff is given else openCSV
     * @return A data set (row oriented)
     */
-  def open(path: String, header: Int = 1, separator: String = ",", excludeIndex: Boolean = false, dropClass: Boolean = true, sample1000: Boolean = false): Array[Array[Double]] = {
+  def open(path: String, header: Int = 1, separator: String = ",", excludeIndex: Boolean = false,
+           dropClass: Boolean = true, sample1000: Boolean = false): DataSet = {
     require(header >= 0, "header cannot be a negative number")
     require(separator.length == 1, "separator cannot be longer than 1")
-    if (path.endsWith("arff")) openArff(path, dropClass, sample1000)
-    else openCSV(path, header, separator, excludeIndex, dropClass, sample1000)
+    //if (path.endsWith("arff")) openArff(path, dropClass, sample1000)
+    //else
+    openCSV(path, header, separator, excludeIndex, dropClass, sample1000)
   }
 
   /**
@@ -50,10 +52,12 @@ object Preprocess extends Preprocessing {
   def getLabels(path: String, header: Int = 1, separator: String = ",", excludeIndex: Boolean = false): Array[Boolean] = {
     require(header >= 0, "header cannot be a negative number")
     require(separator.length == 1, "Data separator cannot be longer than 1")
-    val lastcolumns = if(path.endsWith("arff")) {
-      openArff(path, dropClass = false).last
-    } else openCSV(path, header, separator, excludeIndex, dropClass = false).last
-    lastcolumns.map(x => if(x > 0) true else false)  // This trick should be done for the arff data HiCS synthetic
+    //val lastcolumns = if(path.endsWith("arff")) {
+    //  openArff(path, dropClass = false).last
+    //} else openCSV(path, header, separator, excludeIndex, dropClass = false).last
+    val last = openCSV(path, header, separator, excludeIndex, dropClass = false).last
+    last.map(x => false).toArray // Not handling this for now.
+    //lastcolumns.map(x => if(x > 0) true else false)  // This trick should be done for the arff data HiCS synthetic
     // That's because the class column has a binary encoding which then trick the auc computation
   }
 
@@ -99,7 +103,8 @@ object Preprocess extends Preprocessing {
     * @param max1000 cap the opened data to 1000 rows. If the original data has more rows, sample 1000 without replacement
     * @return A 2-D Array of Double containing the values from the csv. (row-oriented)
     */
-  def openCSV(path: String, header: Int = 1, separator: String = ",", excludeIndex: Boolean = false, dropClass: Boolean = true, max1000: Boolean = false): Array[Array[Double]] = {
+  def openCSV(path: String, header: Int = 1, separator: String = ",", excludeIndex: Boolean = false,
+              dropClass: Boolean = true, max1000: Boolean = false): DataSet = {
     require(header >= 0, "header cannot be a negative number")
     require(separator.length == 1, "separator cannot be longer than 1")
     val bufferedSource = scala.io.Source.fromFile(path)
@@ -115,11 +120,11 @@ object Preprocess extends Preprocessing {
 
     // This could be improved a bit, because toDouble is done twice
 
-    val parser = result.map(x => Some(x.map(_.toDouble)))
-
-    val data: Array[Array[Double]] = parser.collect{
-      case Some(i) => i
-    }
+    //val parser = result.map(x => Some(x.map(_.toDouble)))
+    //val data: Array[Array[Any]] = parser.collect{
+    //  case Some(i) => i
+    //}
+    val data: Array[Array[String]] = result
 
     //val data: Array[Array[Double]] = parser.flatten
 
@@ -140,10 +145,12 @@ object Preprocess extends Preprocessing {
       }
     }
 
-    resultData.transpose
+    new DataSet(resultData.transpose.map(x => x.toVector).toList)
   }
 
-  /**
+
+    /*
+      /**
     * Open an Arff file as a 2-D Array of Double
     *
     * @param path Path to the file in the current filesystem
@@ -152,7 +159,7 @@ object Preprocess extends Preprocessing {
     * @return A 2-D Array of Double containing the values for each numerical columns (row-oriented)
     * @note This method is inspired from the work of Fabian Keller
     */
-  def openArff(path: String, dropClass: Boolean = true, max1000: Boolean = false): Array[Array[Double]] = {
+  def openArff(path: String, dropClass: Boolean = true, max1000: Boolean = false): Array[Array[_]] = {
     val source = scala.io.Source.fromFile(path)
     val lines = source.getLines.toArray
     source.close()
@@ -162,7 +169,7 @@ object Preprocess extends Preprocessing {
     val linesData = lines.drop(lines.indexWhere(x => x.toLowerCase == "@data") + 1).filter(x => x.split(",").length == numAttr)
     val numInst = linesData.length
 
-    val matrix = Array.ofDim[Double](numInst, numAttr)
+    val matrix = Array.ofDim[_](numInst, numAttr)
 
     var i = 0
     for (line <- linesData) {
@@ -198,6 +205,8 @@ object Preprocess extends Preprocessing {
 
     resultData.transpose
   }
+  */
+
 
   /**
     * Return the rank index structure (as in HiCS).

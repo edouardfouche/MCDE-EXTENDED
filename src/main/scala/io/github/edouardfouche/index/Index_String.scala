@@ -17,6 +17,7 @@
 package io.github.edouardfouche.index
 
 // Here the inputs may be row-oriented
+/*
 class Index_String(val values: Array[Array[String]], val parallelize: Int = 0) extends Index[String] {
   /**
     *
@@ -28,3 +29,4 @@ class Index_String(val values: Array[Array[String]], val parallelize: Int = 0) e
   }
 
 }
+*/

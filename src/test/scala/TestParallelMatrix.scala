@@ -18,13 +18,14 @@
 import io.github.edouardfouche.generators.Independent
 import io.github.edouardfouche.mcde.MWP
 import org.scalatest.FunSuite
+import io.github.edouardfouche.preprocess.DataSet
 
 /**
   * Created by fouchee on 10.07.17.
   */
 class TestParallelMatrix extends FunSuite with TestData {
 
-  val data = MWP().preprocess(Independent(3, 0.0, "gaussian", 0).generate(1000))
+  val data = MWP().preprocess(new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose))
 
   test(s"CMatrix+MWP with parallelism level = 0") {
     val test = MWP(50, parallelize = 0)

@@ -1,30 +1,31 @@
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.mcde.{MWP,KSP,KSPP}
-import io.github.edouardfouche.utils.StopWatch
 import io.github.edouardfouche.index.Index_CorrectedRank
+import io.github.edouardfouche.mcde.{KSP, KSPP, MWP}
+import io.github.edouardfouche.preprocess._
+import io.github.edouardfouche.utils.StopWatch
 
-val data = MWP().preprocess(Independent(3, 0.0, "gaussian", 0).generate(1000))
+val data = MWP().preprocess(new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose))
 
-data.values.length
+data.ncols
 
-data.values(0).length
+data.nrows
 
-data.numCols
 
 val test = MWP(50, parallelize = 0)
 val result = test.contrastMatrix(data)
 
-result
-
-val d1 = Array(Array(1,3,2), Array(4,6,5), Array(8,9,7))
-
+val d1 = new DataSet(Array(Array(1,3,2), Array(4,6,5), Array(8,9,7)))
 new Index_CorrectedRank(d1)
-
-val d2 = Array(Array("a", "b", "c"), Array("c", "e", "a"), Array("a", "x", "z"))
-
+val d2 = new DataSet(Array(Array("a", "b", "c"), Array("c", "e", "a"), Array("a", "x", "z")))
 new Index_CorrectedRank(d2)
 
-val d = Independent(3, 0.6, "gaussian", 0).generate(1000)
+val d3 = new DataSet(Array(Array("a", "b", "c"), Array(1.0, 2.0, 3.0), Array(1, 2, 3)))
+val i = new Index_CorrectedRank(d3)
+i.data(0)
+i.data(1)
+i.data(2)
+
+val d = new DataSet(Independent(3, 0.6, "gaussian", 0).generate(1000).transpose)
 val dp = MWP().preprocess(d)
 StopWatch.measureTime{
   MWP().preprocess(d)

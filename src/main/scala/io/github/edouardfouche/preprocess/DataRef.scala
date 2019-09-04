@@ -29,7 +29,7 @@ case class DataRef(id: String, path: String,
     * @param max1000   cap the opened data to 1000 rows. If the original data has more rows, sample 1000 without replacement
     * @return A 2-D Array of Double containing the values from the csv. (row oriented)
     */
-  def open(dropClass: Boolean = true, max1000: Boolean = false): Array[Array[Double]] = {
+  def open(dropClass: Boolean = true, max1000: Boolean = false): DataSet = {
     try {
       Preprocess.open(path, header, separator, excludeIndex, dropClass, max1000)
     } catch {
@@ -44,7 +44,7 @@ case class DataRef(id: String, path: String,
     * @param max1000   cap the opened data to 1000 rows. If the original data has more rows, sample 1000 without replacement
     * @return A 2-D Array of Double containing the values from the csv, preprocessed. (column oriented)
     */
-  def openAndPreprocess(test: Stats, dropClass: Boolean = true, max1000: Boolean = false): Index[Double] = {
+  def openAndPreprocess(test: Stats, dropClass: Boolean = true, max1000: Boolean = false): Index = {
     test.preprocess(Preprocess.open(path, header, separator, excludeIndex, dropClass, max1000))
     // In case preprocess does wrong, this block becomes useful
     //try {

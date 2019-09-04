@@ -22,16 +22,16 @@ import scala.annotation.tailrec
 
 abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
   //implicit protected val cmp: Ordering[_ >: U];
-  val values: Array[U]
+  val values: Vector[U]
 
-  val dindex: Array[_ <: TupleIndex] = createIndex(values)
+  val dindex: Array[_ <: TupleIndex] = createDimensionIndex(values)
 
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[U]): Array[_ <: TupleIndex]
+  protected def createDimensionIndex(data: Vector[U]): Array[_ <: TupleIndex]
 
   def apply(n: Int) = dindex(n) // access in the index
 
@@ -47,10 +47,11 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     * @param input A 2-D Array of Double (data set, column-oriented).
     * @return A 2-D Array of 2-D Tuple, where the first element is the original index, the second is its rank.
     */
-  def mwRank(input: Array[U]): Array[AdjustedRankTupleIndex] = {
+  def mwRank(input: Vector[U]): Array[AdjustedRankTupleIndex] = {
     // Create an index for a column with this shape: (original position, adjusted rank, original value)
     // They are ordered by rank
     val nonadjusted = input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+    val adjusted = nonadjusted.map(y => AdjustedRankTupleIndex(y._1,y._2)).toArray
 
     val m = nonadjusted.length - 1
     var j = 0
@@ -64,11 +65,11 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
       }
       if (k > j) {
         val newval = ((acc + nonadjusted(k)._2) / (k - j + 1.0)).toFloat
-        (j to k).foreach(y => nonadjusted(y) = (nonadjusted(y)._1, newval, nonadjusted(y)._3))
+        (j to k).foreach(y => adjusted(y) = AdjustedRankTupleIndex(nonadjusted(y)._1, newval))
         j += k - j + 1 // jump to after the replacement
       } else j += 1
     }
-    nonadjusted.map(y => AdjustedRankTupleIndex(y._1,y._2))
+    adjusted
   }
 
   /**
@@ -78,7 +79,7 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     * @return A 2-D Array of 3-D Tuple, where the first element is the original index, the second is its rank and the
     *         the last one a cumulative correction for ties.
     */
-  def mwRankCorrectionCumulative(input: Array[U]): Array[CorrectedRankTupleIndex] = {
+  def mwRankCorrectionCumulative(input: Vector[U]): Array[CorrectedRankTupleIndex] = {
     // Create an index for each column with this shape: (original position, adjusted rank, original value)
     // They are ordered by rank
     val nonadjusted = input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
@@ -118,8 +119,8 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     * @param input A 2-D Array of Double (data set, column-oriented).
     * @return A 2-D Array of Int, where the element is the original index in the unsorted data set
     */
-  def ksRankSimple(input: Array[U]): Array[RankTupleIndex] = {
-    input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2))
+  def ksRankSimple(input: Vector[U]): Array[RankTupleIndex] = {
+    input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
   }
 
   def slice(sliceSize: Int): Array[Boolean] = {

@@ -16,30 +16,35 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.preprocess.DataSet
+
 import scala.annotation.tailrec
 
-abstract class Index[U]{
-  val values: Array[Array[U]]
+abstract class Index {
+  //val values: DataSet
+  val data: DataSet
   val parallelize:Int
 
   //type T
-  val index: Array[_ <: DimensionIndex[U]] = createIndex(values.transpose) // IMPORTANT: The transpose, makes the input column-oriented
+  val index: Array[DimensionIndex[_]] = createIndex(data) // IMPORTANT: The transpose, makes the input column-oriented
+
 
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[U]]): Array[_ <: DimensionIndex[U]]
+  protected def createIndex(data: DataSet): Array[DimensionIndex[_]]
 
-  def apply(n: Int) = index(n) // access the columns of the index
 
-  def indices = index.indices // this is supposed to give the indices of the columns
+  def apply(n: Int): DimensionIndex[_] = index(n) // access the columns of the index
 
-  def numCols = index.length
-  def numRows = index(0).length
+  def indices = (0 until data.ncols) // this is supposed to give the indices of the columns
 
-  def isEmpty: Boolean = index.length == 0
+  def ncols = data.ncols
+  def nrows = data.nrows
+
+  def isEmpty: Boolean = data.ncols == 0
 
 
 
@@ -59,7 +64,7 @@ abstract class Index[U]{
     //require(cut >= 0 & cut <= reference.length)
     val ref = index(reference)
     //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
-    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex[U]): Int = {
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex[_]): Int = {
       // "It's easier to ask forgiveness than it is to get permission"
       try if(ref(a+inc).rank != ref(a+inc-1).rank) return a+inc
       else {

@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{Index_Double, Index, Index_Rank, DimensionIndex_Rank}
+import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_Rank}
+import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
 import scala.math.{E, pow, sqrt}
@@ -36,7 +37,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   //type PreprocessedData = DimensionIndex_Rank
   val id = "KSP"
 
-  def preprocess[U](input: Array[Array[U]])(implicit ord: U => Ordered[U]): Index[U] = {
+  def preprocess(input: DataSet): Index = {
     new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
@@ -49,7 +50,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample[U](index: Index[U], reference: Int, indexSelection: Array[Boolean])(implicit ord: U => Ordered[U]): Double = {
+  def twoSample(index: Index, reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     val ref = index(reference)

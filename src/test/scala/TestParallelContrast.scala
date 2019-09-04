@@ -18,6 +18,7 @@
 import io.github.edouardfouche.generators.Independent
 import io.github.edouardfouche.mcde.MWP
 import org.scalatest.FunSuite
+import io.github.edouardfouche.preprocess.DataSet
 
 /**
   * Created by fouchee on 10.07.17.
@@ -25,7 +26,7 @@ import org.scalatest.FunSuite
 class TestParallelContrast extends FunSuite with TestData {
 
   val test = MWP(50, parallelize = 0)
-  val data = test.preprocess(Independent(3, 0.0, "gaussian", 0).generate(1000))
+  val data = test.preprocess(new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose))
 
   test(s"Contrast with parallelism level = 0") {
     val test = MWP(50, parallelize = 0)

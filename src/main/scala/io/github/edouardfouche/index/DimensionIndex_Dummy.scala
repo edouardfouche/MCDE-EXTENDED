@@ -18,11 +18,13 @@ package io.github.edouardfouche.index
 
 import io.github.edouardfouche.index.tuple.{NonTupleIndex, TupleIndex}
 
+/*
 /**
   * A dummy index structure
   *
   * @param values
   */
-class DimensionIndex_Dummy(val values: Array[Double]) extends DimensionIndex[Double] {
-  def createIndex(input: Array[Double]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x))
+class DimensionIndex_Dummy[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U]   {
+  def createDimensionIndex(input: Vector[U]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x)).toArray
 }
+*/

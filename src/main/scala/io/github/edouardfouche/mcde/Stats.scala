@@ -1,6 +1,7 @@
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{Index_Double, Index}
+import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.preprocess.DataSet
 
 /**
   * Created by fouchee on 07.07.17.
@@ -19,23 +20,24 @@ abstract class Stats{
   /**
     * @param input A data set (row oriented)
    */
-  def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
+  def preprocess(input: DataSet): Index
+  //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
     * @param m A data set (row oriented)
     */
-  def contrast[U](m: Array[Array[U]], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double = {
+  def contrast(m: DataSet, dimensions: Set[Int]): Double = {
     this.contrast(this.preprocess(m), dimensions)
   }
 
-  def contrast[U](m: Index[U], dimensions: Set[Int])(implicit ev$1: U => Ordered[U]): Double
+  def contrast(m: Index, dimensions: Set[Int]): Double
 
   /**
     * @param m A data set (row oriented)
     */
-  def contrastMatrix[U](m: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Array[Array[Double]] = {
+  def contrastMatrix(m: DataSet): Array[Array[Double]] = {
     this.contrastMatrix(this.preprocess(m))
   }
 
-  def contrastMatrix[U](m: Index[U])(implicit ev$1: U => Ordered[U]): Array[Array[Double]]
+  def contrastMatrix(m: Index): Array[Array[Double]]
 }

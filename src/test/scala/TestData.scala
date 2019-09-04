@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import io.github.edouardfouche.preprocess.{DataRef, Preprocess}
+import io.github.edouardfouche.preprocess.{DataRef, DataSet, Preprocess}
 import io.github.edouardfouche.mcde.{KSP, MWP}
 
 /**
@@ -22,17 +22,17 @@ import io.github.edouardfouche.mcde.{KSP, MWP}
   */
 trait TestData {
   // note: ranking according to mann-whitney should not have any consequence of kolmogorov results
-  val highcontrast_2D: Array[Array[Double]] = Preprocess.openCSV(
+  val highcontrast_2D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Linear-2-0.0.csv").getPath)
-  val lowcontrast_2D: Array[Array[Double]] = Preprocess.openCSV(
+  val lowcontrast_2D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Independent-2-0.0.csv").getPath)
 
-  val highcontrast_5D: Array[Array[Double]] = Preprocess.openCSV(
+  val highcontrast_5D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Linear-5-0.0.csv").getPath)
-  val lowcontrast_5D: Array[Array[Double]] = Preprocess.openCSV(
+  val lowcontrast_5D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Independent-5-0.0.csv").getPath)
 
-  val lowcontrast_100D: Array[Array[Double]] = Preprocess.openCSV(
+  val lowcontrast_100D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Independent-100-0.0.csv").getPath)
 
   val mwp = MWP(1000, 0.5)

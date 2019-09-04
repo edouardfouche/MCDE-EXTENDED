@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_CorrectedRank, Index_Double, Index_Rank}
+import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_CorrectedRank, Index_Rank}
+import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
@@ -32,9 +33,10 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   //override type PreprocessedData = DimensionIndex_Rank
   val id = "MWPr"
 
-  def preprocess[U](input: Array[Array[U]])(implicit ord: U => Ordered[U]): Index[U] = {
+  def preprocess(input: DataSet): Index = {
     new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
+
 
   /**
     * Compute a statistical test based on  Mann-Whitney U test using a reference vector (the indices of a dimension
@@ -45,7 +47,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample[U](index: Index[U], reference: Int, indexSelection: Array[Boolean])(implicit ord: U => Ordered[U]): Double = {
+  def twoSample(index: Index, reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     // This returns results between 0 and reference.length (both incl.)
     // i.e. the "cut" is the place from which the cut starts, if the cut starts at 0 or reference.length, this is the same as no cut.

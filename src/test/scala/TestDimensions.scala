@@ -1,6 +1,7 @@
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index._
 import io.github.edouardfouche.preprocess._
+import io.github.edouardfouche.preprocess.DataSet
 import org.scalatest.FunSuite
 import io.github.edouardfouche.mcde.{Stats, _}
 import java.io.File
@@ -20,13 +21,13 @@ class TestDimensions extends FunSuite {
   val bivar_arr = Independent(2, 0.0,"gaussian", 0).generate(rows)
 
   // TODO: What if new Tests / Generators?
-  val all_mcde_stats:List[Stats] = List(KSP(), MWP())
+  val all_mcde_stats:List[McdeStats] = List(KSP(), MWP())
 
 
-  val all_indices = List(new Index_Double(arr))//, new DimensionIndex_CorrectedRank(arr),
+  val all_indices = List(new Index_CorrectedRank(new DataSet(arr)))//, new DimensionIndex_CorrectedRank(arr),
     //new DimensionIndex_Dummy(arr), new DImensionIndex_Rank(arr))
 
-  val all_bivar_indices = List(new Index_Double(bivar_arr))//, new DimensionIndex_CorrectedRank(bivar_arr),
+  val all_bivar_indices = List(new Index_CorrectedRank(new DataSet(bivar_arr)))//, new DimensionIndex_CorrectedRank(bivar_arr),
     //new DimensionIndex_Dummy(bivar_arr), new DImensionIndex_Rank(bivar_arr))
 
   val all_gens = List(
@@ -57,30 +58,30 @@ class TestDimensions extends FunSuite {
   val dir = new File(path).mkdirs()
   val indi = Independent(dims, 0.0,"gaussian", 0)
   indi.save(rows,path) // save is final on Base Class, dir gets destructed after test
-  val data = Preprocess.open(path + indi.id + ".csv", header = 1, separator = ",", excludeIndex = false, dropClass = true)
+  val data: DataSet = Preprocess.open(path + indi.id + ".csv", header = 1, separator = ",", excludeIndex = false, dropClass = true)
   val dataclass = DataRef("Independent-2-0.0", path + indi.id + ".csv", 1, ",", "Test")
 
 
 
-  def get_dim[T](arr: Array[_ <: DimensionIndex[Double]]): (Int, Int) = {
+  def get_dim[T](arr: Array[_ <: DimensionIndex[_]]): (Int, Int) = {
     (arr.length, arr(0).length)
   }
 
-  def which_row_orient_stats(stats: List[Stats]): List[Boolean] = {
+  def which_row_orient_stats(stats: List[McdeStats]): List[Boolean] = {
       {for{
         stat <- stats
-        data = stat.preprocess(arr)
+        data = stat.preprocess(new DataSet(arr))
       } yield get_dim(data.index)}.map(x => x == (dims, rows))
   }
 
   def which_row_orient_bivar_stats(stats: List[Stats]): List[Boolean] = {
     {for{
       stat <- stats
-      data = stat.preprocess(bivar_arr)
+      data = stat.preprocess(new DataSet(bivar_arr))
     } yield get_dim(data.index)}.map(x => x == (2, rows))
   }
 
-  def which_row_orient_index(ind: List[Index[Double]]):List[Boolean] = {
+  def which_row_orient_index(ind: List[Index]):List[Boolean] = {
       {for {
         index <- ind
       } yield get_dim(index.index)}.map(x => x == (dims, rows))
@@ -110,7 +111,7 @@ class TestDimensions extends FunSuite {
   }
 
   test("Checking if no of rows in saved data by saveSample != dims"){
-    assert(data.length != dims)
+    assert(data.nrows != dims)
   }
 
   test("Checking if saved data using DataGenerator.saveSample loads row oriented using Preprocess.open() and DataRef(...).open()"){
