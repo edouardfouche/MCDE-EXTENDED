@@ -25,7 +25,10 @@ i.data(0)
 i.data(1)
 i.data(2)
 
-val d = new DataSet(Independent(3, 0.6, "gaussian", 10).generate(1000).transpose)
+val d = new DataSet(Independent(3, 0.6, "gaussian", 20).generate(1000).transpose)
+d(0).length
+d(0).distinct.length
+
 StopWatch.measureTime{
   MWP().contrast(d, Set(0,1))
 }
@@ -36,10 +39,10 @@ StopWatch.measureTime{
   KSPP().contrast(d, Set(0,1))
 }
 StopWatch.measureTime{
-  CSP(5).contrast(d, Set(0,1))
+  CSP(50).contrast(d, Set(0,1))
 }
 
-val dd = new DataSet(Linear(3, 0.6, "gaussian", 10).generate(1000).transpose)
+val dd = new DataSet(Linear(3, 0.0, "gaussian", 20).generate(1000).transpose)
 StopWatch.measureTime{
   MWP().contrast(dd, Set(0,1))
 }
@@ -50,7 +53,7 @@ StopWatch.measureTime{
   KSPP().contrast(dd, Set(0,1))
 }
 StopWatch.measureTime{
-  CSP(5).contrast(dd, Set(0,1))
+  CSP(50).contrast(dd, Set(0,1))
 }
 
 print("lol")

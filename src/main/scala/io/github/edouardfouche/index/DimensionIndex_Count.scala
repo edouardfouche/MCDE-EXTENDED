@@ -44,13 +44,12 @@ class DimensionIndex_Count[U](val values: Vector[U])(implicit ord: U => Ordered[
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
-    val logicalArray = Array.fill[Boolean](length)(true)
+    val logicalArray = Array.fill[Boolean](length)(false)
+    //TODO: Problem: The categories might as well not be uniform. So deciding the number of categories is misleading
     val selectedCategories: List[Int] = scala.util.Random.shuffle(categories.indices.toList).take(sliceSize)
-    val selectedIndexes: Set[Int] = selectedCategories.flatMap(x => dindex(x).value).toSet
-    val nonselectedIndexes: Set[Int] = values.indices.toSet -- selectedIndexes
-    for {x <- nonselectedIndexes} {
-      logicalArray(x) = false
-    }
+    val selectedIndexes: List[Int] = selectedCategories.flatMap(x => dindex(x).value)
+    //val nonselectedIndexes: Set[Int] = values.indices.toSet -- selectedIndexes
+    selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray
   }
 

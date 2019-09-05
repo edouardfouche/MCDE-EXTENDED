@@ -64,7 +64,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         // There should be at least 1 and at most number of categories-1
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
-        println(s"slicesize: $sliceSize")
+        //println(s"slicesize: $sliceSize")
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     } else {
@@ -77,7 +77,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         // There should be at least 1 and at most number of categories-1
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
-        println(s"slicesize: $sliceSize")
+        //println(s"slicesize: $sliceSize")
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     }
@@ -118,12 +118,12 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       })
       val teststatistics = statistics.sum
 
-      val ndegree = ref.categories.length
+      val ndegree = ref.categories.length - 1
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)
-      println(s"ref: $reference, ndegree: $ndegree, npoint: ${ref.values.length}, nselected: ${selectedvalues.length}  stat: $teststatistics, chsq: $chsq")
-      println(selectedcounts.toString())
-      println(expectedcounts.toString)
+      //println(s"ref: $reference, ndegree: $ndegree, npoint: ${ref.values.length}, nselected: ${selectedvalues.length}  stat: $teststatistics, chsq: $chsq")
+      //println(selectedcounts.toString())
+      //println(expectedcounts.toString)
       chsq
     }
 
