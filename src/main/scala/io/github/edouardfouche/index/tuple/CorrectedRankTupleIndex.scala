@@ -4,6 +4,6 @@ case class CorrectedRankTupleIndex(tuple: (Int, Float, Double)) extends TupleInd
   type T = (Int, Float, Double)
 
   val position = tuple._1
-  val rank = tuple._2
+  val value = tuple._2
   val correction = tuple._3
 }

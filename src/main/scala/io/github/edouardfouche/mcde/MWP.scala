@@ -35,9 +35,10 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                   var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = DimensionIndex_CorrectedRank
   //type U = Double
+  type I = Index_CorrectedRank
   val id = "MWP"
 
-  def preprocess(input: DataSet): Index = {
+  def preprocess(input: DataSet): Index_CorrectedRank = {
     new Index_CorrectedRank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
@@ -50,7 +51,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(index: Index, reference: Int, indexSelection: Array[Boolean]): Double = {
+  def twoSample(index: Index_CorrectedRank, reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
     val sliceStart = index.getSafeCut(start, reference)
@@ -59,12 +60,12 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
 
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
-    val ref = index(reference)
+    val ref: DimensionIndex_CorrectedRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).rank, count + 1)
+        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).value, count + 1)
         else cumulative(n + 1, acc, count)
       }
 

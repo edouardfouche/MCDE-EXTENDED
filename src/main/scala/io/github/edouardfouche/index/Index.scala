@@ -25,8 +25,8 @@ abstract class Index {
   val data: DataSet
   val parallelize:Int
 
-  //type T
-  val index: Array[DimensionIndex[_]] = createIndex(data) // IMPORTANT: The transpose, makes the input column-oriented
+  type T <: DimensionIndex[_]
+  val index: Array[T] = createIndex(data)
 
 
   /**
@@ -34,10 +34,10 @@ abstract class Index {
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Array[DimensionIndex[_]]
+  protected def createIndex(data: DataSet): Array[T]
 
 
-  def apply(n: Int): DimensionIndex[_] = index(n) // access the columns of the index
+  def apply(n: Int): T = index(n) // access the columns of the index
 
   def indices = (0 until data.ncols) // this is supposed to give the indices of the columns
 
@@ -66,9 +66,9 @@ abstract class Index {
     //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
     @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex[_]): Int = {
       // "It's easier to ask forgiveness than it is to get permission"
-      try if(ref(a+inc).rank != ref(a+inc-1).rank) return a+inc
+      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
       else {
-        try if (ref(a - inc).rank != ref(a - inc - 1).rank) return a - inc
+        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
         catch{case _: Throwable => return a-inc}
       }
       catch {case _: Throwable => return a+inc}

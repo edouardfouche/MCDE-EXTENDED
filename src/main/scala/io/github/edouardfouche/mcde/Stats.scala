@@ -11,7 +11,7 @@ abstract class Stats{
   //type PreprocessedData = Index_Double //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
   //type U = _ <: Ordered[U]
   // type PreprocessedData = _ <: Index[U]
-
+  type I <: Index
   val id: String
   val alpha: Double
   val beta: Double
@@ -20,7 +20,7 @@ abstract class Stats{
   /**
     * @param input A data set (row oriented)
    */
-  def preprocess(input: DataSet): Index
+  def preprocess(input: DataSet): I
   //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
@@ -30,7 +30,7 @@ abstract class Stats{
     this.contrast(this.preprocess(m), dimensions)
   }
 
-  def contrast(m: Index, dimensions: Set[Int]): Double
+  def contrast(m: I, dimensions: Set[Int]): Double
 
   /**
     * @param m A data set (row oriented)
@@ -39,5 +39,5 @@ abstract class Stats{
     this.contrastMatrix(this.preprocess(m))
   }
 
-  def contrastMatrix(m: Index): Array[Array[Double]]
+  def contrastMatrix(m: I): Array[Array[Double]]
 }

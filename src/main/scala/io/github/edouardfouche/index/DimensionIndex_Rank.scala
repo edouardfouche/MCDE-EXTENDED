@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.TupleIndex
+import io.github.edouardfouche.index.tuple.{RankTupleIndex, TupleIndex}
 import io.github.edouardfouche.preprocess.Preprocess
 
 /**
@@ -24,7 +24,9 @@ import io.github.edouardfouche.preprocess.Preprocess
   * @param values
   */
 class DimensionIndex_Rank[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U] {
-  def createDimensionIndex(input: Vector[U]): Array[_ <: TupleIndex] = {
+  type T = RankTupleIndex
+
+  def createDimensionIndex(input: Vector[U]): Array[T] = {
     ksRankSimple(input)
   }
 }

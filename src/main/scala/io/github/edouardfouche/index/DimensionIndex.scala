@@ -16,30 +16,39 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, CorrectedRankTupleIndex, RankTupleIndex, TupleIndex}
+import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, CorrectedRankTupleIndex, RankTupleIndex, TupleIndex, CountTupleIndex}
 
 import scala.annotation.tailrec
 
 abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
   //implicit protected val cmp: Ordering[_ >: U];
   val values: Vector[U]
+  type T <: TupleIndex
 
-  val dindex: Array[_ <: TupleIndex] = createDimensionIndex(values)
+  val dindex: Array[T] = createDimensionIndex(values)
 
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createDimensionIndex(data: Vector[U]): Array[_ <: TupleIndex]
+  protected def createDimensionIndex(data: Vector[U]): Array[T]
 
-  def apply(n: Int) = dindex(n) // access in the index
+  def apply(n: Int): T = dindex(n) // access in the index
 
   def indices = dindex.indices // this is supposed to give the indices of the columns
 
-  def length = dindex.length
+  def length = values.length
 
-  def isEmpty: Boolean = dindex.length == 0
+  def isEmpty: Boolean = values.length == 0
+
+  def slice(sliceSize: Int): Array[Boolean] = {
+    val logicalArray = Array.fill[Boolean](length)(true)
+    val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
+    for {x <- 0 until sliceStart} {logicalArray(dindex(x).position) = false}
+    for {x <- sliceStart + sliceSize until dindex.length} {logicalArray(dindex(x).position) = false}
+    logicalArray
+  }
 
   /**
     * Return the rank index structure for MWP, with adjusted ranks but no correction for ties.
@@ -123,13 +132,9 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
   }
 
-  def slice(sliceSize: Int): Array[Boolean] = {
-    val logicalArray = Array.fill[Boolean](length)(true)
-    val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
-    for {x <- 0 until sliceStart} {logicalArray(dindex(x).position) = false}
-    for {x <- sliceStart + sliceSize until dindex.length} {logicalArray(dindex(x).position) = false}
-    logicalArray
-  }
+
+
+
 
   /**
   //TODO: Question : Is it problematic to slice on ties? Its seems not.

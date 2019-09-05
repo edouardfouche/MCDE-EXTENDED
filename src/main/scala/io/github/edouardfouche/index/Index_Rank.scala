@@ -20,12 +20,14 @@ import io.github.edouardfouche.preprocess.DataSet
 
 // Here the inputs may be row-oriented
 class Index_Rank(val data: DataSet, val parallelize: Int = 0) extends Index {
+  type T = DimensionIndex_Rank[String]
+
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Array[DimensionIndex[_]] = {
+  protected def createIndex(data: DataSet): Array[DimensionIndex_Rank[String]] = {
     (0 until data.ncols).toArray.map(data(_)).map {
       //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
       //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)

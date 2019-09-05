@@ -16,19 +16,23 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, TupleIndex}
-import io.github.edouardfouche.preprocess.Preprocess
+import io.github.edouardfouche.preprocess.DataSet
 
-//TODO: Refactor the Slice1, Slice2, Slice3
-/**
-  * Compute an adjusted rank index from a given data set
-  * The "adjusted rank" means that in the case of ties, the rank is defined as the average rank of the tying values
-  *
-  * @param values A row-oriented data set
-  */
-class DimensionIndex_AdjustedRank[U](val values: Vector[U])(implicit ord: U => Ordered[U])  extends DimensionIndex[U]  {
-  type T = AdjustedRankTupleIndex
-   def createDimensionIndex(input: Vector[U]): Array[T] = {
-    mwRank(input)
+// Here the inputs may be row-oriented
+class Index_Count(val data: DataSet, val parallelize: Int = 0) extends Index {
+  type T = DimensionIndex_Count[String]
+  /**
+    *
+    * @param data a data set (column-oriented!)
+    * @return An index, which is also column-oriented
+    */
+  protected def createIndex(data: DataSet): Array[DimensionIndex_Count[String]] = {
+    (0 until data.ncols).toArray.map(data(_)).map {
+      //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
+      //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)
+      case x: Vector[String] => new DimensionIndex_Count[String](x)
+      case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+    }
   }
+
 }

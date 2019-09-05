@@ -5,7 +5,7 @@ trait TupleIndex {
   val tuple: T
 
   val position: Int
-  val rank: Float
+  val value: Any
   val correction: Double
 
   //val value: Double
