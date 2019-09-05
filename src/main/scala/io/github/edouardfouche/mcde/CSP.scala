@@ -39,6 +39,8 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   type I = Index_Count
   val id = "CSP"
 
+  //TODO: We are not handling the marginal restriction for the moment (beta)
+
   def preprocess(input: DataSet): Index_Count = {
     new Index_Count(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
@@ -62,6 +64,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         // There should be at least 1 and at most number of categories-1
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
+        println(s"slicesize: $sliceSize")
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     } else {
@@ -74,6 +77,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         // There should be at least 1 and at most number of categories-1
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
+        println(s"slicesize: $sliceSize")
         twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     }
@@ -99,18 +103,29 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
     val selectedvalues: Array[String] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
 
-    val selectedcounts: Map[String, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
+    if(selectedvalues.length == 0) 1.0 // Nothing in the slide. Maximal value then
+    else{
+      val selectedcounts: Map[String, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
 
-    // now let's compare the selectedcounts with the ref.counts according to chisq
+      // now let's compare the selectedcounts with the ref.counts according to chisq
 
-    val statistics = ref.categories.map(stat => {
-      val observed = selectedcounts(stat)
-      val expected = (ref.counts(stat) / ref.values.length)*selectedvalues.length
-      math.pow((observed - expected),2)/expected
-    })
+      val expectedcounts: Map[String, Double]  = ref.counts.map({case (x,y) => (x, (y.toDouble / ref.values.length.toDouble)*(ref.values.length.toDouble*alpha))})
 
-    val teststatistics = statistics.sum
-    val ndegree = index.ncols
-    ChiSquared(ndegree).cdf(teststatistics)
+      val statistics = ref.categories.map(stat => {
+        val observed = selectedcounts.getOrElse(stat,0).toDouble
+        val expected = (ref.counts(stat).toDouble / ref.values.length.toDouble)*selectedvalues.length.toDouble
+        math.pow((observed - expectedcounts(stat)),2)/expectedcounts(stat)
+      })
+      val teststatistics = statistics.sum
+
+      val ndegree = ref.categories.length
+
+      val chsq = ChiSquared(ndegree).cdf(teststatistics)
+      println(s"ref: $reference, ndegree: $ndegree, npoint: ${ref.values.length}, nselected: ${selectedvalues.length}  stat: $teststatistics, chsq: $chsq")
+      println(selectedcounts.toString())
+      println(expectedcounts.toString)
+      chsq
+    }
+
   }
 }

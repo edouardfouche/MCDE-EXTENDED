@@ -26,25 +26,30 @@ class DimensionIndex_Count[U](val values: Vector[U])(implicit ord: U => Ordered[
   type T = CountTupleIndex
 
   val group: Map[U, Vector[(U,Int)]]  = values.zipWithIndex.groupBy(_._1)
-
   val counts: Map[U, Int] = group.map({case (x,y) => (x,y.length)})
   val categories: Vector[U] = values.distinct.sorted
 
-  val int_to_value: Map[Int, U] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)}) // map  each category to location in index
-
   def createDimensionIndex(input: Vector[U]): Array[T] = {
+    // somewhat inefficient to do that twice, fix that
+    val group: Map[U, Vector[(U,Int)]]  = values.zipWithIndex.groupBy(_._1)
+    val counts: Map[U, Int] = group.map({case (x,y) => (x,y.length)})
+    val categories: Vector[U] = values.distinct.sorted
+
+    val int_to_value: Map[Int, U] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)}) // map  each category to location in index
+
     val indexes: Map[U, Array[Int]] = group.map({case (x,y) => (x,y.map(_._2).toArray)})
-    categories.indices.toArray.map(x => CountTupleIndex(x, indexes(int_to_value(x))))
+    categories.indices.toArray.map(x =>
+      CountTupleIndex(x, indexes(int_to_value(x)))
+    )
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)
     val selectedCategories: List[Int] = scala.util.Random.shuffle(categories.indices.toList).take(sliceSize)
-    for {x <- selectedCategories} {
-      val selectedIndexes: Array[Int] = dindex(x).value
-      for {y <- selectedIndexes} {
-        logicalArray(y) = false
-      }
+    val selectedIndexes: Set[Int] = selectedCategories.flatMap(x => dindex(x).value).toSet
+    val nonselectedIndexes: Set[Int] = values.indices.toSet -- selectedIndexes
+    for {x <- nonselectedIndexes} {
+      logicalArray(x) = false
     }
     logicalArray
   }

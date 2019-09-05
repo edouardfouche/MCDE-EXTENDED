@@ -38,6 +38,8 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   type I = Index_Rank
   val id = "KSP"
 
+  //TODO: We are not handling the marginal restriction for the moment
+
   def preprocess(input: DataSet): Index_Rank = {
     new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }

@@ -54,6 +54,10 @@ trait McdeStats extends Stats {
     */
   def twoSample(index: I, reference: Int, indexSelection: Array[Boolean]): Double
 
+  override def contrast(m: DataSet, dimensions: Set[Int]): Double = {
+    this.contrast(this.preprocess(m), dimensions)
+  }
+
   /**
     * Compute the contrast of a subspace
     *
