@@ -35,6 +35,7 @@ import scala.math.{E, pow, sqrt}
 case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = DimensionIndex_Rank
   type I = Index_Rank
+  type D = DimensionIndex_Rank
   val id = "KSPP"
 
   def preprocess(input: DataSet): Index_Rank = {
@@ -46,17 +47,26 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * a set of Int that correspond to the intersection of the position of the element in the slices in the other
     * dimensions.
     *
-    * @param reference      The original position of the elements of a reference dimension ordered by their rank
+    *
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample(index: Index_Rank, reference: Int, indexSelection: Array[Boolean]): Double = {
+    // @param reference      The original position of the elements of a reference dimension ordered by their rank
+  def twoSample(ref: DimensionIndex_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
-    val ref = index(reference)
+    // Decide on the marginal restriction
+    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val sliceStart = ref.getSafeCut(start)
+    val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
+    val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
-    val inSlize = indexSelection.count(_ == true)
-    val outSlize = ref.length - inSlize
+    //val ref = index(reference)
+
+    //val inSlize = indexSelection.count(_ == true)
+    //val outSlize = ref.length - inSlize
+    val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
+    val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
 
     if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and we also avoid divisions by 0)
 
@@ -65,7 +75,7 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
 
     // This step is impossible (or difficult) to parallelize, but at least it is tail recursive
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
-      if (n == ref.length) currentMax
+      if (n == sliceEnd) currentMax
       else {
         if (indexSelection(ref(n).position))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
@@ -73,7 +83,7 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
           cumulative(n + 1, acc1, acc2 + refIncrement, currentMax max math.abs(acc2 + refIncrement - acc1))
       }
     }
-    get_p_from_D(cumulative(0, 0, 0, 0), inSlize, outSlize)
+    get_p_from_D(cumulative(sliceStart, 0, 0, 0), inSlize, outSlize)
   }
 
   /**

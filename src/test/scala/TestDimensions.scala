@@ -63,7 +63,7 @@ class TestDimensions extends FunSuite {
 
 
 
-  def get_dim[T](arr: Array[_ <: DimensionIndex[_]]): (Int, Int) = {
+  def get_dim[T](arr: Vector[_ <: DimensionIndex]): (Int, Int) = {
     (arr.length, arr(0).length)
   }
 
@@ -81,7 +81,7 @@ class TestDimensions extends FunSuite {
     } yield get_dim(data.index)}.map(x => x == (2, rows))
   }
 
-  def which_row_orient_index(ind: List[Index]):List[Boolean] = {
+  def which_row_orient_index(ind: List[Index[DimensionIndex]]):List[Boolean] = {
       {for {
         index <- ind
       } yield get_dim(index.index)}.map(x => x == (dims, rows))

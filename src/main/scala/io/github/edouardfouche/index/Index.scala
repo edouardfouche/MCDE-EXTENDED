@@ -20,13 +20,12 @@ import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
 
-abstract class Index {
-  //val values: DataSet
+abstract class Index[+T <: DimensionIndex] {
   val data: DataSet
   val parallelize:Int
 
-  type T <: DimensionIndex[_]
-  val index: Array[T] = createIndex(data)
+  //type T <: DimensionIndex[_]
+  val index: Vector[T] = createIndex(data)
 
 
   /**
@@ -34,7 +33,21 @@ abstract class Index {
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Array[T]
+  // TODO: In the instantiations of this function, it is nice to parallelize
+  protected def createIndex(data: DataSet): Vector[T]
+
+  def insert(newdata: DataSet): Unit = {
+    require(data.ncols == newdata.ncols)
+    (0 to data.ncols).foreach{x =>
+      index(x).insert(newdata(x))
+    }
+  }
+  def insertreplace(newdata: DataSet): Unit = {
+    require(data.ncols == newdata.ncols)
+    (0 to data.ncols).foreach{x =>
+      index(x).insertreplace(newdata(x))
+    }
+  }
 
 
   def apply(n: Int): T = index(n) // access the columns of the index
@@ -58,23 +71,6 @@ abstract class Index {
   //TODO: Question : Is it problematic to slice on ties? Its seems not.
   def randomSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
     dimensions.filter(_ != referenceDim).map(x => index(x).slice(sliceSize)).toArray.transpose.map(x => !x.contains(false))
-  }
-
-  def getSafeCut(cut: Int, reference: Int): Int = {
-    //require(cut >= 0 & cut <= reference.length)
-    val ref = index(reference)
-    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
-    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex[_]): Int = {
-      // "It's easier to ask forgiveness than it is to get permission"
-      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
-      else {
-        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
-        catch{case _: Throwable => return a-inc}
-      }
-      catch {case _: Throwable => return a+inc}
-      cutSearch(a, inc+1, ref)
-    }
-    cutSearch(cut, 0, ref)
   }
 
   /**

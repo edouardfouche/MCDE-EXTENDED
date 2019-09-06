@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.{DimensionIndex, Index}
 import io.github.edouardfouche.preprocess.{DataSet, Preprocess}
 
 import scala.collection.parallel.ForkJoinTaskSupport
@@ -27,7 +27,9 @@ import scala.collection.parallel.ForkJoinTaskSupport
 trait McdeStats extends Stats {
   //type U
   //val slicer: Slicer[U]
-  type I <: Index
+  type D <: DimensionIndex
+  type I <: Index[D]
+
   val id: String
   val alpha: Double
   val beta: Double // Added to loose the dependence of beta from alpha
@@ -49,10 +51,11 @@ trait McdeStats extends Stats {
   /**
     * Statistical test computation
     *
-    * @param reference      The vector of the reference dimension as an array of 2-Tuple. First element is the index, the second is the rank
+    *
     * @param indexSelection An array of Boolean that contains the information if a given index is in the slice
     */
-  def twoSample(index: I, reference: Int, indexSelection: Array[Boolean]): Double
+  //@param reference      The vector of the reference dimension as an array of 2-Tuple. First element is the index, the second is the rank
+  def twoSample(index: D, indexSelection: Array[Boolean]): Double
 
   override def contrast(m: DataSet, dimensions: Set[Int]): Double = {
     this.contrast(this.preprocess(m), dimensions)
@@ -74,7 +77,7 @@ trait McdeStats extends Stats {
     val result = if (parallelize == 0) {
       (1 to M).map(i => {
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+        twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     } else {
       val iterations = (1 to M).par
@@ -84,7 +87,7 @@ trait McdeStats extends Stats {
       }
       iterations.map(i => {
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+        twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     }
 
@@ -111,7 +114,7 @@ trait McdeStats extends Stats {
         val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+        twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     } else {
       val iterations = (1 to M).par
@@ -123,7 +126,7 @@ trait McdeStats extends Stats {
         val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
         val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+        twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
       }).sum / M
     }
 
@@ -147,7 +150,7 @@ trait McdeStats extends Stats {
 
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m(0).length).ceil.toInt /// WARNING: Do not forget -1
 
-    val result = (1 to M).map(i => twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))).sum / M //, targetSampleSize))).sum / M
+    val result = (1 to M).map(i => twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))).sum / M //, targetSampleSize))).sum / M
 
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
     //else result
@@ -170,7 +173,7 @@ trait McdeStats extends Stats {
     val result = (1 to M).map(i => {
       val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
       val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
-      twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+      twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
     }).sum / M //, targetSampleSize))).sum / M
 
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)

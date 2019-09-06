@@ -1,6 +1,6 @@
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.{DimensionIndex, Index}
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
@@ -11,7 +11,8 @@ abstract class Stats{
   //type PreprocessedData = Index_Double //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
   //type U = _ <: Ordered[U]
   // type PreprocessedData = _ <: Index[U]
-  type I <: Index
+  type D <: DimensionIndex
+  type I <: Index[D]
   val id: String
   val alpha: Double
   val beta: Double

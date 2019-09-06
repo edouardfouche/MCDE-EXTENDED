@@ -27,11 +27,55 @@ import io.github.edouardfouche.preprocess.Preprocess
   *
   * @param values A row-oriented data set
   */
-class DimensionIndex_CorrectedRank[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U]  {
+class DimensionIndex_CorrectedRank(val values: Vector[String]) extends DimensionIndex  {
   type T = CorrectedRankTupleIndex
   //def apply[U](implicit ord: Ordering[U]) = new DimensionIndex_CorrectedRank[U]
 
+  var dindex: Array[T] = createDimensionIndex(values)
+
+  // TODO
+  def insert(newdata: Vector[U]): Unit = {}
+  def insertreplace(newdata: Vector[U]): Unit = {}
+
   def createDimensionIndex(input: Vector[U]): Array[T]= {
-    mwRankCorrectionCumulative(input)
+    // Create an index for each column with this shape: (original position, adjusted rank, original value)
+    // They are ordered by rank
+    val nonadjusted = {
+      try{
+        input.map(_.toInt).zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+      } catch {
+        case _: Throwable  => try{
+          input.map(_.toDouble).zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+        } catch {
+          case _: Throwable  => input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+        }
+      }
+    }
+    val adjusted = new Array[CorrectedRankTupleIndex](input.length)
+
+    val m = nonadjusted.length - 1
+    var j = 0
+    var acc_corr = 0.0
+    while (j <= m) {
+      var k = j
+      var acc = 0.0
+      // && is quite important here, as if the first condition is false you don't want to evaluate the second
+      while ((k < m) && (nonadjusted(k)._3 == nonadjusted(k + 1)._3)) { // Wooo we are comparing doubles here, is that ok? I guess yes
+        acc += nonadjusted(k)._2
+        k += 1
+      }
+      if (k > j) {
+        val newval = ((acc + nonadjusted(k)._2) / (k - j + 1.0)).toFloat
+        val t = k - j + 1.0
+        acc_corr = acc_corr + math.pow(t , 3) - t
+        (j to k).foreach(y => adjusted(y) = CorrectedRankTupleIndex(nonadjusted(y)._1, newval, acc_corr))
+        j += k - j + 1 // jump to after the replacement
+      } else {
+        adjusted(j) = CorrectedRankTupleIndex(nonadjusted(j)._1, nonadjusted(j)._2, acc_corr)
+        j += 1
+      }
+    }
+
+    adjusted
   }
 }

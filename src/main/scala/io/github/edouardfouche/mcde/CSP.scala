@@ -36,55 +36,16 @@ import breeze.stats.distributions.ChiSquared
 case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = DimensionIndex_Rank
+  type D = DimensionIndex_Count
   type I = Index_Count
+
   val id = "CSP"
 
-  //TODO: We are not handling the marginal restriction for the moment (beta)
+  //TODO: How is the handling of marginal restriction?
+  //TODO: It does not really seems uniform in the independent case.
 
   def preprocess(input: DataSet): Index_Count = {
     new Index_Count(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
-  }
-
-  /**
-    * Overriding because the slice size is different in that case
-    * Compute the contrast of a subspace
-    *
-    * @param m          The indexes from the original data ordered by the rank of the points
-    * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
-    * @return The contrast of the subspace (value between 0 and 1)
-    */
-  override def contrast(m: I, dimensions: Set[Int]): Double = {
-    // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
-    //val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
-    //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
-
-    val result = if (parallelize == 0) {
-      (1 to M).map(i => {
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        // There should be at least 1 and at most number of categories-1
-        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
-        //println(s"slicesize: $sliceSize")
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-      }).sum / M
-    } else {
-      val iterations = (1 to M).par
-      if (parallelize > 1) {
-        //iterations.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parallelize))
-        iterations.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parallelize))
-      }
-      iterations.map(i => {
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        // There should be at least 1 and at most number of categories-1
-        val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.index(referenceDim).dindex.length).ceil.toInt.min(m.index(referenceDim).dindex.length-1).max(1)
-        //println(s"slicesize: $sliceSize")
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-      }).sum / M
-    }
-
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
-    result
   }
 
   /**
@@ -92,38 +53,64 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * a set of Int that correspond to the intersection of the position of the element in the slices in the other
     * dimensions.
     *
-    * @param reference      The original position of the elements of a reference dimension ordered by their rank
+    *
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample(index: Index_Count, reference: Int, indexSelection: Array[Boolean]): Double = {
+    // @param reference      The original position of the elements of a reference dimension ordered by their rank
+  def twoSample(ref: DimensionIndex_Count, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
-    val ref: DimensionIndex_Count[String] = index(reference)
+    //val ref: DimensionIndex_Count[String] = index(reference)
 
-    val selectedvalues: Array[String] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
+    // the marginal restriction
+    /*
+      val shuffledCategories: List[_] = scala.util.Random.shuffle(ref.categories.toList)//.take(sliceSize)
+    @scala.annotation.tailrec
+    def cumulative(current: Int, categories: List[_], selectedCategories: List[Int]): List[Int] = {
+      if(current < ref.values.length*beta && categories.nonEmpty) {
+        cumulative(current + ref.counts(categories.head), categories.tail, selectedCategories :+ categories.head)
+      } else selectedCategories
+    }
+    val restrictedCategories: Set[_] = cumulative(0, shuffledCategories, List[Int]()).map(x => ref.int_to_value(x)).toSet
+    */
+    val restrictedCategories: List[String] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
+
+    val nonrestrictedvalues: Array[String] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
+    val selectedvalues = nonrestrictedvalues.filter(x => restrictedCategories.contains(x))
 
     if(selectedvalues.length == 0) 1.0 // Nothing in the slide. Maximal value then
     else{
+      // count the occurences of each categories in the selection
       val selectedcounts: Map[String, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
 
       // now let's compare the selectedcounts with the ref.counts according to chisq
 
-      val expectedcounts: Map[String, Double]  = ref.counts.map({case (x,y) => (x, (y.toDouble / ref.values.length.toDouble)*(ref.values.length.toDouble*alpha))})
+      // ref.values.length.toDouble*alpha
 
-      val statistics = ref.categories.map(stat => {
+
+      // Here this is wrong to take ref.values.length.toDouble instead:
+      // restrictedCategories.map(x => ref.counts(x)).sum.toDouble
+      //val total = restrictedCategories.map(x => ref.counts(x)).sum.toDouble
+      // the length of the nonrestricted !
+      val expectedcounts: Map[String, Double]  = ref.counts.map({case (x,y) => (x, (y.toDouble / ref.values.length.toDouble)*(nonrestrictedvalues.length.toDouble))})
+
+      val statistics = restrictedCategories.map(stat => {
         val observed = selectedcounts.getOrElse(stat,0).toDouble
-        val expected = (ref.counts(stat).toDouble / ref.values.length.toDouble)*selectedvalues.length.toDouble
+        //val expected = (ref.counts(stat).toDouble / ref.values.length.toDouble)*selectedvalues.length.toDouble
         math.pow((observed - expectedcounts(stat)),2)/expectedcounts(stat)
       })
       val teststatistics = statistics.sum
 
-      val ndegree = ref.categories.length - 1
+      val ndegree = restrictedCategories.size - 1
+      //val ndegree = ref.categories.size - 1
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)
-      //println(s"ref: $reference, ndegree: $ndegree, npoint: ${ref.values.length}, nselected: ${selectedvalues.length}  stat: $teststatistics, chsq: $chsq")
-      //println(selectedcounts.toString())
-      //println(expectedcounts.toString)
+      println(s"ndegree: $ndegree, npoint: ${ref.values.length}, nonrest: ${nonrestrictedvalues.length}, rest: ${selectedvalues.length}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories.toString}")
+      //println(s"restrictedcats: ${restrictedCategories.toString}")
+      println(s"s: ${selectedcounts.toString}")
+      println(s"e: ${expectedcounts.toString}")
+      println(s"a: ${ref.counts.toString}")
       chsq
     }
 

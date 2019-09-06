@@ -1,6 +1,6 @@
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.Index_CorrectedRank
-import io.github.edouardfouche.mcde.{KSP, KSPP, MWP, CSP}
+import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess._
 import io.github.edouardfouche.utils.StopWatch
 
@@ -25,35 +25,45 @@ i.data(0)
 i.data(1)
 i.data(2)
 
-val d = new DataSet(Independent(3, 0.6, "gaussian", 20).generate(1000).transpose)
+val d = new DataSet(Independent(3, 0, "gaussian", 5).generate(1000).transpose,
+  types=Array("c", "o", "n"))
+
 d(0).length
 d(0).distinct.length
 
 StopWatch.measureTime{
-  MWP().contrast(d, Set(0,1))
+  MWP().contrast(d, Set(0,1,2))
 }
 StopWatch.measureTime{
-  KSP().contrast(d, Set(0,1))
+  KSP().contrast(d, Set(0,1,2))
 }
 StopWatch.measureTime{
-  KSPP().contrast(d, Set(0,1))
+  KSPP().contrast(d, Set(0,1,2))
 }
 StopWatch.measureTime{
-  CSP(50).contrast(d, Set(0,1))
+  CSP(50).contrast(d, Set(0,1,2))
+}
+StopWatch.measureTime{
+  AUTOP(50).contrast(d, Set(0,1,2))
 }
 
-val dd = new DataSet(Linear(3, 0.0, "gaussian", 20).generate(1000).transpose)
+val dd = new DataSet(Linear(3, 0.0, "gaussian", 5).generate(1000).transpose,
+  types=Array("c", "o", "n"))
+
 StopWatch.measureTime{
-  MWP().contrast(dd, Set(0,1))
+  MWP().contrast(dd, Set(0,1,2))
 }
 StopWatch.measureTime{
-  KSP().contrast(dd, Set(0,1))
+  KSP().contrast(dd, Set(0,1,2))
 }
 StopWatch.measureTime{
-  KSPP().contrast(dd, Set(0,1))
+  KSPP().contrast(dd, Set(0,1,2))
 }
 StopWatch.measureTime{
-  CSP(50).contrast(dd, Set(0,1))
+  CSP(50).contrast(dd, Set(0,1,2))
+}
+StopWatch.measureTime{
+  AUTOP(50).contrast(dd, Set(0,1,2))
 }
 
 print("lol")

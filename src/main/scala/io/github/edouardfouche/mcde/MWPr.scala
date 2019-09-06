@@ -32,6 +32,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   //type U = Double
   //override type PreprocessedData = DimensionIndex_Rank
   type I = Index_Rank
+  type D = DimensionIndex_Rank
   val id = "MWPr"
 
   def preprocess(input: DataSet): Index_Rank = {
@@ -44,11 +45,12 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * ordered by the rank) and a set of Int that correspond to the intersection of the position of the element in the
     * slices in the other dimensions.
     *
-    * @param reference      The original position of the elements of a reference dimension ordered by their rank
+    *
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(index: Index_Rank, reference: Int, indexSelection: Array[Boolean]): Double = {
+    // @param reference      The original position of the elements of a reference dimension ordered by their rank
+  def twoSample(ref: DimensionIndex_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     // This returns results between 0 and reference.length (both incl.)
     // i.e. the "cut" is the place from which the cut starts, if the cut starts at 0 or reference.length, this is the same as no cut.
@@ -61,7 +63,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
 
     //println(s"sliceStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
-    val ref = index(reference)
+    //val ref = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {

@@ -20,12 +20,14 @@ import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, CorrectedRan
 
 import scala.annotation.tailrec
 
-abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
+// [U](implicit ord: U => Ordered[U])
+abstract class DimensionIndex {
   //implicit protected val cmp: Ordering[_ >: U];
+  type U = String
   val values: Vector[U]
   type T <: TupleIndex
 
-  val dindex: Array[T] = createDimensionIndex(values)
+  var dindex: Array[T]
 
   /**
     *
@@ -33,6 +35,10 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     * @return An index, which is also column-oriented
     */
   protected def createDimensionIndex(data: Vector[U]): Array[T]
+
+  def insert(newdata: Vector[U]): Unit
+
+  def insertreplace(newdata: Vector[U]): Unit
 
   def apply(n: Int): T = dindex(n) // access in the index
 
@@ -50,6 +56,24 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     logicalArray
   }
 
+  def getSafeCut(cut: Int): Int = {
+    //require(cut >= 0 & cut <= reference.length)
+    //val ref = index(reference)
+    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex): Int = {
+      // "It's easier to ask forgiveness than it is to get permission"
+      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
+      else {
+        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
+        catch{case _: Throwable => return a-inc}
+      }
+      catch {case _: Throwable => return a+inc}
+      cutSearch(a, inc+1, ref)
+    }
+    cutSearch(cut, 0, this)
+  }
+
+  /*
   /**
     * Return the rank index structure for MWP, with adjusted ranks but no correction for ties.
     *
@@ -80,7 +104,10 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
     }
     adjusted
   }
+  */
 
+
+  /*
   /**
     * Return the rank index structure for MWP, with adjusted ranks AND correction for ties.
     *
@@ -119,7 +146,10 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
 
     adjusted
   }
+  */
 
+
+  /*
   /**
     * Return the rank index structure (as in HiCS).
     *
@@ -131,7 +161,7 @@ abstract class DimensionIndex[U](implicit ord: U => Ordered[U]){
   def ksRankSimple(input: Vector[U]): Array[RankTupleIndex] = {
     input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
   }
-
+  */
 
 
 

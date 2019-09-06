@@ -22,20 +22,28 @@ import io.github.edouardfouche.index.tuple.{CountTupleIndex, TupleIndex}
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   * @param values
   */
-class DimensionIndex_Count[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U] {
+class DimensionIndex_Count(val values: Vector[String]) extends DimensionIndex {
   type T = CountTupleIndex
 
   val group: Map[U, Vector[(U,Int)]]  = values.zipWithIndex.groupBy(_._1)
   val counts: Map[U, Int] = group.map({case (x,y) => (x,y.length)})
   val categories: Vector[U] = values.distinct.sorted
+  val int_to_value: Map[Int, U] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)})
+  val values_to_int: Map[U, Int] = int_to_value.map({case (x,y) => (y,x)})
+
+  var dindex: Array[T] = createDimensionIndex(values)
+
+  // TODO
+  def insert(newdata: Vector[U]): Unit = {}
+  def insertreplace(newdata: Vector[U]): Unit = {}
 
   def createDimensionIndex(input: Vector[U]): Array[T] = {
     // somewhat inefficient to do that twice, fix that
-    val group: Map[U, Vector[(U,Int)]]  = values.zipWithIndex.groupBy(_._1)
-    val counts: Map[U, Int] = group.map({case (x,y) => (x,y.length)})
-    val categories: Vector[U] = values.distinct.sorted
+    //val group: Map[U, Vector[(U,Int)]]  = values.zipWithIndex.groupBy(_._1)
+    //val counts: Map[U, Int] = group.map({case (x,y) => (x,y.length)})
+    //val categories: Vector[U] = values.distinct.sorted
 
-    val int_to_value: Map[Int, U] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)}) // map  each category to location in index
+    //val int_to_value: Map[Int, U] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)}) // map  each category to location in index
 
     val indexes: Map[U, Array[Int]] = group.map({case (x,y) => (x,y.map(_._2).toArray)})
     categories.indices.toArray.map(x =>
@@ -43,11 +51,34 @@ class DimensionIndex_Count[U](val values: Vector[U])(implicit ord: U => Ordered[
     )
   }
 
+  def selectCategories(sliceSize: Int): List[U] = {
+    val shuffledCategories: List[U] = scala.util.Random.shuffle(categories.toList)//.take(sliceSize)
+
+    @scala.annotation.tailrec
+    def cumulative(current: Int, categories: List[U], selectedCategories: List[U]): List[U] = {
+      if(current < sliceSize && categories.nonEmpty) {
+        cumulative(current + counts(categories.head), categories.tail, selectedCategories :+ categories.head)
+      } else selectedCategories
+    }
+    cumulative(0, shuffledCategories, List[U]())
+  }
+
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(false)
     //TODO: Problem: The categories might as well not be uniform. So deciding the number of categories is misleading
-    val selectedCategories: List[Int] = scala.util.Random.shuffle(categories.indices.toList).take(sliceSize)
-    val selectedIndexes: List[Int] = selectedCategories.flatMap(x => dindex(x).value)
+    //TODO: Check that it works now.
+    /*
+    val shuffledCategories: List[Int] = scala.util.Random.shuffle(categories.indices.toList)//.take(sliceSize)
+    @scala.annotation.tailrec
+    def cumulative(current: Int, categories: List[Int], selectedCategories: List[Int]): List[Int] = {
+      if(current < sliceSize && categories.nonEmpty) {
+        cumulative(current + counts(int_to_value(categories.head)), categories.tail, selectedCategories :+ categories.head)
+      } else selectedCategories
+    }
+    val selectedCategories = cumulative(0, shuffledCategories, List[Int]())
+    */
+    val selectedCategories = selectCategories(sliceSize)
+    val selectedIndexes: List[Int] = selectedCategories.flatMap(x => dindex(values_to_int(x)).value)
     //val nonselectedIndexes: Set[Int] = values.indices.toSet -- selectedIndexes
     selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray

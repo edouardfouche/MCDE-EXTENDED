@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex, DimensionIndex_CorrectedRank, Index, Index_CorrectedRank}
+import io.github.edouardfouche.index.{DimensionIndex, DimensionIndex_CorrectedRank, DimensionIndex_Rank, Index, Index_CorrectedRank}
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -36,6 +36,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   //type PreprocessedData = DimensionIndex_CorrectedRank
   //type U = Double
   type I = Index_CorrectedRank
+  type D = DimensionIndex_CorrectedRank
   val id = "MWP"
 
   def preprocess(input: DataSet): Index_CorrectedRank = {
@@ -47,20 +48,21 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * ordered by the rank) and a set of Int that correspond to the intersection of the position of the element in the
     * slices in the other dimensions.
     *
-    * @param reference      The original position of the elements of a reference dimension ordered by their rank
+    *
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(index: Index_CorrectedRank, reference: Int, indexSelection: Array[Boolean]): Double = {
+    // @param reference      The original position of the elements of a reference dimension ordered by their rank
+  def twoSample(ref: DimensionIndex_CorrectedRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
-    val sliceStart = index.getSafeCut(start, reference)
+    val sliceStart = ref.getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
-    val sliceEnd = index.getSafeCut(sliceEndSearchStart, reference)
+    val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
-    val ref: DimensionIndex_CorrectedRank[String] = index(reference)
+    //val ref: DimensionIndex_CorrectedRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
