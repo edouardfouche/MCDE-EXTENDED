@@ -27,20 +27,22 @@ import io.github.edouardfouche.preprocess.Preprocess
   *
   * @param values A row-oriented data set
   */
-class DimensionIndex_CorrectedRank(val values: Vector[String]) extends DimensionIndex  {
+class DimensionIndex_CorrectedRank(val values: Array[Double]) extends DimensionIndex  {
   type T = CorrectedRankTupleIndex
   //def apply[U](implicit ord: Ordering[U]) = new DimensionIndex_CorrectedRank[U]
 
   var dindex: Array[T] = createDimensionIndex(values)
 
   // TODO
-  def insert(newdata: Vector[U]): Unit = {}
-  def insertreplace(newdata: Vector[U]): Unit = {}
+  def insert(newdata: Array[Double]): Unit = {}
+  def insertreplace(newdata: Array[Double]): Unit = {}
 
-  def createDimensionIndex(input: Vector[U]): Array[T]= {
+  def createDimensionIndex(input: Array[Double]): Array[T]= {
     // Create an index for each column with this shape: (original position, adjusted rank, original value)
     // They are ordered by rank
     val nonadjusted = {
+      input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+      /*
       try{
         input.map(_.toInt).zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
       } catch {
@@ -50,6 +52,8 @@ class DimensionIndex_CorrectedRank(val values: Vector[String]) extends Dimension
           case _: Throwable  => input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
         }
       }
+
+       */
     }
     val adjusted = new Array[CorrectedRankTupleIndex](input.length)
 

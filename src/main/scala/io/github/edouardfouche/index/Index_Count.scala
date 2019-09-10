@@ -30,7 +30,7 @@ class Index_Count(val data: DataSet, val parallelize: Int = 0) extends Index[Dim
     (0 until data.ncols).toVector.map(data(_)).map {
       //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
       //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)
-      case x: Vector[String] => new DimensionIndex_Count(x)
+      case x: Array[Double] => new DimensionIndex_Count(x)
       case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
     }
   }

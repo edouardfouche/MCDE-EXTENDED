@@ -8,7 +8,7 @@ crossScalaVersions := Seq("2.11.8", "2.12.8") // prefix with "+" to perform for 
 //scalacOptions += "-deprecation"
 
 fork in run := true
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation")
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "commons-io" % "commons-io" % "2.6"

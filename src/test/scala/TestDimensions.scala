@@ -24,10 +24,10 @@ class TestDimensions extends FunSuite {
   val all_mcde_stats:List[McdeStats] = List(KSP(), MWP())
 
 
-  val all_indices = List(new Index_CorrectedRank(new DataSet(arr)))//, new DimensionIndex_CorrectedRank(arr),
+  val all_indices = Array(new Index_CorrectedRank(new DataSet(arr)))//, new DimensionIndex_CorrectedRank(arr),
     //new DimensionIndex_Dummy(arr), new DImensionIndex_Rank(arr))
 
-  val all_bivar_indices = List(new Index_CorrectedRank(new DataSet(bivar_arr)))//, new DimensionIndex_CorrectedRank(bivar_arr),
+  val all_bivar_indices = Array(new Index_CorrectedRank(new DataSet(bivar_arr)))//, new DimensionIndex_CorrectedRank(bivar_arr),
     //new DimensionIndex_Dummy(bivar_arr), new DImensionIndex_Rank(bivar_arr))
 
   val all_gens = List(
@@ -63,7 +63,7 @@ class TestDimensions extends FunSuite {
 
 
 
-  def get_dim[T](arr: Vector[_ <: DimensionIndex]): (Int, Int) = {
+  def get_dim[T](arr: Vector[DimensionIndex]): (Int, Int) = {
     (arr.length, arr(0).length)
   }
 
@@ -81,13 +81,12 @@ class TestDimensions extends FunSuite {
     } yield get_dim(data.index)}.map(x => x == (2, rows))
   }
 
-  def which_row_orient_index(ind: List[Index[DimensionIndex]]):List[Boolean] = {
+  def which_row_orient_index(ind: Array[_ <: Index[DimensionIndex]]):Array[Boolean] = {
       {for {
         index <- ind
       } yield get_dim(index.index)}.map(x => x == (dims, rows))
 
   }
-
 
   test("Checking if generated data is row oriented"){
 

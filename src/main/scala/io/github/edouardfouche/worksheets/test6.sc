@@ -1,5 +1,5 @@
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.Index_CorrectedRank
+import io.github.edouardfouche.index._
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess._
 import io.github.edouardfouche.utils.StopWatch
@@ -16,17 +16,27 @@ val result = test.contrastMatrix(data)
 
 val d1 = new DataSet(Array(Array(1,3,2), Array(4,6,5), Array(8,9,7)))
 new Index_CorrectedRank(d1)
-val d2 = new DataSet(Array(Array("a", "b", "c"), Array("c", "e", "a"), Array("a", "x", "z")))
+val d2 = new DataSet(Array(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9)),
+  Array("c", "c", "c"))
 new Index_CorrectedRank(d2)
 
-val d3 = new DataSet(Array(Array("a", "b", "c"), Array(1.0, 2.0, 3.0), Array(1, 2, 3)))
+val d3 = new DataSet(Array(Array(1, 2, 3), Array(2.0, 3.0, 4.0), Array(5, 6, 7)),
+  Array("c", "n", "o"))
 val i = new Index_CorrectedRank(d3)
 i.data(0)
 i.data(1)
 i.data(2)
 
-val d = new DataSet(Independent(3, 0, "gaussian", 5).generate(1000).transpose,
-  types=Array("c", "o", "n"))
+val ii = new Index_Multi(d3)
+ii.data(0)
+ii.data(1)
+ii.data(2)
+ii(0)
+ii(1)
+ii(2)
+
+val d = new DataSet(Independent(3, 0, "gaussian", 10).generate(1000).transpose,
+  types=Array("c", "c", "c"))
 
 d(0).length
 d(0).distinct.length
@@ -40,14 +50,16 @@ StopWatch.measureTime{
 StopWatch.measureTime{
   KSPP().contrast(d, Set(0,1,2))
 }
+
 StopWatch.measureTime{
-  CSP(50).contrast(d, Set(0,1,2))
-}
-StopWatch.measureTime{
-  AUTOP(50).contrast(d, Set(0,1,2))
+  CSP(500).contrast(d, Set(0,1,2))
 }
 
-val dd = new DataSet(Linear(3, 0.0, "gaussian", 5).generate(1000).transpose,
+StopWatch.measureTime{
+  AUTOP(500).contrast(d, Set(0,1,2))
+}
+
+val dd = new DataSet(Linear(3, 0.0, "gaussian", 10).generate(1000).transpose,
   types=Array("c", "o", "n"))
 
 StopWatch.measureTime{
@@ -59,11 +71,13 @@ StopWatch.measureTime{
 StopWatch.measureTime{
   KSPP().contrast(dd, Set(0,1,2))
 }
+
 StopWatch.measureTime{
-  CSP(50).contrast(dd, Set(0,1,2))
+  CSP(100).contrast(dd, Set(0,1,2))
 }
+
 StopWatch.measureTime{
-  AUTOP(50).contrast(dd, Set(0,1,2))
+  AUTOP(100).contrast(dd, Set(0,1,2))
 }
 
 print("lol")

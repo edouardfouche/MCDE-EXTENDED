@@ -31,7 +31,7 @@ class Index_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[Dime
     (0 until data.ncols).toVector.map(data(_)).map {
       //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
       //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)
-      case x: Vector[String] => new DimensionIndex_Rank(x)
+      case x: Array[Double] => new DimensionIndex_Rank(x)
       case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
     }
   }

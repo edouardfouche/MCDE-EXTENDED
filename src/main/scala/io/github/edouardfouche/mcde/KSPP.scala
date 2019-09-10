@@ -56,10 +56,12 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction
-    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
-    val sliceStart = ref.getSafeCut(start)
-    val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
-    val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
+    //val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    //val sliceStart = ref.getSafeCut(start)
+    //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
+    //val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
+    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
 
     //val ref = index(reference)
 

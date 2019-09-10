@@ -30,9 +30,9 @@ class Index_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[Dim
     (0 until data.ncols).toVector.map(x => (data.types(x), data(x))).map {
       //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
       //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)
-      case ("n",x: Vector[String]) => new DimensionIndex_Rank(x)
-      case ("o",x: Vector[String]) => new DimensionIndex_CorrectedRank(x)
-      case ("c",x: Vector[String]) => new DimensionIndex_Count(x)
+      case ("n",x: Array[Double]) => new DimensionIndex_Rank(x)
+      case ("o",x: Array[Double]) => new DimensionIndex_CorrectedRank(x)
+      case ("c",x: Array[Double]) => new DimensionIndex_Count(x)
       case (_,_) => throw new Error(s"Unsupported type")
     }
   }

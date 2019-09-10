@@ -57,15 +57,15 @@ case class AUTOP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     ref match {
       case x: DimensionIndex_Count => {
-        //println("CSP!")
+        //println(s"$ref : CSP!")
         CSP().twoSample(x, indexSelection)
       }
       case x: DimensionIndex_Rank => {
-        //println("KSP!")
+        //println(s"$ref : KSP!")
         KSP().twoSample(x, indexSelection)
       }
       case x: DimensionIndex_CorrectedRank => {
-        //println("MWP!")
+        //println(s"$ref : MWP!")
         MWP().twoSample(x, indexSelection)
       }
       case _ => throw new Error("Unsupported DimensionIndex type")

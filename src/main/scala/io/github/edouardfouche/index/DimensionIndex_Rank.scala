@@ -23,16 +23,18 @@ import io.github.edouardfouche.preprocess.Preprocess
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   * @param values
   */
-class DimensionIndex_Rank(val values: Vector[String]) extends DimensionIndex {
+class DimensionIndex_Rank(val values: Array[Double]) extends DimensionIndex {
   type T = RankTupleIndex
 
   var dindex: Array[T] = createDimensionIndex(values)
 
   // TODO
-  def insert(newdata: Vector[U]): Unit = {}
-  def insertreplace(newdata: Vector[U]): Unit = {}
+  def insert(newdata: Array[Double]): Unit = {}
+  def insertreplace(newdata: Array[Double]): Unit = {}
 
-  def createDimensionIndex(input: Vector[U]): Array[T] = {
+  def createDimensionIndex(input: Array[Double]): Array[T] = {
+    input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
+    /*
     try{
       input.map(_.toInt).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
     } catch {
@@ -42,5 +44,6 @@ class DimensionIndex_Rank(val values: Vector[String]) extends DimensionIndex {
         case _: Throwable  => input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
       }
     }
+     */
   }
 }

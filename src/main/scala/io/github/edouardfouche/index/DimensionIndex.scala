@@ -23,8 +23,8 @@ import scala.annotation.tailrec
 // [U](implicit ord: U => Ordered[U])
 abstract class DimensionIndex {
   //implicit protected val cmp: Ordering[_ >: U];
-  type U = String
-  val values: Vector[U]
+  //type U = Double
+  val values: Array[Double]
   type T <: TupleIndex
 
   var dindex: Array[T]
@@ -34,11 +34,11 @@ abstract class DimensionIndex {
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createDimensionIndex(data: Vector[U]): Array[T]
+  protected def createDimensionIndex(data: Array[Double]): Array[T]
 
-  def insert(newdata: Vector[U]): Unit
+  def insert(newdata: Array[Double]): Unit
 
-  def insertreplace(newdata: Vector[U]): Unit
+  def insertreplace(newdata: Array[Double]): Unit
 
   def apply(n: Int): T = dindex(n) // access in the index
 

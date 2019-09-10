@@ -74,15 +74,26 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     }
     val restrictedCategories: Set[_] = cumulative(0, shuffledCategories, List[Int]()).map(x => ref.int_to_value(x)).toSet
     */
-    val restrictedCategories: List[String] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
 
-    val nonrestrictedvalues: Array[String] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
-    val selectedvalues = nonrestrictedvalues.filter(x => restrictedCategories.contains(x))
+    val restrictedCategories: Array[Double] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
+    //val restrictedCategories: List[String] = ref.categories.toList
+    val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
+    val sample1 = restrictedselection.filter(_._1 == true).map(_._2)
+    val sample2 = restrictedselection.filter(_._1 == false).map(_._2)
 
-    if(selectedvalues.length == 0) 1.0 // Nothing in the slide. Maximal value then
+    //val nonrestrictedvalues: Array[Double] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
+    //val selectedvalues = nonrestrictedvalues.filter(x => restrictedCategories.contains(x))
+    //val selectedvalues = nonrestrictedvalues
+
+    if((sample1.length == 0) | (sample2.length == 0)) 1.0 // Nothing in the slide. Maximal value then
     else{
       // count the occurences of each categories in the selection
-      val selectedcounts: Map[String, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
+      // val selectedcounts: Map[Double, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
+
+
+      val sample1counts: Map[Double, Int] = sample1.groupBy(identity).mapValues(_.length)
+      //val sample2counts: Map[Double, Int] = sample2.groupBy(identity).mapValues(_.length) // could we speed this up?
+      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.counts(x) - sample1counts.getOrElse(x,0))).toMap
 
       // now let's compare the selectedcounts with the ref.counts according to chisq
 
@@ -93,24 +104,45 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       // restrictedCategories.map(x => ref.counts(x)).sum.toDouble
       //val total = restrictedCategories.map(x => ref.counts(x)).sum.toDouble
       // the length of the nonrestricted !
-      val expectedcounts: Map[String, Double]  = ref.counts.map({case (x,y) => (x, (y.toDouble / ref.values.length.toDouble)*(nonrestrictedvalues.length.toDouble))})
 
+      /*
+      val expectedcounts: Map[Double, Double]  = ref.counts.map({case (x,y) => (x, (y.toDouble / ref.values.length.toDouble)*(nonrestrictedvalues.length.toDouble))})
       val statistics = restrictedCategories.map(stat => {
         val observed = selectedcounts.getOrElse(stat,0).toDouble
         //val expected = (ref.counts(stat).toDouble / ref.values.length.toDouble)*selectedvalues.length.toDouble
         math.pow((observed - expectedcounts(stat)),2)/expectedcounts(stat)
       })
       val teststatistics = statistics.sum
+      */
 
-      val ndegree = restrictedCategories.size - 1
+      val n1 = sample1.length.toDouble
+      val n2 = sample2.length.toDouble
+      val N = n1 + n2
+
+      val statistics = restrictedCategories.map(stat => {
+        val o1 = sample1counts.getOrElse(stat,0).toDouble
+        val o2 = sample2counts.getOrElse(stat,0).toDouble
+        val tot = o1 + o2
+
+        val e1 = (tot * n1) /  N
+        val e2 = (tot * n2) /  N
+
+        math.pow((o1 - e1),2)/e1 + math.pow((o2 - e2),2)/e2
+      })
+      val teststatistics = statistics.sum
+
+      //val ndegree = math.pow(restrictedCategories.size - 1,2)
+      //TODO: In some extreme cases, ndegree becomes 0, (because restricting on only one categorie, in that case, this is a one-way chi-squared test
+      val ndegree = (restrictedCategories.length - 1).max(1)
       //val ndegree = ref.categories.size - 1
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)
-      println(s"ndegree: $ndegree, npoint: ${ref.values.length}, nonrest: ${nonrestrictedvalues.length}, rest: ${selectedvalues.length}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories.toString}")
+
+      //println(s"ndegree: $ndegree, sample1size: ${sample1.size}, sample2size: ${sample2.size}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories mkString ","}")
       //println(s"restrictedcats: ${restrictedCategories.toString}")
-      println(s"s: ${selectedcounts.toString}")
-      println(s"e: ${expectedcounts.toString}")
-      println(s"a: ${ref.counts.toString}")
+      //println(s"s: ${selectedcounts.toString}")
+      //println(s"e: ${expectedcounts.toString}")
+      //println(s"a: ${ref.counts.toString}")
       chsq
     }
 
