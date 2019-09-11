@@ -60,32 +60,38 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //val sliceStart = ref.getSafeCut(start)
     //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     //val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
-    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
 
     //val ref = index(reference)
 
     //val inSlize = indexSelection.count(_ == true)
     //val outSlize = ref.length - inSlize
-    val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
-    val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
+    //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
+    //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
+
+    val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x).position))
+    val inSlize = theref.count(_ == true)
+    val outSlize = theref.length - inSlize
 
     if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and we also avoid divisions by 0)
 
-    val selectIncrement = 1.0 / inSlize
-    val refIncrement = 1.0 / outSlize
+    val selectIncrement = 1.0 / inSlize //  TODO: Maybe this is inSlice + outSlice
+    val refIncrement = 1.0 / outSlize  // TODO: Maybe this is inSlice + outSlice
 
     // This step is impossible (or difficult) to parallelize, but at least it is tail recursive
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
-      if (n == sliceEnd) currentMax
+      if (n == theref.length) currentMax
       else {
-        if (indexSelection(ref(n).position))
+        //if (indexSelection(ref(n).position))
+        if (theref(n))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
         else
           cumulative(n + 1, acc1, acc2 + refIncrement, currentMax max math.abs(acc2 + refIncrement - acc1))
       }
     }
-    get_p_from_D(cumulative(sliceStart, 0, 0, 0), inSlize, outSlize)
+    //get_p_from_D(cumulative(sliceStart, 0, 0, 0), inSlize, outSlize)
+    get_p_from_D(cumulative(0, 0, 0, 0), inSlize, outSlize)
   }
 
   /**

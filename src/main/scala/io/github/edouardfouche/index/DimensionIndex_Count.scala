@@ -63,8 +63,14 @@ class DimensionIndex_Count(val values: Array[Double]) extends DimensionIndex {
 
     @scala.annotation.tailrec
     def cumulative(current: Int, categories: List[Double], selectedCategories: List[Double]): List[Double] = {
-      if(current < sliceSize && categories.nonEmpty) {
-        cumulative(current + counts(categories.head), categories.tail, selectedCategories :+ categories.head)
+      // make sure there is a least one category that is not selected{
+      if(categories.length == 1) selectedCategories
+      if(current < sliceSize) {
+        if(selectedCategories.isEmpty // make sure we select at least one category
+          || (math.abs(current + counts(categories.head) - sliceSize) < math.abs(current - sliceSize)))  // make sure we get the closest match to the desired sliceSize
+        {
+          cumulative(current + counts(categories.head), categories.tail, selectedCategories :+ categories.head)
+        } else selectedCategories
       } else selectedCategories
     }
     cumulative(0, shuffledCategories, List[Double]()).toArray

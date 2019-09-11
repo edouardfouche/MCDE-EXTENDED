@@ -24,7 +24,7 @@ import io.github.edouardfouche.mcde.{KSP, McdeStats}
 import org.scalatest.FunSuite
 
 class TestKolmogorovSmirnov extends FunSuite with TestData {
-  val test: McdeStats = KSP(1000, 0.1)
+  val test: McdeStats = KSP(1000)
 
   test("Computing Preprocessing index structure") {
     val data = Preprocess.openCSV(getClass.getResource("/data/Independent-2-0.0.csv").getPath)
@@ -34,6 +34,7 @@ class TestKolmogorovSmirnov extends FunSuite with TestData {
   test("Contrast can be detected in a 2-D subspace") {
     val res1 = test.contrast(highcontrast_2D, Set(0, 1))
     val res2 = test.contrast(lowcontrast_2D, Set(0, 1))
+    assert(lowcontrast_2D.ncols == 2)
     assert(res1 > 0.7)
     assert(res2 < 0.7)
   }

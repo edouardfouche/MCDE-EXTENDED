@@ -34,7 +34,10 @@ object Contrast extends Experiment {
 
     val tests = Vector(
       MWP(1,0.5, 0.5),
+      MWPr(1,0.5, 0.5),
       KSP(1,0.5, 0.5),
+      KSPn(1,0.5, 0.5),
+      KSPP(1,0.5, 0.5),
       CSP(1,0.5, 0.5)
     )
 

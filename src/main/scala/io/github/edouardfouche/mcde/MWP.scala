@@ -55,7 +55,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     // @param reference      The original position of the elements of a reference dimension ordered by their rank
   def twoSample(ref: DimensionIndex_CorrectedRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
-    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     val sliceStart = ref.getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     val sliceEnd = ref.getSafeCut(sliceEndSearchStart)

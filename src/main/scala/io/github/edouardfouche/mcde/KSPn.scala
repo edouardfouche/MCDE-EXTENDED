@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_Rank}
+import io.github.edouardfouche.index.{DimensionIndex_Rank, Index_Rank}
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -32,7 +32,7 @@ import scala.math.{E, pow, sqrt}
   *
   */
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
-case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = DimensionIndex_Rank
   type I = Index_Rank
@@ -59,26 +59,21 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction
+    //val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1) // TODO: some bug in beta = 1 (without the +1)
     //TODO: What is the effect of this safecut ? I am thinking in particular about the case with much same values.
-    //val sliceStartSearchStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1) // TODO: some bug in beta = 1 (without the +1)
-    //val sliceStart = ref.getSafeCut(sliceStartSearchStart)
+    //val sliceStart = ref.getSafeCut(start)
     //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     //val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
-    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
-    val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
+    //val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    //val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
 
     //val ref = index(reference)
 
-    //val inSlize = indexSelection.count(_ == true)
-    //val outSlize = ref.length - inSlize
+    val inSlize = indexSelection.count(_ == true)
+    val outSlize = ref.length - inSlize
     //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
     //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
-
-    val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x).position))
-    val inSlize = theref.count(_ == true)
-    val outSlize = theref.length - inSlize
-
 
     if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
 
@@ -86,20 +81,15 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     val refIncrement = 1.0 / outSlize
 
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
-      if (n == theref.length) currentMax
+      if (n == ref.length) currentMax
       else {
-        //if (indexSelection(ref(n).position))
-        if (theref(n))
+        if (indexSelection(ref(n).position))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
         else
           cumulative(n + 1, acc1, acc2 + refIncrement, currentMax max math.abs(acc2 + refIncrement - acc1))
       }
     }
-    //val D = cumulative(sliceStart, 0, 0, 0)
-    val D = cumulative(0, 0, 0, 0)
-    val p = get_p_from_D(D, inSlize, outSlize)
-    //println(s"ref.length: ${ref.length}, start: ${sliceStart}, end: ${sliceEnd}, inSlice: $inSlize, outSLice: $outSlize, inc1: ${selectIncrement}, inc2: $refIncrement, D: $D")
-    p
+    get_p_from_D(cumulative(0, 0, 0, 0), inSlize, outSlize)
   }
 
   /**

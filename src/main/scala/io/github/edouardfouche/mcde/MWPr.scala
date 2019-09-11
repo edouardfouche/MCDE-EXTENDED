@@ -57,7 +57,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //val cut = getSafeCut(scala.util.Random.nextInt(reference.length + 1), reference)
 
     //val cutLength = (indexSelection.length*alpha).toInt
-    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     //val sliceEndSearchStart = (sliceStart + (indexSelection.length * alpha).toInt).min(indexSelection.length - 1) // this is rather a dirty fix
     val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
 
