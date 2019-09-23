@@ -36,18 +36,22 @@ abstract class Index[+T <: DimensionIndex] {
   // TODO: In the instantiations of this function, it is nice to parallelize
   protected def createIndex(data: DataSet): Vector[T]
 
-  def insert(newdata: DataSet): Unit = {
-    require(data.ncols == newdata.ncols)
+  //def insert(newdata: DataSet): Unit = {
+  def insert(newPoint: Array[Double]): Unit = {
+    require(data.ncols == newPoint.length)
     (0 to data.ncols).foreach{x =>
-      index(x).insert(newdata(x))
+      index(x).insert(newPoint(x))
     }
   }
+  /*
   def insertreplace(newdata: DataSet): Unit = {
     require(data.ncols == newdata.ncols)
     (0 to data.ncols).foreach{x =>
       index(x).insertreplace(newdata(x))
     }
   }
+  */
+
 
 
   def apply(n: Int): T = index(n) // access the columns of the index

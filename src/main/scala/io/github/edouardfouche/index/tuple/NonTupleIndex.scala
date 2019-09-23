@@ -5,4 +5,6 @@ case class NonTupleIndex(tuple: Double) extends TupleIndex {
   val position = 0
   val value = tuple
   val correction = 0.0
+
+  override def toString = s"(X,$value,X)"
 }

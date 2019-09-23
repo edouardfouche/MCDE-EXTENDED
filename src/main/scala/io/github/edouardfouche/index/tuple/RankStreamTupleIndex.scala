@@ -1,10 +1,11 @@
 package io.github.edouardfouche.index.tuple
 
-case class CountTupleIndex(tuple: (Int, Array[Int])) extends TupleIndex {
-  type T = (Int, Array[Int]) // For each category, we get a list of indexes
+case class RankStreamTupleIndex(tuple: (Int, Double)) extends TupleIndex {
+  type T = (Int, Double)
   val position = tuple._1
   val value = tuple._2
   val correction = 0
+  //val value = 0
 
   override def toString = s"($position,$value,X)"
 }

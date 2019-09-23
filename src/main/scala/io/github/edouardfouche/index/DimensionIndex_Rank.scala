@@ -29,7 +29,7 @@ class DimensionIndex_Rank(val values: Array[Double]) extends DimensionIndex {
   var dindex: Array[T] = createDimensionIndex(values)
 
   // TODO
-  def insert(newdata: Array[Double]): Unit = {}
+  def insert(newpoint: Double): Unit = {}
   def insertreplace(newdata: Array[Double]): Unit = {}
 
   def createDimensionIndex(input: Array[Double]): Array[T] = {

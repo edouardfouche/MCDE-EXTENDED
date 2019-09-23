@@ -36,9 +36,8 @@ abstract class DimensionIndex {
     */
   protected def createDimensionIndex(data: Array[Double]): Array[T]
 
-  def insert(newdata: Array[Double]): Unit
-
-  def insertreplace(newdata: Array[Double]): Unit
+  def insert(newPoint: Double): Unit
+  //def insertreplace(newdata: Array[Double]): Unit
 
   def apply(n: Int): T = dindex(n) // access in the index
 
@@ -47,6 +46,8 @@ abstract class DimensionIndex {
   def length = values.length
 
   def isEmpty: Boolean = values.length == 0
+
+  override def toString: String = dindex mkString ";"
 
   def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)

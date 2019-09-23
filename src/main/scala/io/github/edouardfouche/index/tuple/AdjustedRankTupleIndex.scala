@@ -5,4 +5,6 @@ case class AdjustedRankTupleIndex(tuple: (Int, Float)) extends TupleIndex {
   val position = tuple._1
   val value = tuple._2
   val correction = 0
+
+  override def toString = s"($position,$value,X)"
 }
