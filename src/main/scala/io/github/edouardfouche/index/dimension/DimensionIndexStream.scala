@@ -14,17 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.github.edouardfouche.index
+package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.{NonTupleIndex, TupleIndex}
+import scala.collection.mutable
 
-/*
-/**
-  * A dummy index structure
-  *
-  * @param values
-  */
-class DimensionIndex_Dummy[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U]   {
-  def createDimensionIndex(input: Vector[U]): Array[_ <: TupleIndex] = input.map(x => NonTupleIndex(x)).toArray
+trait DimensionIndexStream extends DimensionIndex {
+  val queue: mutable.Queue[Double]
+  var offset: Int
 }
-*/

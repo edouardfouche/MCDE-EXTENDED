@@ -1,6 +1,7 @@
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex, Index}
+import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.dimension.DimensionIndex
 import io.github.edouardfouche.preprocess.DataSet
 
 /**

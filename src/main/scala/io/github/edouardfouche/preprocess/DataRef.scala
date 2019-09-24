@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.preprocess
 
-import io.github.edouardfouche.index.{DimensionIndex, Index}
+import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.dimension.DimensionIndex
 import io.github.edouardfouche.mcde.Stats
 
 case class DataRef(id: String, path: String,

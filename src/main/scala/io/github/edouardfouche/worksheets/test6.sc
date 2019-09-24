@@ -11,23 +11,23 @@ data.ncols
 data.nrows
 
 
-val test = MWP(50, parallelize = 0)
+val test = MWP()
 val result = test.contrastMatrix(data)
 
 val d1 = new DataSet(Array(Array(1,3,2), Array(4,6,5), Array(8,9,7)))
-new Index_CorrectedRank(d1)
+new I_CRank(d1)
 val d2 = new DataSet(Array(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9)),
   Array("c", "c", "c"))
-new Index_CorrectedRank(d2)
+new I_CRank(d2)
 
 val d3 = new DataSet(Array(Array(1, 2, 3), Array(2.0, 3.0, 4.0), Array(5, 6, 7)),
   Array("c", "n", "o"))
-val i = new Index_CorrectedRank(d3)
+val i = new I_CRank(d3)
 i.data(0)
 i.data(1)
 i.data(2)
 
-val ii = new Index_Multi(d3)
+val ii = new I_Multi(d3)
 ii.data(0)
 ii.data(1)
 ii.data(2)

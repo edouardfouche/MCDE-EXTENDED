@@ -16,17 +16,26 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.dimension.{DI_CRank, DI_Count, DI_Rank, DimensionIndex}
+import io.github.edouardfouche.preprocess.DataSet
+
 // Here the inputs may be row-oriented
-/*
-class Index_DoubleAndString(val values: Array[Array[_ >: Double with String]], val parallelize: Int = 0) extends Index[_ >: Double with String] {
+class I_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[DimensionIndex] {
+  //type T = DimensionIndex[String]
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[_ >: Double with String]]): Array[DimensionIndex[_ >: Double with String]] = {
-    data.map(x => new DimensionIndex_CorrectedRank(x))
+  protected def createIndex(data: DataSet): Vector[DimensionIndex] = {
+    (0 until data.ncols).toVector.map(x => (data.types(x), data(x))).map {
+      //case x: Vector[Double] => new DI_Rank[Double](x)
+      //case x: Vector[Int] => new DI_Rank[Int](x)
+      case ("n", x: Array[Double]) => new DI_Rank(x)
+      case ("o", x: Array[Double]) => new DI_CRank(x)
+      case ("c", x: Array[Double]) => new DI_Count(x)
+      case (_,_) => throw new Error(s"Unsupported type")
+    }
   }
 
 }
-*/

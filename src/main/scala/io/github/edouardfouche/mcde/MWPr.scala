@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex_Rank, Index, Index_CorrectedRank, Index_Rank}
+import io.github.edouardfouche.index.I_Rank
+import io.github.edouardfouche.index.dimension.DI_Rank
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -30,13 +31,13 @@ import scala.annotation.tailrec
   */
 case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats{
   //type U = Double
-  //override type PreprocessedData = DimensionIndex_Rank
-  type I = Index_Rank
-  type D = DimensionIndex_Rank
+  //override type PreprocessedData = DI_Rank
+  type I = I_Rank
+  type D = DI_Rank
   val id = "MWPr"
 
-  def preprocess(input: DataSet): Index_Rank = {
-    new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I_Rank = {
+    new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
 
@@ -45,12 +46,11 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * ordered by the rank) and a set of Int that correspond to the intersection of the position of the element in the
     * slices in the other dimensions.
     *
-    *
+    * @param ref            The original position of the elements of a reference dimension ordered by their rank
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-    // @param reference      The original position of the elements of a reference dimension ordered by their rank
-  def twoSample(ref: DimensionIndex_Rank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: DI_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     // This returns results between 0 and reference.length (both incl.)
     // i.e. the "cut" is the place from which the cut starts, if the cut starts at 0 or reference.length, this is the same as no cut.

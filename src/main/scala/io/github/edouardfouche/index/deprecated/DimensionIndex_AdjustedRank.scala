@@ -16,9 +16,6 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{AdjustedRankTupleIndex, TupleIndex}
-import io.github.edouardfouche.preprocess.Preprocess
-
 /*
 //TODO: Refactor the Slice1, Slice2, Slice3
 /**

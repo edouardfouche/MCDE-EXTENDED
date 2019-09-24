@@ -18,14 +18,14 @@ package io.github.edouardfouche.index
 
 // Here the inputs may be row-oriented
 /*
-class Index_String(val values: Array[Array[String]], val parallelize: Int = 0) extends Index[String] {
+class Index_DoubleAndString(val values: Array[Array[_ >: Double with String]], val parallelize: Int = 0) extends Index[_ >: Double with String] {
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: Array[Array[String]]): Array[DimensionIndex[String]] = {
-    data.map(x => new DimensionIndex_CorrectedRank(x))
+  protected def createIndex(data: Array[Array[_ >: Double with String]]): Array[DimensionIndex[_ >: Double with String]] = {
+    data.map(x => new DI_CRank(x))
   }
 
 }

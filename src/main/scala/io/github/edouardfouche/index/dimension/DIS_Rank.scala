@@ -14,39 +14,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.github.edouardfouche.index
+package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.{RankStreamTupleIndex, RankTupleIndex}
+import io.github.edouardfouche.index.tuple.TI_Rank
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
-  * @param values
+  *
+  * @param values An array of values corresponding to the values in a column
   */
-class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionIndex {
-  type T = RankStreamTupleIndex
-
-  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double]()
+class DIS_Rank(values: Array[Double]) extends DI_Rank(values) with DimensionIndexStream {
+  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset: Int = 0
 
-  var dindex: Array[T] = createDimensionIndex(values)
+  //var dindex: Array[T] = createDimensionIndex(values)
 
-
-
-  // TODO: Need a refresh function (Does nothing for non-stream index)
-  def refresh: Unit = {
+  override def refresh: Unit = {
     if(offset > 0) {
-      dindex = dindex.map(x => new RankStreamTupleIndex(x.position - offset, x.value))
+      dindex = dindex.map(x => new TI_Rank(x.position - offset, x.value))
     }
     offset = 0
   }
 
-  // TODO: Maybe this one should not explicitely handle ties (keep that for Corrected Rank?)
-  def insert(newPoint: Double): Unit = {
+  override def insert(newPoint: Double): Unit = {
     val todelete = queue.dequeue
-
     // the binary search returns the index on the match with oldest position
     // if no match, the index just after
     def binarySearch_insert(start: Int, end: Int, value: Double): Int = {
@@ -55,7 +49,7 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
         (dindex(i).value, dindex(i + 1).value) match {
-          case x if (x._1 < value) & (x._2 >= value) => {
+          case x if (x._1 < value) & (x._2 >= value) =>
             if(x._2 > value) i+1 // in this case, no multiple same value
             else { // in case of match, return position at the oldest index
               var newest = i+1
@@ -67,7 +61,6 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
               }
               newest+1
             }
-          }
           case x if x._1 >= value => binarySearch_acc(start, i - 1, value)
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
@@ -94,7 +87,7 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
         (dindex(i).value, dindex(i + 1).value) match {
-          case x if(x._1 == value) => {
+          case x if x._1 == value =>
             var oldest = i
             var j = oldest - 1
             while((j >= 0) && (dindex(j).value == value)) {
@@ -102,8 +95,7 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
               j-=1
             }
             oldest
-          }
-          case x if(x._2 == value) => {
+          case x if x._2 == value =>
             var oldest = i+1
             var j = oldest - 1
             while((j >= 0) && (dindex(j).value == value)) {
@@ -111,7 +103,6 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
               j-=1
             }
             oldest
-          }
           case x if x._1 > value => binarySearch_acc(start, i - 1, value)
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
@@ -129,19 +120,19 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
 
-    println(s"want to delete: $todelete, want to insert: $newPoint")
+    //println(s"want to delete: $todelete, want to insert: $newPoint")
     val indextodelete = binarySearch_delete(0, dindex.length-1, todelete) // will always be pointing to an object
     val indextoinsert = binarySearch_insert(0, dindex.length-1, newPoint) // will always be pointing to an object or between two, in that case, the one after.
-    println(s"todelete: $indextodelete, toinsert: $indextoinsert")
+    //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
-      dindex(indextodelete) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+      dindex(indextodelete) = new TI_Rank(dindex.length + offset, newPoint)
     } else {
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {
           dindex(x) = dindex(x + 1)
         }
-        dindex(indextoinsert-1) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+        dindex(indextoinsert - 1) = new TI_Rank(dindex.length + offset, newPoint)
       } else {
         val actualindextoinsert = if(dindex(indextoinsert).value == newPoint) indextoinsert +1 else indextoinsert
 
@@ -149,34 +140,16 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
           for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
             dindex(x) = dindex(x - 1)
           }
-          dindex(actualindextoinsert) =  new RankStreamTupleIndex(dindex.length + offset, newPoint)
+          dindex(actualindextoinsert) = new TI_Rank(dindex.length + offset, newPoint)
         } else if (actualindextoinsert > indextodelete) {
           for (x <- indextodelete until actualindextoinsert-1) {
             dindex(x) = dindex(x + 1)
           }
-          dindex(actualindextoinsert-1) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+          dindex(actualindextoinsert - 1) = new TI_Rank(dindex.length + offset, newPoint)
         }
       }
     }
     offset += 1
     queue += newPoint
-  }
-
-  def insertreplace(newdata: Array[Double]): Unit = {}
-
-  def createDimensionIndex(input: Array[Double]): Array[T] = {
-    input.foreach(x => queue += x)
-    input.zipWithIndex.sortBy(_._1).map(x => RankStreamTupleIndex(x._2, x._1)).toArray
-    /*
-    try{
-      input.map(_.toInt).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-    } catch {
-      case _: Throwable => try{
-        input.map(_.toDouble).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-      } catch {
-        case _: Throwable  => input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-      }
-    }
-     */
   }
 }

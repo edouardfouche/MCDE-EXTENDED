@@ -14,36 +14,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.github.edouardfouche.index
+package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.{RankTupleIndex, TupleIndex}
-import io.github.edouardfouche.preprocess.Preprocess
+import io.github.edouardfouche.index.tuple.TI_Rank
 
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
-  * @param values
+  *
+  * @param values An array of values corresponding to the values in a column
   */
-class DimensionIndex_Rank(val values: Array[Double]) extends DimensionIndex {
-  type T = RankTupleIndex
+class DI_Rank(val values: Array[Double]) extends DimensionIndex {
+  type T = TI_Rank
 
   var dindex: Array[T] = createDimensionIndex(values)
 
-  // TODO
-  def insert(newpoint: Double): Unit = {}
-  def insertreplace(newdata: Array[Double]): Unit = {}
-
   def createDimensionIndex(input: Array[Double]): Array[T] = {
-    input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-    /*
-    try{
-      input.map(_.toInt).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-    } catch {
-      case _: Throwable => try{
-        input.map(_.toDouble).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-      } catch {
-        case _: Throwable  => input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-      }
+    input.zipWithIndex.sortBy(_._1).map(x => TI_Rank(x._2, x._1))
+  }
+
+  override def slice(sliceSize: Int): Array[Boolean] = {
+    val logicalArray = Array.fill[Boolean](length)(true)
+    val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
+    for {x <- 0 until sliceStart} {
+      logicalArray(dindex(x).position) = false
     }
-     */
+    for {x <- sliceStart + sliceSize until dindex.length} {
+      logicalArray(dindex(x).position) = false
+    }
+    logicalArray
   }
 }

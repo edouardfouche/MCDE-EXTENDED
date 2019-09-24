@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex_Rank, Index_Rank}
+import io.github.edouardfouche.index.I_Rank
+import io.github.edouardfouche.index.dimension.DI_Rank
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -34,15 +35,15 @@ import scala.math.{E, pow, sqrt}
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
-  //type PreprocessedData = DimensionIndex_Rank
-  type I = Index_Rank
-  type D = DimensionIndex_Rank
+  //type PreprocessedData = DI_Rank
+  type I = I_Rank
+  type D = DI_Rank
   val id = "KSP"
 
   //TODO: We are not handling the marginal restriction for the moment
 
-  def preprocess(input: DataSet): Index_Rank = {
-    new Index_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I_Rank = {
+    new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**
@@ -50,12 +51,11 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * a set of Int that correspond to the intersection of the position of the element in the slices in the other
     * dimensions.
     *
-    *
+    * @param ref            The original position of the elements of a reference dimension ordered by their rank
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-    // @param reference      The original position of the elements of a reference dimension ordered by their rank
-  def twoSample(ref: DimensionIndex_Rank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: DI_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction

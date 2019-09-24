@@ -16,11 +16,9 @@
  */
 package io.github.edouardfouche.mcde
 
-import breeze.stats.distributions.ChiSquared
-import io.github.edouardfouche.index.{DimensionIndex, DimensionIndex_CorrectedRank, DimensionIndex_Count, DimensionIndex_Rank, Index_Count, Index_Multi}
+import io.github.edouardfouche.index.I_Multi
+import io.github.edouardfouche.index.dimension.{DI_CRank, DI_Count, DI_Rank, DimensionIndex}
 import io.github.edouardfouche.preprocess.DataSet
-
-import scala.collection.parallel.ForkJoinTaskSupport
 
 /**
   * Chi-Squared test whithin the MCDE framework
@@ -33,16 +31,16 @@ import scala.collection.parallel.ForkJoinTaskSupport
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class AUTOP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
-  //type PreprocessedData = DimensionIndex_Rank
+  //type PreprocessedData = DI_Rank
   type D = DimensionIndex
-  type I = Index_Multi
+  type I = I_Multi
 
   val id = "CSP"
 
   //TODO: How is the handling of marginal restriction?
 
-  def preprocess(input: DataSet): Index_Multi = {
-    new Index_Multi(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I_Multi = {
+    new I_Multi(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**
@@ -55,19 +53,17 @@ case class AUTOP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
     */
   def twoSample(ref: DimensionIndex, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
+    //ref.refresh // handled inside
     ref match {
-      case x: DimensionIndex_Count => {
+      case x: DI_Count =>
         //println(s"$ref : CSP!")
-        CSP().twoSample(x, indexSelection)
-      }
-      case x: DimensionIndex_Rank => {
+        CSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
+      case x: DI_Rank =>
         //println(s"$ref : KSP!")
-        KSP().twoSample(x, indexSelection)
-      }
-      case x: DimensionIndex_CorrectedRank => {
+        KSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
+      case x: DI_CRank =>
         //println(s"$ref : MWP!")
-        MWP().twoSample(x, indexSelection)
-      }
+        MWP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case _ => throw new Error("Unsupported DimensionIndex type")
     }
   }

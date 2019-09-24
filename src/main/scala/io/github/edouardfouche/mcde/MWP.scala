@@ -16,7 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex, DimensionIndex_CorrectedRank, DimensionIndex_Rank, Index, Index_CorrectedRank}
+import io.github.edouardfouche.index.I_CRank
+import io.github.edouardfouche.index.dimension.DI_CRank
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -33,14 +34,14 @@ import scala.annotation.tailrec
 
 case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                   var parallelize: Int = 0) extends McdeStats {
-  //type PreprocessedData = DimensionIndex_CorrectedRank
+  //type PreprocessedData = DI_CRank
   //type U = Double
-  type I = Index_CorrectedRank
-  type D = DimensionIndex_CorrectedRank
+  type I = I_CRank
+  type D = DI_CRank
   val id = "MWP"
 
-  def preprocess(input: DataSet): Index_CorrectedRank = {
-    new Index_CorrectedRank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I_CRank = {
+    new I_CRank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
 
   /**
@@ -48,12 +49,11 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * ordered by the rank) and a set of Int that correspond to the intersection of the position of the element in the
     * slices in the other dimensions.
     *
-    *
+    * @param ref            The original position of the elements of a reference dimension ordered by their rank
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-    // @param reference      The original position of the elements of a reference dimension ordered by their rank
-  def twoSample(ref: DimensionIndex_CorrectedRank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: DI_CRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     val sliceStart = ref.getSafeCut(start)
@@ -62,12 +62,12 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
 
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
-    //val ref: DimensionIndex_CorrectedRank[String] = index(reference)
+    //val ref: DI_CRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).value, count + 1)
+        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).adjustedrank, count + 1)
         else cumulative(n + 1, acc, count)
       }
 

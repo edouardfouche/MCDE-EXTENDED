@@ -16,8 +16,9 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{DimensionIndex, Index}
-import io.github.edouardfouche.preprocess.{DataSet, Preprocess}
+import io.github.edouardfouche.index.Index
+import io.github.edouardfouche.index.dimension.DimensionIndex
+import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
@@ -70,7 +71,8 @@ trait McdeStats extends Stats {
     */
   def contrast(m: I, dimensions: Set[Int]): Double = {
     // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
+    m.refresh()
+    require(dimensions.forall(x => x >= 0 & x < m.ncols), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.nrows).ceil.toInt /// WARNING: Do not forget -1
     //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
 
@@ -105,7 +107,8 @@ trait McdeStats extends Stats {
     */
   def contrastAlpha(m: I, dimensions: Set[Int]): Double = {
     // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
+    m.refresh()
+    require(dimensions.forall(x => x >= 0 & x < m.ncols), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
 
     //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
 
@@ -145,8 +148,9 @@ trait McdeStats extends Stats {
     */
   def deviation(m: I, dimensions: Set[Int], referenceDim: Int): Double = {
     // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
-    //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
+    m.refresh()
+    require(dimensions.forall(x => x >= 0 & x < m.ncols), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
+    require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
 
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m(0).length).ceil.toInt /// WARNING: Do not forget -1
 
@@ -167,8 +171,9 @@ trait McdeStats extends Stats {
     */
   def deviationAlpha(m: I, dimensions: Set[Int], referenceDim: Int): Double = {
     // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
-    //require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
+    m.refresh()
+    require(dimensions.forall(x => x >= 0 & x < m.ncols), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
+    require(dimensions.contains(referenceDim), "The reference dimensions should be contained in the set of dimensions")
 
     val result = (1 to M).map(i => {
       val alpha = (scala.util.Random.nextInt(9)+1) / 10.0
@@ -194,6 +199,8 @@ trait McdeStats extends Stats {
     * @return A 2-D Array contains the contrast for each pairwise dimension
     */
   def contrastMatrix(m: I): Array[Array[Double]] = {
+    m.refresh()
+
     val numCols = m.ncols
     val matrix = Array.ofDim[Double](numCols, numCols)
 
@@ -241,6 +248,7 @@ trait McdeStats extends Stats {
     */
   def deviationMatrix(m: I): Array[Array[Double]] = {
     // Sanity check
+    m.refresh()
     //require(alpha > 0 & alpha < 1, "alpha should be greater than 0 and lower than 1")
     //require(M > 0, "M should be greater than 0")
     val numCols = m.ncols

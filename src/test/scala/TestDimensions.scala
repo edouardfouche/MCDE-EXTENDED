@@ -1,14 +1,15 @@
-import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index._
-import io.github.edouardfouche.preprocess._
-import io.github.edouardfouche.preprocess.DataSet
-import org.scalatest.FunSuite
-import io.github.edouardfouche.mcde.{Stats, _}
 import java.io.File
 import java.nio.file.{Files, Paths}
 
+import io.github.edouardfouche.generators._
+import io.github.edouardfouche.index._
+import io.github.edouardfouche.index.dimension.DimensionIndex
+import io.github.edouardfouche.mcde.{Stats, _}
+import io.github.edouardfouche.preprocess.{DataSet, _}
 import org.apache.commons.io.FileUtils
+import org.scalatest.FunSuite
 
+import scala.annotation.tailrec
 import scala.language.existentials // Fixes a curious warning.
 
 
@@ -17,17 +18,17 @@ class TestDimensions extends FunSuite {
 
   val rows = 50
   val dims = 4
-  val arr = Independent(dims, 0.0,"gaussian", 0).generate(rows).transpose
-  val bivar_arr = Independent(2, 0.0,"gaussian", 0).generate(rows).transpose
+  val arr: Array[Array[Double]] = Independent(dims, 0.0, "gaussian", 0).generate(rows).transpose
+  val bivar_arr: Array[Array[Double]] = Independent(2, 0.0, "gaussian", 0).generate(rows).transpose
 
   // TODO: What if new Tests / Generators?
   val all_mcde_stats:List[McdeStats] = List(KSP(), MWP())
 
 
-  val all_indices = Array(new Index_CorrectedRank(new DataSet(arr)))//, new DimensionIndex_CorrectedRank(arr),
+  val all_indices = Array(new I_CRank(new DataSet(arr))) //, new DI_CRank(arr),
     //new DimensionIndex_Dummy(arr), new DImensionIndex_Rank(arr))
 
-  val all_bivar_indices = Array(new Index_CorrectedRank(new DataSet(bivar_arr)))//, new DimensionIndex_CorrectedRank(bivar_arr),
+  val all_bivar_indices = Array(new I_CRank(new DataSet(bivar_arr))) //, new DI_CRank(bivar_arr),
     //new DimensionIndex_Dummy(bivar_arr), new DImensionIndex_Rank(bivar_arr))
 
   val all_gens = List(
@@ -55,7 +56,7 @@ class TestDimensions extends FunSuite {
 
 
   val path = s"${System.getProperty("user.home")}/datagenerator_for_scalatest/"
-  val dir = new File(path).mkdirs()
+  val dir: Boolean = new File(path).mkdirs()
   val indi = Independent(dims, 0.0,"gaussian", 0)
   indi.save(rows,path) // save is final on Base Class, dir gets destructed after test
   val data: DataSet = Preprocess.open(path + indi.id + ".csv", header = 1, separator = ",", excludeIndex = false, dropClass = true)
@@ -90,6 +91,7 @@ class TestDimensions extends FunSuite {
 
   test("Checking if generated data is row oriented"){
 
+    @tailrec
     def test_dim (arr_l: List[Array[Array[Double]]], size: Int = 0, tru: Int = 0): Boolean = {
       if(arr_l == Nil) size == tru
       else if ((arr_l.head.length, arr_l.head(0).length) == (rows, dims)) test_dim(arr_l.tail, size + 1 , tru + 1)

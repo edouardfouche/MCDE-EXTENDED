@@ -16,6 +16,7 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.dimension.DimensionIndex
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -37,33 +38,29 @@ abstract class Index[+T <: DimensionIndex] {
   protected def createIndex(data: DataSet): Vector[T]
 
   //def insert(newdata: DataSet): Unit = {
-  def insert(newPoint: Array[Double]): Unit = {
-    require(data.ncols == newPoint.length)
-    (0 to data.ncols).foreach{x =>
-      index(x).insert(newPoint(x))
-    }
-  }
-  /*
-  def insertreplace(newdata: DataSet): Unit = {
-    require(data.ncols == newdata.ncols)
-    (0 to data.ncols).foreach{x =>
-      index(x).insertreplace(newdata(x))
-    }
-  }
-  */
 
+
+  def insert(newpoints: Array[Double]): Unit = {
+    require(data.ncols == newpoints.length)
+    (0 to data.ncols).foreach{x =>
+      index(x).insert(newpoints(x))
+    }
+  }
+
+  def refresh(): Unit = {
+    index.foreach(x => x.refresh)
+  }
 
 
   def apply(n: Int): T = index(n) // access the columns of the index
 
-  def indices = (0 until data.ncols) // this is supposed to give the indices of the columns
+  def indices: Range = 0 until data.ncols // this is supposed to give the indices of the columns
 
-  def ncols = data.ncols
-  def nrows = data.nrows
+  def ncols: Int = data.ncols
+
+  def nrows: Int = data.nrows
 
   def isEmpty: Boolean = data.ncols == 0
-
-
 
   /**
     * Produce a subspace slice by conditioning on all dimensions, except a reference dimension

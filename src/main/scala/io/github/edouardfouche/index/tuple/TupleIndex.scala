@@ -5,17 +5,19 @@ trait TupleIndex {
   type T
   val tuple: T
 
-  val position: Int
-  val value: Any
-  val correction: Double
+  // position: Int
+  //val value: Double
+  //val adjustedrank: Float
+  //val correction: Double
 
   //val value: Double
 
   def toString: String
 
-  def toTuple: (Int, Any, Double) = (position,value,correction)
+  //def toTuple: (Int, Double, Float, Double) = (position,value,adjustedrank,correction)
+  //implicit def TupleIndexToTuple(input : _ <: TupleIndex) : input.T
 }
 
-object TupleIndex {
-  implicit def TupleIndexToTuple(input : TupleIndex) : (Int, Any, Double) = (input.position, input.value, input.correction)
-}
+//object TupleIndex {
+//  implicit def TupleIndexToTuple(input : TupleIndex) : (Int, Double, Float, Double) = (input.position, input.value, input.adjustedrank, input.correction)
+//}

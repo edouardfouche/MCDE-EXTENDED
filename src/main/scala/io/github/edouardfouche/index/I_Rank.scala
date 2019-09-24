@@ -16,21 +16,23 @@
  */
 package io.github.edouardfouche.index
 
+import io.github.edouardfouche.index.dimension.DI_Rank
 import io.github.edouardfouche.preprocess.DataSet
 
 // Here the inputs may be row-oriented
-class Index_Count(val data: DataSet, val parallelize: Int = 0) extends Index[DimensionIndex_Count] {
-  //type T = DimensionIndex_Count[String]
+class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[DI_Rank] {
+  //type T = DimensionIndex[String]
+
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Vector[DimensionIndex_Count] = {
+  protected def createIndex(data: DataSet): Vector[DI_Rank] = {
     (0 until data.ncols).toVector.map(data(_)).map {
-      //case x: Vector[Double] => new DimensionIndex_Rank[Double](x)
-      //case x: Vector[Int] => new DimensionIndex_Rank[Int](x)
-      case x: Array[Double] => new DimensionIndex_Count(x)
+      //case x: Vector[Double] => new DI_Rank[Double](x)
+      //case x: Vector[Int] => new DI_Rank[Int](x)
+      case x: Array[Double] => new DI_Rank(x)
       case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
     }
   }
