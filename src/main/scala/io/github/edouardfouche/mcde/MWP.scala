@@ -17,7 +17,7 @@
 package io.github.edouardfouche.mcde
 
 import io.github.edouardfouche.index.I_CRank
-import io.github.edouardfouche.index.dimension.DI_CRank
+import io.github.edouardfouche.index.dimension.D_CRank
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -34,10 +34,10 @@ import scala.annotation.tailrec
 
 case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                   var parallelize: Int = 0) extends McdeStats {
-  //type PreprocessedData = DI_CRank
+  //type PreprocessedData = D_CRank
   //type U = Double
   type I = I_CRank
-  type D = DI_CRank
+  type D = D_CRank
   val id = "MWP"
 
   def preprocess(input: DataSet): I_CRank = {
@@ -53,7 +53,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(ref: DI_CRank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D_CRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     val sliceStart = ref.getSafeCut(start)
@@ -62,7 +62,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
 
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
-    //val ref: DI_CRank[String] = index(reference)
+    //val ref: D_CRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {

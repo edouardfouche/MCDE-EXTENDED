@@ -25,7 +25,7 @@ class Index_DoubleAndString(val values: Array[Array[_ >: Double with String]], v
     * @return An index, which is also column-oriented
     */
   protected def createIndex(data: Array[Array[_ >: Double with String]]): Array[DimensionIndex[_ >: Double with String]] = {
-    data.map(x => new DI_CRank(x))
+    data.map(x => new D_CRank(x))
   }
 
 }

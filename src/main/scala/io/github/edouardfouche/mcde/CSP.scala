@@ -18,7 +18,7 @@ package io.github.edouardfouche.mcde
 
 import breeze.stats.distributions.ChiSquared
 import io.github.edouardfouche.index.I_Count
-import io.github.edouardfouche.index.dimension.DI_Count
+import io.github.edouardfouche.index.dimension.D_Count
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
@@ -32,8 +32,8 @@ import io.github.edouardfouche.preprocess.DataSet
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
-  //type PreprocessedData = DI_Rank
-  type D = DI_Count
+  //type PreprocessedData = D_Rank
+  type D = D_Count
   type I = I_Count
 
   val id = "CSP"
@@ -54,7 +54,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample(ref: DI_Count, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
     val restrictedCategories: Array[Double] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
     //val restrictedCategories: List[String] = ref.categories.toList
     val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
@@ -73,7 +73,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
       val sample1counts: Map[Double, Int] = sample1.groupBy(identity).mapValues(_.length)
       //val sample2counts: Map[Double, Int] = sample2.groupBy(identity).mapValues(_.length) // could we speed this up?
-      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.dindex(0).map(x)._2 - sample1counts.getOrElse(x, 0))).toMap
+      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.dindex(x)._2 - sample1counts.getOrElse(x, 0))).toMap
 
       // now let's compare the selectedcounts with the ref.counts according to chisq
 

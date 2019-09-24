@@ -16,24 +16,32 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.TI_Count
+import io.github.edouardfouche.index.tuple.T_Count
+
+import scala.collection.mutable
 
 /**
   * A very simple index structure will only the ranks and values(convenient for HiCS for example)
   *
   * @param values An array of values corresponding to the values in a column
   */
-class DI_Count(val values: Array[Double]) extends DimensionIndex {
-  type T = TI_Count
+class D_Count(val values: Array[Double]) extends DimensionIndex {
+  type T = T_Count
 
-  var dindex: Array[T] = createDimensionIndex(values)
+  //var dindex: Array[T] = createDimensionIndex(values)
+  var dindex: mutable.Map[Double, T] = createDimensionIndex(values)
 
-  //override def apply(i: Int): (Array[Int], Int) = dindex(0).map(i)
+  def apply(i: Double): (Array[Int], Int) = dindex(i)
 
-  def createDimensionIndex(input: Array[Double]): Array[T] = {
-    Array(TI_Count(
-      collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
-    ))
+  def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
+    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+  }
+
+  def createDimensionIndex(input: Array[Double]): mutable.Map[Double, T] = {
+    //Array(T_Count(
+    //  collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
+    //))
+    collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({ case (x, y) => (x, T_Count(y.map(_._2), y.length)) }).toSeq: _*)
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
@@ -41,13 +49,13 @@ class DI_Count(val values: Array[Double]) extends DimensionIndex {
     //TODO: Problem: The categories might as well not be uniform. So deciding the number of categories is misleading
     //TODO: Check that it works now.
     val selectedCategories: Array[Double] = selectCategories(sliceSize)
-    val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(0).map(x)._1)
+    val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(x)._1)
     selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray
   }
 
   def selectCategories(sliceSize: Int): Array[Double] = {
-    val shuffledCategories: List[Double] = scala.util.Random.shuffle(dindex(0).map.keys.toList) //.take(sliceSize)
+    val shuffledCategories: List[Double] = scala.util.Random.shuffle(dindex.keys.toList) //.take(sliceSize)
 
     @scala.annotation.tailrec
     def cumulative(current: Int, categories: List[Double], selectedCategories: List[Double]): List[Double] = {
@@ -55,9 +63,9 @@ class DI_Count(val values: Array[Double]) extends DimensionIndex {
       if(categories.length == 1) selectedCategories
       if(current < sliceSize) {
         if(selectedCategories.isEmpty // make sure we select at least one category
-          || (math.abs(current + dindex(0).map(categories.head)._2 - sliceSize) < math.abs(current - sliceSize))) // make sure we get the closest match to the desired sliceSize
+          || (math.abs(current + dindex(categories.head)._2 - sliceSize) < math.abs(current - sliceSize))) // make sure we get the closest match to the desired sliceSize
         {
-          cumulative(current + dindex(0).map(categories.head)._2, categories.tail, selectedCategories :+ categories.head)
+          cumulative(current + dindex(categories.head)._2, categories.tail, selectedCategories :+ categories.head)
         } else selectedCategories
       } else selectedCategories
     }

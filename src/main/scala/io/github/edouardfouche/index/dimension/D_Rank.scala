@@ -16,20 +16,26 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.TI_Rank
+import io.github.edouardfouche.index.tuple.T_Rank
 
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   *
   * @param values An array of values corresponding to the values in a column
   */
-class DI_Rank(val values: Array[Double]) extends DimensionIndex {
-  type T = TI_Rank
+class D_Rank(val values: Array[Double]) extends DimensionIndex {
+  type T = T_Rank
 
   var dindex: Array[T] = createDimensionIndex(values)
 
+  def apply(n: Int): T = dindex(n) // access in the index
+
+  def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
+    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+  }
+
   def createDimensionIndex(input: Array[Double]): Array[T] = {
-    input.zipWithIndex.sortBy(_._1).map(x => TI_Rank(x._2, x._1))
+    input.zipWithIndex.sortBy(_._1).map(x => T_Rank(x._2, x._1))
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {

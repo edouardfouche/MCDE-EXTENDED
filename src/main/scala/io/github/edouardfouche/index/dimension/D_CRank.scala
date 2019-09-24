@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.TI_CRank
+import io.github.edouardfouche.index.tuple.T_CRank
 
 import scala.annotation.tailrec
 
@@ -28,10 +28,16 @@ import scala.annotation.tailrec
   *
   * @param values An array of values corresponding to the values in a column
   */
-class DI_CRank(val values: Array[Double]) extends DimensionIndex {
-  type T = TI_CRank
+class D_CRank(val values: Array[Double]) extends DimensionIndex {
+  type T = T_CRank
 
   var dindex: Array[T] = createDimensionIndex(values)
+
+  def apply(n: Int): T = dindex(n) // access in the index
+
+  def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
+    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+  }
 
   def createDimensionIndex(input: Array[Double]): Array[T]= {
     // Create an index for each column with this shape: (original position, adjusted rank, original value)
@@ -39,7 +45,7 @@ class DI_CRank(val values: Array[Double]) extends DimensionIndex {
     val nonadjusted = {
       input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
     }
-    val adjusted = new Array[TI_CRank](input.length)
+    val adjusted = new Array[T_CRank](input.length)
 
     val m = nonadjusted.length - 1
     var j = 0
@@ -56,10 +62,10 @@ class DI_CRank(val values: Array[Double]) extends DimensionIndex {
         val newval = ((acc + nonadjusted(k)._3) / (k - j + 1.0)).toFloat
         val t = k - j + 1.0
         acc_corr = acc_corr + math.pow(t , 3) - t
-        (j to k).foreach(y => adjusted(y) = TI_CRank(nonadjusted(y)._1, nonadjusted(y)._2, newval, acc_corr))
+        (j to k).foreach(y => adjusted(y) = T_CRank(nonadjusted(y)._1, nonadjusted(y)._2, newval, acc_corr))
         j += k - j + 1 // jump to after the replacement
       } else {
-        adjusted(j) = TI_CRank(nonadjusted(j)._1, nonadjusted(j)._2, nonadjusted(j)._3, acc_corr)
+        adjusted(j) = T_CRank(nonadjusted(j)._1, nonadjusted(j)._2, nonadjusted(j)._3, acc_corr)
         j += 1
       }
     }
@@ -83,7 +89,7 @@ class DI_CRank(val values: Array[Double]) extends DimensionIndex {
     //require(cut >= 0 & cut <= reference.length)
     //val ref = index(reference)
     //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
-    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DI_CRank): Int = {
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: D_CRank): Int = {
       // "It's easier to ask forgiveness than it is to get permission"
       try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
       else {

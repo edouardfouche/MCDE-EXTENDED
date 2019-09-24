@@ -1,4 +1,4 @@
-import io.github.edouardfouche.index.dimension.DIS_Rank
+import io.github.edouardfouche.index.dimension.D_Rank_Stream
 import org.scalatest.FunSuite
 
 class TestRankStream extends FunSuite {
@@ -8,7 +8,7 @@ class TestRankStream extends FunSuite {
 
   // init
   test(s"Check init for odd") {
-    val odd1 = new DIS_Rank(Array(2.0, 6.0, 1.0, 3.0, 4.0, 5.0, 7.0))
+    val odd1 = new D_Rank_Stream(Array(2.0, 6.0, 1.0, 3.0, 4.0, 5.0, 7.0))
     assert(odd1(0).toTuple == (2, 1.0))
     assert(odd1(1).toTuple == (0, 2.0))
     assert(odd1(2).toTuple == (3, 3.0))
@@ -20,7 +20,7 @@ class TestRankStream extends FunSuite {
 
 
   test(s"Check init for even") {
-    val even1 = new DIS_Rank(Array(4.0, 2.0, 6.0, 1.0, 3.0, 5.0))
+    val even1 = new D_Rank_Stream(Array(4.0, 2.0, 6.0, 1.0, 3.0, 5.0))
     assert(even1(0).toTuple == (3, 1.0))
     assert(even1(1).toTuple == (1, 2.0))
     assert(even1(2).toTuple == (4, 3.0))
@@ -31,7 +31,7 @@ class TestRankStream extends FunSuite {
 
 
   test(s"Check init for ties") {
-    val ties1 = new DIS_Rank(Array(3.0, 2.0, 2.0, 1.0, 2.0))
+    val ties1 = new D_Rank_Stream(Array(3.0, 2.0, 2.0, 1.0, 2.0))
     assert(ties1(0)._2 == 1.0)
     assert(ties1(1)._2 == 2.0)
     assert(ties1(2)._2 == 2.0)
@@ -42,33 +42,33 @@ class TestRankStream extends FunSuite {
 
   // insert, odd
   test(s"Check insert below delete for odd") {
-    val odd2 = new DIS_Rank(odd)
+    val odd2 = new D_Rank_Stream(odd)
     odd2.insert(1.5)
     assert(odd2(1).toTuple == (7, 1.5))
   }
 
 
   test(s"Check insert after delete for odd") {
-    val odd3 = new DIS_Rank(odd)
+    val odd3 = new D_Rank_Stream(odd)
     odd3.insert(2.5)
     assert(odd3(1).toTuple == (7, 2.5))
   }
 
   test(s"Check insert middle for odd") {
-    val odd4 = new DIS_Rank(odd)
+    val odd4 = new D_Rank_Stream(odd)
     odd4.insert(4.5)
     assert(odd4(3).toTuple == (7, 4.5))
   }
 
 
   test(s"Check insert begin for odd") {
-    val odd5 = new DIS_Rank(odd)
+    val odd5 = new D_Rank_Stream(odd)
     odd5.insert(0.5)
     assert(odd5(0).toTuple == (7, 0.5))
   }
 
   test(s"Check insert end for odd") {
-    val odd6 = new DIS_Rank(odd)
+    val odd6 = new D_Rank_Stream(odd)
     odd6.insert(7.5)
     assert(odd6(6).toTuple == (7, 7.5))
   }
@@ -77,32 +77,32 @@ class TestRankStream extends FunSuite {
   // insert, even
   test(s"Check insert below delete for even") {
 
-    val even2 = new DIS_Rank(even)
+    val even2 = new D_Rank_Stream(even)
     even2.insert(3.5)
     assert(even2(3).toTuple == (6, 3.5))
   }
 
   test(s"Check insert after delete for even") {
-    val even3 = new DIS_Rank(even)
+    val even3 = new D_Rank_Stream(even)
     even3.insert(4.5)
     assert(even3(3).toTuple == (6, 4.5))
   }
 
   test(s"Check insert middle for even") {
-    val even4 = new DIS_Rank(even)
+    val even4 = new D_Rank_Stream(even)
     even4.insert(2.5)
     assert(even4(2).toTuple == (6, 2.5))
   }
 
   test(s"Check insert begin for even") {
-    val even5 = new DIS_Rank(even)
+    val even5 = new D_Rank_Stream(even)
     even5.insert(0.5)
     assert(even5(0).toTuple == (6, 0.5))
 
   }
 
   test(s"Check insert end for even") {
-    val even6 = new DIS_Rank(even)
+    val even6 = new D_Rank_Stream(even)
     even6.insert(7.5)
     assert(even6(5).toTuple == (6, 7.5))
   }
@@ -110,19 +110,19 @@ class TestRankStream extends FunSuite {
   // insert, ties
   val tiesA = Array(3.0,2.0,2.0,1.0,2.0)
   test(s"A - Check insert below delete for ties") {
-    val ties2 = new DIS_Rank(tiesA)
+    val ties2 = new D_Rank_Stream(tiesA)
     ties2.insert(1.5)
     assert(ties2(1).toTuple == (5, 1.5))
   }
 
   test(s"A - Check insert after delete for ties") {
-    val ties3 = new DIS_Rank(tiesA)
+    val ties3 = new D_Rank_Stream(tiesA)
     ties3.insert(2.5)
     assert(ties3(4).toTuple == (5, 2.5))
   }
 
   test(s"A - Check insert middle for ties") {
-    val ties4 = new DIS_Rank(tiesA)
+    val ties4 = new D_Rank_Stream(tiesA)
     ties4.insert(2.0)
     assert(ties4(1).toTuple == (1, 2.0))
     assert(ties4(2).toTuple == (2, 2.0))
@@ -138,20 +138,20 @@ class TestRankStream extends FunSuite {
 
   val tiesB = Array(3.0,2.0,2.0,4.0,2.0)
   test(s"B - Check insert below delete for ties") {
-    val ties5 = new DIS_Rank(tiesB)
+    val ties5 = new D_Rank_Stream(tiesB)
     ties5.insert(1.5)
     assert(ties5(0).toTuple == (5, 1.5))
   }
 
   test(s"B - Check insert after delete for ties") {
-    val ties6 = new DIS_Rank(tiesB)
+    val ties6 = new D_Rank_Stream(tiesB)
     ties6.insert(2.5)
     assert(ties6(3).toTuple == (5, 2.5))
   }
 
 
   test(s"B - Check insert middle for ties") {
-    val ties7 = new DIS_Rank(tiesB)
+    val ties7 = new D_Rank_Stream(tiesB)
     ties7.insert(2.0)
     assert(ties7(0).toTuple == (1, 2.0))
     assert(ties7(1).toTuple == (2, 2.0))
@@ -162,21 +162,21 @@ class TestRankStream extends FunSuite {
   val tiesC = Array(0.0,2.0,2.0,1.0,2.0)
   test(s"C - Check insert below delete for ties") {
 
-    val ties8 = new DIS_Rank(tiesC)
+    val ties8 = new D_Rank_Stream(tiesC)
     ties8.insert(1.5)
     assert(ties8(1).toTuple == (5, 1.5))
   }
 
 
   test(s"C - Check insert after delete for ties") {
-    val ties9 = new DIS_Rank(tiesC)
+    val ties9 = new D_Rank_Stream(tiesC)
     ties9.insert(2.5)
     assert(ties9(4).toTuple == (5, 2.5))
   }
 
 
   test(s"C - Check insert middle for ties") {
-    val ties10 = new DIS_Rank(tiesC)
+    val ties10 = new D_Rank_Stream(tiesC)
     ties10.insert(2.0)
     assert(ties10(1).toTuple == (1, 2.0))
     assert(ties10(2).toTuple == (2, 2.0))
@@ -187,21 +187,21 @@ class TestRankStream extends FunSuite {
   val tiesD = Array(2.0,0.0,2.0,1.0,2.0)
   test(s"D - Check insert below delete for ties") {
 
-    val ties8 = new DIS_Rank(tiesD)
+    val ties8 = new D_Rank_Stream(tiesD)
     ties8.insert(1.5)
     assert(ties8(2).toTuple == (5, 1.5))
   }
 
 
   test(s"D - Check insert after delete for ties") {
-    val ties9 = new DIS_Rank(tiesD)
+    val ties9 = new D_Rank_Stream(tiesD)
     ties9.insert(2.5)
     assert(ties9(4).toTuple == (5, 2.5))
   }
 
 
   test(s"D - Check insert middle for ties") {
-    val ties10 = new DIS_Rank(tiesD)
+    val ties10 = new D_Rank_Stream(tiesD)
     //println(ties10)
     ties10.insert(2.0)
     //println(ties10)
@@ -213,21 +213,21 @@ class TestRankStream extends FunSuite {
 
   val tiesE = Array(2.0,3.0,2.0,1.0,2.0)
   test(s"E - Check insert below delete for ties") {
-    val ties8 = new DIS_Rank(tiesE)
+    val ties8 = new D_Rank_Stream(tiesE)
     ties8.insert(1.5)
     assert(ties8(1).toTuple == (5, 1.5))
   }
 
 
   test(s"E - Check insert after delete for ties") {
-    val ties9 = new DIS_Rank(tiesE)
+    val ties9 = new D_Rank_Stream(tiesE)
     ties9.insert(2.5)
     assert(ties9(3).toTuple == (5, 2.5))
   }
 
 
   test(s"E - Check insert middle for ties") {
-    val ties10 = new DIS_Rank(tiesE)
+    val ties10 = new D_Rank_Stream(tiesE)
     //println(ties10)
     ties10.insert(2.0)
     //println(ties10)
@@ -239,21 +239,21 @@ class TestRankStream extends FunSuite {
 
   val tiesF = Array(2.0,3.0,2.0,4.0,2.0)
   test(s"F - Check insert below delete for ties") {
-    val ties8 = new DIS_Rank(tiesF)
+    val ties8 = new D_Rank_Stream(tiesF)
     ties8.insert(1.5)
     assert(ties8(0).toTuple == (5, 1.5))
   }
 
 
   test(s"F - Check insert after delete for ties") {
-    val ties9 = new DIS_Rank(tiesF)
+    val ties9 = new D_Rank_Stream(tiesF)
     ties9.insert(2.5)
     assert(ties9(2).toTuple == (5, 2.5))
   }
 
 
   test(s"F - Check insert middle for ties") {
-    val ties10 = new DIS_Rank(tiesF)
+    val ties10 = new D_Rank_Stream(tiesF)
     ties10.insert(2.0)
     assert(ties10(0).toTuple == (2, 2.0))
     assert(ties10(1).toTuple == (4, 2.0))
@@ -262,7 +262,7 @@ class TestRankStream extends FunSuite {
   }
 
   test(s"Test Scenario 1") {
-    val odd1 = new DIS_Rank(Array(2.0, 2.0, 6.0, 1.0, 1.0, 0.0))
+    val odd1 = new D_Rank_Stream(Array(2.0, 2.0, 6.0, 1.0, 1.0, 0.0))
     odd1.insert(1.0)
     assert(odd1(0).toTuple == (5, 0.0))
     assert(odd1(1).toTuple == (3, 1.0))
@@ -296,7 +296,7 @@ class TestRankStream extends FunSuite {
   }
 
   test("Test Scenario 2") {
-    val odd2 = new DIS_Rank(Array(2.0, 2.0, 6.0, 1.0, 1.0, 0.0))
+    val odd2 = new D_Rank_Stream(Array(2.0, 2.0, 6.0, 1.0, 1.0, 0.0))
     odd2.insert(2.0)
     odd2.insert(2.0)
     odd2.insert(6.0)

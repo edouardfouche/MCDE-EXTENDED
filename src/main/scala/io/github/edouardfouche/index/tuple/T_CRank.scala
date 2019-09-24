@@ -2,7 +2,7 @@ package io.github.edouardfouche.index.tuple
 
 import scala.language.implicitConversions
 
-case class TI_CRank(tuple: (Int, Double, Float, Double)) extends TupleIndex {
+case class T_CRank(tuple: (Int, Double, Float, Double)) extends TupleIndex {
   type T = (Int, Double, Float, Double)
 
   val position: Int = tuple._1
@@ -14,11 +14,11 @@ case class TI_CRank(tuple: (Int, Double, Float, Double)) extends TupleIndex {
 
   def toTuple: (Int, Double, Float, Double) = (position, value, adjustedrank, correction)
 
-  //implicit def TupleIndexToTuple(input : TI_CRank) : (Int, Double, Float, Double) =
+  //implicit def TupleIndexToTuple(input : T_CRank) : (Int, Double, Float, Double) =
   //  (input.position, input.value, input.adjustedrank, input.correction)
 }
 
-object TI_CRank {
-  implicit def TupleIndexToTuple(input: TI_CRank): (Int, Double, Float, Double) =
+object T_CRank {
+  implicit def TupleIndexToTuple(input: T_CRank): (Int, Double, Float, Double) =
     (input.position, input.value, input.adjustedrank, input.correction)
 }

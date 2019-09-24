@@ -21,17 +21,15 @@ import io.github.edouardfouche.index.tuple.TupleIndex
 abstract class DimensionIndex {
   val values: Array[Double] // An array of values corresponding to the values in a column
   type T <: TupleIndex
-  var dindex: Array[T]
+  //var dindex: Object
 
-  def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
-  }
+  def insert(newpoint: Double): Unit // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
 
   def refresh(): Unit = {} // Do nothing, DimensionIndexStream must override
 
-  def indices: Range = dindex.indices // this is supposed to give the indices of the columns
+  //def indices: Range = dindex.indices // this is supposed to give the indices of the columns
 
-  def apply(n: Int): T = dindex(n) // access in the index
+  //def apply(n: Int): T = dindex(n) // access in the index
 
   def length: Int = values.length
 
@@ -39,11 +37,11 @@ abstract class DimensionIndex {
 
   def isEmpty: Boolean = values.length == 0
 
-  override def toString: String = dindex mkString ";"
+  //override def toString: String = dindex mkString ";"
 
   /**
     * @param data An array of values corresponding to the values in a column
     * @return An index, which is also column-oriented
     */
-  protected def createDimensionIndex(data: Array[Double]): Array[T]
+  protected def createDimensionIndex(data: Array[Double]): Object
 }

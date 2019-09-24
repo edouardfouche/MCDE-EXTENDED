@@ -16,22 +16,22 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.dimension.DI_Count
+import io.github.edouardfouche.index.dimension.D_Count
 import io.github.edouardfouche.preprocess.DataSet
 
 // Here the inputs may be row-oriented
-class I_Count(val data: DataSet, val parallelize: Int = 0) extends Index[DI_Count] {
-  //type T = DI_Count[String]
+class I_Count(val data: DataSet, val parallelize: Int = 0) extends Index[D_Count] {
+  //type T = D_Count[String]
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Vector[DI_Count] = {
+  protected def createIndex(data: DataSet): Vector[D_Count] = {
     (0 until data.ncols).toVector.map(data(_)).map {
-      //case x: Vector[Double] => new DI_Rank[Double](x)
-      //case x: Vector[Int] => new DI_Rank[Int](x)
-      case x: Array[Double] => new DI_Count(x)
+      //case x: Vector[Double] => new D_Rank[Double](x)
+      //case x: Vector[Int] => new D_Rank[Int](x)
+      case x: Array[Double] => new D_Count(x)
       case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
     }
   }

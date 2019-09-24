@@ -2,7 +2,7 @@ package io.github.edouardfouche.index.tuple
 
 import scala.language.implicitConversions
 
-case class TI_Rank(tuple: (Int, Double)) extends TupleIndex {
+case class T_Rank(tuple: (Int, Double)) extends TupleIndex {
   type T = (Int, Double)
   val position: Int = tuple._1
   val value: Double = tuple._2
@@ -13,10 +13,10 @@ case class TI_Rank(tuple: (Int, Double)) extends TupleIndex {
 
   def toTuple: (Int, Double) = (position, value)
 
-  //implicit def TupleIndexToTuple(input : TI_Rank) : input.T = (input.position, input.value)
+  //implicit def TupleIndexToTuple(input : T_Rank) : input.T = (input.position, input.value)
 }
 
-object TI_Rank {
-  implicit def TupleIndexToTuple(input: TI_Rank): (Int, Double) =
+object T_Rank {
+  implicit def TupleIndexToTuple(input: T_Rank): (Int, Double) =
     (input.position, input.value)
 }

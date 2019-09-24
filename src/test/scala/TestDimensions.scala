@@ -25,10 +25,10 @@ class TestDimensions extends FunSuite {
   val all_mcde_stats:List[McdeStats] = List(KSP(), MWP())
 
 
-  val all_indices = Array(new I_CRank(new DataSet(arr))) //, new DI_CRank(arr),
+  val all_indices = Array(new I_CRank(new DataSet(arr))) //, new D_CRank(arr),
     //new DimensionIndex_Dummy(arr), new DImensionIndex_Rank(arr))
 
-  val all_bivar_indices = Array(new I_CRank(new DataSet(bivar_arr))) //, new DI_CRank(bivar_arr),
+  val all_bivar_indices = Array(new I_CRank(new DataSet(bivar_arr))) //, new D_CRank(bivar_arr),
     //new DimensionIndex_Dummy(bivar_arr), new DImensionIndex_Rank(bivar_arr))
 
   val all_gens = List(

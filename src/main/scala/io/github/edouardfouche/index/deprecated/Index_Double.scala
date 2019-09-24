@@ -26,7 +26,7 @@ class Index_Double(val values: Array[Array[Double]], val parallelize: Int = 0) e
     * @return An index, which is also column-oriented
     */
   protected def createIndex(data: Array[Array[Double]]): Array[DimensionIndex[Double]] = {
-    data.map(x => new DI_CRank(x))
+    data.map(x => new D_CRank(x))
   }
 
 }

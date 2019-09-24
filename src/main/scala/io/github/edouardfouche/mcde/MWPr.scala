@@ -17,7 +17,7 @@
 package io.github.edouardfouche.mcde
 
 import io.github.edouardfouche.index.I_Rank
-import io.github.edouardfouche.index.dimension.DI_Rank
+import io.github.edouardfouche.index.dimension.D_Rank
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -31,9 +31,9 @@ import scala.annotation.tailrec
   */
 case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats{
   //type U = Double
-  //override type PreprocessedData = DI_Rank
+  //override type PreprocessedData = D_Rank
   type I = I_Rank
-  type D = DI_Rank
+  type D = D_Rank
   val id = "MWPr"
 
   def preprocess(input: DataSet): I_Rank = {
@@ -50,7 +50,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(ref: DI_Rank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     // This returns results between 0 and reference.length (both incl.)
     // i.e. the "cut" is the place from which the cut starts, if the cut starts at 0 or reference.length, this is the same as no cut.

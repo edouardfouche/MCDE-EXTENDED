@@ -1,7 +1,7 @@
-import io.github.edouardfouche.index.dimension.DIS_Rank
+import io.github.edouardfouche.index.dimension.D_Rank_Stream
 
 val test1 = Array(2.0,6.0,1.0,3.0,4.0,5.0,7.0)
-val odd1 = new DIS_Rank(test1)
+val odd1 = new D_Rank_Stream(test1)
 odd1(0)
 odd1(1)
 odd1(2)

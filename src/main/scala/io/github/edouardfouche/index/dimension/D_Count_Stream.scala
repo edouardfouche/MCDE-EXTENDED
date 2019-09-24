@@ -16,6 +16,8 @@
  */
 package io.github.edouardfouche.index.dimension
 
+import io.github.edouardfouche.index.tuple.T_Count
+
 import scala.collection.mutable
 
 /**
@@ -23,15 +25,15 @@ import scala.collection.mutable
   *
   * @param values An array of values corresponding to the values in a column
   */
-class DIS_Count(values: Array[Double]) extends DI_Count(values) with DimensionIndexStream {
+class D_Count_Stream(values: Array[Double]) extends D_Count(values) with DimensionIndexStream {
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset = 0
 
-  //var dindex: Array[T] = createDimensionIndex(values)
+  //override var dindex: mutable.Map[Double, T] = createDimensionIndex(values)
 
   override def refresh: Unit = {
     if(offset > 0) {
-      dindex(0).map.keys.foreach(x => dindex(0).map(x) = (dindex(0).map(x)._1.map(y => y-offset), dindex(0).map(x)._2))
+      dindex.keys.foreach(x => dindex(x) = T_Count(dindex(x)._1.map(y => y - offset), dindex(x)._2))
     }
     offset = 0
   }
@@ -39,19 +41,19 @@ class DIS_Count(values: Array[Double]) extends DI_Count(values) with DimensionIn
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue()
     // handle insertion
-    if(dindex(0).map.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
-      dindex(0).map(newpoint) = (dindex(0).map(newpoint)._1 :+ values.length+offset, dindex(0).map(newpoint)._2 + 1)
+    if (dindex.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
+      dindex(newpoint) = T_Count(dindex(newpoint)._1 :+ values.length + offset, dindex(newpoint)._2 + 1)
     } else {
       // Handle the case were this is a new category
-      dindex(0).map(newpoint) = (Array(values.length+offset), 1)
+      dindex(newpoint) = T_Count(Array(values.length + offset), 1)
     }
     // handle deletion
-    if(dindex(0).map(todelete)._2 > 1) { // In that case we don't need to remove the entry
-      val position = dindex(0).map(todelete)._1.zipWithIndex.min._2
-      dindex(0).map(todelete) = (dindex(0).map(todelete)._1.take(position) ++ dindex(0).map(todelete)._1.drop(position+1),
-        dindex(0).map(todelete)._2 -1)
+    if (dindex(todelete)._2 > 1) { // In that case we don't need to remove the entry
+      val position = dindex(todelete)._1.zipWithIndex.min._2
+      dindex(todelete) = T_Count(dindex(todelete)._1.take(position) ++ dindex(todelete)._1.drop(position + 1),
+        dindex(todelete)._2 - 1)
     } else {
-      dindex(0).map.remove(todelete)
+      dindex.remove(todelete)
       // For those guys, we need to find where it is.
       //val postodelete = categories.zipWithIndex.filter(_._1 == todelete)(0)._2
       //categories = categories.take(postodelete) ++ categories.drop(postodelete+1)

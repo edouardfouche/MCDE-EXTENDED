@@ -23,6 +23,6 @@ package io.github.edouardfouche.index
   * @param values
   */
 class DimensionIndex_Dummy[U](val values: Vector[U])(implicit ord: U => Ordered[U]) extends DimensionIndex[U]   {
-  def createDimensionIndex(input: Vector[U]): Array[_ <: TupleIndex] = input.map(x => TI_Dummy(x)).toArray
+  def createDimensionIndex(input: Vector[U]): Array[_ <: TupleIndex] = input.map(x => T_Dummy(x)).toArray
 }
 */

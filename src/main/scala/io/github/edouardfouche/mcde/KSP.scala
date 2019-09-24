@@ -17,7 +17,7 @@
 package io.github.edouardfouche.mcde
 
 import io.github.edouardfouche.index.I_Rank
-import io.github.edouardfouche.index.dimension.DI_Rank
+import io.github.edouardfouche.index.dimension.D_Rank
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -35,7 +35,7 @@ import scala.math.{E, pow, sqrt}
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
 case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   type I = I_Rank
-  type D = DI_Rank
+  type D = D_Rank
   val id = "KSP"
 
   def preprocess(input: DataSet): I_Rank = {
@@ -51,7 +51,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
     // @param reference      The original position of the elements of a reference dimension ordered by their rank
-    def twoSample(ref: DI_Rank, indexSelection: Array[Boolean]): Double = {
+    def twoSample(ref: D_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction
