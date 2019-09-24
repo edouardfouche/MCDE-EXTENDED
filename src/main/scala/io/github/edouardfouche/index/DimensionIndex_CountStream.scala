@@ -16,33 +16,68 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{CountTupleIndex2, TupleIndex}
+import io.github.edouardfouche.index.tuple.{CountTupleIndex, CountTupleIndex2, RankStreamTupleIndex}
+
+import scala.annotation.tailrec
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   * @param values
   */
-class DimensionIndex_Count(val values: Array[Double]) extends DimensionIndex {
-  //type T = CountTupleIndex
+class DimensionIndex_CountStream(val values: Array[Double]) extends DimensionIndex {
   type T = CountTupleIndex2
 
   //val group: Map[Double, Array[(Double,Int)]]  = values.zipWithIndex.groupBy(_._1)
+  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double]()
+  var offset = 0
 
   // that is the two important things
-  //val indexes: Map[Double, Array[Int]] = values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.map(_._2))})
-  //val counts: Map[Double, Int] = indexes.mapValues(_.length)
-  //val indexes: Map[Double, (Array[Int], Int)] = values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))})
+  //val indexes: collection.mutable.Map[Double, Array[Int]] =
+  //  collection.mutable.Map[Double, Array[Int]]() ++= values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.map(_._2))})
+  //val counts: collection.mutable.Map[Double, Int] =
+  //  collection.mutable.Map[Double, Int]() ++=indexes.mapValues(_.length)
 
-  //val categories: Array[Double] = counts.keys.toArray.sorted
+  //var categories: ArrayBuffer[Double] = ArrayBuffer[Double](counts.keys.toArray: _*) // don't need to sort
 
   //val int_to_value: Map[Int, Double] = categories.zipWithIndex.toMap.map({case (x,y) => (y,x)})
-  //val categorie_to_position: Map[Double, Int] = categories.zipWithIndex.toMap
-  //val position_to_categorie: Map[Int, Double] = categorie_to_position.map({case (x,y) => (y,x)})
+  //def categorie_to_position: Map[Double, Int] = categories.zipWithIndex.toMap
 
   var dindex: Array[T] = createDimensionIndex(values)
 
-  // TODO
-  def insert(newpoint: Double): Unit = {}
+  def refresh: Unit = {
+    if(offset > 0) {
+      dindex(0).map.keys.foreach(x => dindex(0).map(x) = (dindex(0).map(x)._1.map(y => y-offset), dindex(0).map(x)._2))
+    }
+    offset = 0
+  }
+
+  def insert(newpoint: Double): Unit = {
+
+    val todelete = queue.dequeue()
+    // handle insertion
+    if(dindex(0).map.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
+      dindex(0).map(newpoint) = (dindex(0).map(newpoint)._1 :+ values.length+offset, dindex(0).map(newpoint)._2 + 1)
+    } else {
+      // Handle the case were this is a new category
+      dindex(0).map(newpoint) = (Array(values.length+offset), 1)
+    }
+    // handle deletion
+    if(dindex(0).map(todelete)._2 > 1) { // In that case we don't need to remove the entry
+      val position = dindex(0).map(todelete)._1.zipWithIndex.min._2
+      dindex(0).map(todelete) = (dindex(0).map(todelete)._1.take(position) ++ dindex(0).map(todelete)._1.drop(position+1),
+        dindex(0).map(todelete)._2 -1)
+    } else {
+      dindex(0).map.remove(todelete)
+      // For those guys, we need to find where it is.
+      //val postodelete = categories.zipWithIndex.filter(_._1 == todelete)(0)._2
+      //categories = categories.take(postodelete) ++ categories.drop(postodelete+1)
+      //dindex = dindex.take(postodelete) ++ dindex.drop(postodelete+1)
+    }
+    offset += 1
+    queue += newpoint
+  }
   def insertreplace(newdata: Array[Double]): Unit = {}
 
   def createDimensionIndex(input: Array[Double]): Array[T] = {
@@ -57,7 +92,9 @@ class DimensionIndex_Count(val values: Array[Double]) extends DimensionIndex {
     //categories.indices.toArray.map(x =>
     //  CountTupleIndex(x, indexes(x))
     //)
-    //categories.map(x => CountTupleIndex(categorie_to_position(x), indexes(x)))
+
+    //categories.zipWithIndex.map(x => CountTupleIndex(x._2, indexes(x._1))).toArray
+    input.foreach(x => queue += x)
     Array(CountTupleIndex2(
       collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
     ))

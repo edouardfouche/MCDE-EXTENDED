@@ -16,35 +16,60 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.tuple.{RankStreamTupleIndex, RankTupleIndex}
+import io.github.edouardfouche.index.tuple.CorrectedRankStreamTupleIndex
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
-  * A very simple index structure will only the ranks (convenient for HiCS for example)
-  * @param values
+  * Compute an adjusted, corrected rank index from a given data set
+  * The rank are adjusted, which means that in the case of ties, the rank is defined as the average rank of the tying values
+  * Also, a "correction for ties" is computed, as required to compute a Mann-Whitney U test
+  * The correction is computed as a cumulative value.
+  *
+  * @param values A row-oriented data set
   */
-class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionIndex {
-  type T = RankStreamTupleIndex
+class DimensionIndex_CorrectedRankStream(val values: Array[Double]) extends DimensionIndex  {
+  type T = CorrectedRankStreamTupleIndex
+  //def apply[U](implicit ord: Ordering[U]) = new DimensionIndex_CorrectedRank[U]
 
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double]()
   var offset: Int = 0
 
   var dindex: Array[T] = createDimensionIndex(values)
 
-
-
-  // TODO: Need a refresh function (Does nothing for non-stream index)
   def refresh: Unit = {
     if(offset > 0) {
-      dindex = dindex.map(x => new RankStreamTupleIndex(x.position - offset, x.value))
+      dindex = dindex.zipWithIndex.map(x => new CorrectedRankStreamTupleIndex(x._1.position-offset, x._1.value, x._2, x._1.value))
+
+      val m = dindex.length - 1
+      var j = 0
+      var acc_corr = 0.0
+      while (j <= m) {
+        var k = j
+        var acc = 0.0
+        // && is quite important here, as if the first condition is false you don't want to evaluate the second
+        while ((k < m) && (dindex(k).value == dindex(k + 1).value)) { // Wooo we are comparing doubles here, is that ok? I guess yes
+          acc += dindex(k).adjustedrank
+          k += 1
+        }
+        if (k > j) {
+          val newval = ((acc + dindex(k).adjustedrank) / (k - j + 1.0)).toFloat
+          val t = k - j + 1.0
+          acc_corr = acc_corr + math.pow(t , 3) - t
+          (j to k).foreach(y => dindex(y) = CorrectedRankStreamTupleIndex(dindex(y).position, dindex(y).value, newval, acc_corr))
+          j += k - j + 1 // jump to after the replacement
+        } else {
+          dindex(j) = CorrectedRankStreamTupleIndex(dindex(j).position, dindex(j).value, dindex(j).adjustedrank, acc_corr)
+          j += 1
+        }
+      }
     }
     offset = 0
   }
 
-  // TODO: Maybe this one should not explicitely handle ties (keep that for Corrected Rank?)
-  def insert(newPoint: Double): Unit = {
+  // TODO
+  def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
 
     // the binary search returns the index on the match with oldest position
@@ -129,54 +154,102 @@ class DimensionIndex_RankStream(val values: Array[Double]) extends DimensionInde
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
 
-    println(s"want to delete: $todelete, want to insert: $newPoint")
+    println(s"want to delete: $todelete, want to insert: $newpoint")
     val indextodelete = binarySearch_delete(0, dindex.length-1, todelete) // will always be pointing to an object
-    val indextoinsert = binarySearch_insert(0, dindex.length-1, newPoint) // will always be pointing to an object or between two, in that case, the one after.
+    val indextoinsert = binarySearch_insert(0, dindex.length-1, newpoint) // will always be pointing to an object or between two, in that case, the one after.
     println(s"todelete: $indextodelete, toinsert: $indextoinsert")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
-      dindex(indextodelete) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+      dindex(indextodelete) = new CorrectedRankStreamTupleIndex(dindex.length + offset, newpoint, -1, -1)
     } else {
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {
           dindex(x) = dindex(x + 1)
         }
-        dindex(indextoinsert-1) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+        dindex(indextoinsert-1) = new CorrectedRankStreamTupleIndex(dindex.length + offset, newpoint, -1, -1)
       } else {
-        val actualindextoinsert = if(dindex(indextoinsert).value == newPoint) indextoinsert +1 else indextoinsert
+        val actualindextoinsert = if(dindex(indextoinsert).value == newpoint) indextoinsert +1 else indextoinsert
 
         if (actualindextoinsert < indextodelete) {
           for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
             dindex(x) = dindex(x - 1)
           }
-          dindex(actualindextoinsert) =  new RankStreamTupleIndex(dindex.length + offset, newPoint)
+          dindex(actualindextoinsert) =  new CorrectedRankStreamTupleIndex(dindex.length + offset, newpoint, -1, -1)
         } else if (actualindextoinsert > indextodelete) {
           for (x <- indextodelete until actualindextoinsert-1) {
             dindex(x) = dindex(x + 1)
           }
-          dindex(actualindextoinsert-1) = new RankStreamTupleIndex(dindex.length + offset, newPoint)
+          dindex(actualindextoinsert-1) = new CorrectedRankStreamTupleIndex(dindex.length + offset, newpoint, -1, -1)
         }
       }
     }
     offset += 1
-    queue += newPoint
+    queue += newpoint
   }
 
   def insertreplace(newdata: Array[Double]): Unit = {}
 
-  def createDimensionIndex(input: Array[Double]): Array[T] = {
+  def createDimensionIndex(input: Array[Double]): Array[T]= {
     input.foreach(x => queue += x)
-    input.zipWithIndex.sortBy(_._1).map(x => RankStreamTupleIndex(x._2, x._1)).toArray
-    /*
-    try{
-      input.map(_.toInt).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
-    } catch {
-      case _: Throwable => try{
-        input.map(_.toDouble).zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
+    // Create an index for each column with this shape: (original position, adjusted rank, original value)
+    // They are ordered by rank
+    val nonadjusted = {
+      input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
+      /*
+      try{
+        input.map(_.toInt).zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
       } catch {
-        case _: Throwable  => input.zipWithIndex.sortBy(_._1).map(x => RankTupleIndex(x._2)).toArray
+        case _: Throwable  => try{
+          input.map(_.toDouble).zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+        } catch {
+          case _: Throwable  => input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._2.toFloat, y._1._1))
+        }
+      }
+
+       */
+    }
+    val adjusted = new Array[CorrectedRankStreamTupleIndex](input.length)
+
+    val m = nonadjusted.length - 1
+    var j = 0
+    var acc_corr = 0.0
+    while (j <= m) {
+      var k = j
+      var acc = 0.0
+      // && is quite important here, as if the first condition is false you don't want to evaluate the second
+      while ((k < m) && (nonadjusted(k)._4 == nonadjusted(k + 1)._4)) { // Wooo we are comparing doubles here, is that ok? I guess yes
+        acc += nonadjusted(k)._3
+        k += 1
+      }
+      if (k > j) {
+        val newval = ((acc + nonadjusted(k)._3) / (k - j + 1.0)).toFloat
+        val t = k - j + 1.0
+        acc_corr = acc_corr + math.pow(t , 3) - t
+        (j to k).foreach(y => adjusted(y) = CorrectedRankStreamTupleIndex(nonadjusted(y)._1, nonadjusted(y)._2, newval, acc_corr))
+        j += k - j + 1 // jump to after the replacement
+      } else {
+        adjusted(j) = CorrectedRankStreamTupleIndex(nonadjusted(j)._1, nonadjusted(j)._2, nonadjusted(j)._3, acc_corr)
+        j += 1
       }
     }
-     */
+
+    adjusted
+  }
+
+  def getSafeCut(cut: Int): Int = {
+    //require(cut >= 0 & cut <= reference.length)
+    //val ref = index(reference)
+    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex): Int = {
+      // "It's easier to ask forgiveness than it is to get permission"
+      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
+      else {
+        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
+        catch{case _: Throwable => return a-inc}
+      }
+      catch {case _: Throwable => return a+inc}
+      cutSearch(a, inc+1, ref)
+    }
+    cutSearch(cut, 0, this)
   }
 }

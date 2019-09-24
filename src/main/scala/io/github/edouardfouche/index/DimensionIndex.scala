@@ -57,23 +57,6 @@ abstract class DimensionIndex {
     logicalArray
   }
 
-  def getSafeCut(cut: Int): Int = {
-    //require(cut >= 0 & cut <= reference.length)
-    //val ref = index(reference)
-    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
-    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex): Int = {
-      // "It's easier to ask forgiveness than it is to get permission"
-      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
-      else {
-        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
-        catch{case _: Throwable => return a-inc}
-      }
-      catch {case _: Throwable => return a+inc}
-      cutSearch(a, inc+1, ref)
-    }
-    cutSearch(cut, 0, this)
-  }
-
   /*
   /**
     * Return the rank index structure for MWP, with adjusted ranks but no correction for ties.

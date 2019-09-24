@@ -93,7 +93,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
       val sample1counts: Map[Double, Int] = sample1.groupBy(identity).mapValues(_.length)
       //val sample2counts: Map[Double, Int] = sample2.groupBy(identity).mapValues(_.length) // could we speed this up?
-      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.counts(x) - sample1counts.getOrElse(x,0))).toMap
+      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.dindex(0).toMap(x)._2 - sample1counts.getOrElse(x,0))).toMap
 
       // now let's compare the selectedcounts with the ref.counts according to chisq
 

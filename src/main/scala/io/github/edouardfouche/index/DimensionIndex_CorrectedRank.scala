@@ -19,6 +19,8 @@ package io.github.edouardfouche.index
 import io.github.edouardfouche.index.tuple.{CorrectedRankTupleIndex, TupleIndex}
 import io.github.edouardfouche.preprocess.Preprocess
 
+import scala.annotation.tailrec
+
 /**
   * Compute an adjusted, corrected rank index from a given data set
   * The rank are adjusted, which means that in the case of ties, the rank is defined as the average rank of the tying values
@@ -81,5 +83,22 @@ class DimensionIndex_CorrectedRank(val values: Array[Double]) extends DimensionI
     }
 
     adjusted
+  }
+
+  def getSafeCut(cut: Int): Int = {
+    //require(cut >= 0 & cut <= reference.length)
+    //val ref = index(reference)
+    //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
+    @tailrec def cutSearch(a: Int, inc: Int = 0, ref: DimensionIndex): Int = {
+      // "It's easier to ask forgiveness than it is to get permission"
+      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
+      else {
+        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
+        catch{case _: Throwable => return a-inc}
+      }
+      catch {case _: Throwable => return a+inc}
+      cutSearch(a, inc+1, ref)
+    }
+    cutSearch(cut, 0, this)
   }
 }
