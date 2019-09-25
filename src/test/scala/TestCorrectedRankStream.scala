@@ -49,7 +49,6 @@ class TestCorrectedRankStream extends FunSuite {
   }
 
   val odd = Array(2.0, 6.0, 1.0, 3.0, 4.0, 5.0, 7.0)
-  val even = Array(4.0, 2.0, 6.0, 1.0, 3.0, 5.0)
   test(s"Check insert below delete for odd") {
     val odd2 = new D_CRank_Stream(odd)
     odd2.insert(1.5)
@@ -84,6 +83,7 @@ class TestCorrectedRankStream extends FunSuite {
 
 
   // insert, even
+  val even = Array(4.0, 2.0, 6.0, 1.0, 3.0, 5.0)
   test(s"Check insert below delete for even") {
 
     val even2 = new D_CRank_Stream(even)
@@ -100,6 +100,7 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"Check insert middle for even") {
     val even4 = new D_CRank_Stream(even)
     even4.insert(2.5)
+    println(even4.toString)
     assert(even4(2).toTuple == (6, 2.5, -1, -1))
   }
 

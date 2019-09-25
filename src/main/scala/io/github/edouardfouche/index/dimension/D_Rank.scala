@@ -24,11 +24,14 @@ import io.github.edouardfouche.index.tuple.T_Rank
   * @param values An array of values corresponding to the values in a column
   */
 class D_Rank(val values: Array[Double]) extends DimensionIndex {
+  val id = "Rank"
   type T = T_Rank
 
   var dindex: Array[T] = createDimensionIndex(values)
 
   def apply(n: Int): T = dindex(n) // access in the index
+
+  override def toString: String = dindex mkString ";"
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
     dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))

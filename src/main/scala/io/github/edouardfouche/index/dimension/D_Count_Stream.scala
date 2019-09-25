@@ -25,7 +25,8 @@ import scala.collection.mutable
   *
   * @param values An array of values corresponding to the values in a column
   */
-class D_Count_Stream(values: Array[Double]) extends D_Count(values) with DimensionIndexStream {
+class D_Count_Stream(override val values: Array[Double]) extends D_Count(values) with DimensionIndexStream {
+  override val id = "CountStream"
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset = 0
 
@@ -33,6 +34,9 @@ class D_Count_Stream(values: Array[Double]) extends D_Count(values) with Dimensi
 
   override def refresh: Unit = {
     if(offset > 0) {
+      //if(dindex.keys.toArray.exists(x=> x.isNaN)) {
+      //  println(dindex.keys.mkString(","))
+      //}
       dindex.keys.foreach(x => dindex(x) = T_Count(dindex(x)._1.map(y => y - offset), dindex(x)._2))
     }
     offset = 0
@@ -61,5 +65,8 @@ class D_Count_Stream(values: Array[Double]) extends D_Count(values) with Dimensi
     }
     offset += 1
     queue += newpoint
+    //if(dindex.keys.toArray.exists(x=> x.isNaN)) {
+    //  println(s"todelete: $todelete, newpoint: $newpoint, keys:${dindex.keys.mkString(",")}")
+    //}
   }
 }

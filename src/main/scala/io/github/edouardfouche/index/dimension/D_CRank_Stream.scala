@@ -29,7 +29,8 @@ import scala.collection.mutable
   *
   * @param values An array of values corresponding to the values in a column
   */
-class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with DimensionIndexStream {
+class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values) with DimensionIndexStream {
+  override val id = "CRankStream"
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset: Int = 0
 
@@ -76,7 +77,7 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
         (dindex(i).value, dindex(i + 1).value) match {
-          case x if (x._1 < value) & (x._2 >= value) =>
+          case x if (x._1 <= value) & (x._2 >= value) =>
             if(x._2 > value) i+1 // in this case, no multiple same value
             else { // in case of match, return position at the oldest index
               var newest = i+1
@@ -98,13 +99,13 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
         var j = newest + 1
         //println(s"some match; current: $oldest")
         while((j < dindex.length) && (dindex(j).value == value)) {
-          if(dindex(j).position > dindex(newest).position) newest = j+1
+          if (dindex(j).position > dindex(newest).position) newest = j
           j+=1
         }
         newest+1
       }
-      else if(dindex(dindex.length-1).value == value) dindex.length-1
-      else if(dindex(dindex.length-1).value < value) dindex.length
+      else if (dindex(dindex.length - 1).value <= value) dindex.length
+      //else if(dindex(dindex.length-1).value < value) dindex.length
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
 
@@ -117,22 +118,24 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
           case x if x._1 == value =>
             var oldest = i
             var j = oldest - 1
-            while((j >= 0) && (dindex(j).value == value)) {
-              if(dindex(j).position < dindex(oldest).position) oldest = j
-              j-=1
+            while ((j >= 0) && (dindex(j).value == value)) {
+              if (dindex(j).position < dindex(oldest).position) oldest = j
+              j -= 1
             }
             oldest
           case x if x._2 == value =>
-            var oldest = i+1
+            var oldest = i + 1
             var j = oldest - 1
-            while((j >= 0) && (dindex(j).value == value)) {
-              if(dindex(j).position < dindex(oldest).position) oldest = j
-              j-=1
+            while ((j >= 0) && (dindex(j).value == value)) {
+              if (dindex(j).position < dindex(oldest).position) oldest = j
+              j -= 1
             }
             oldest
           case x if x._1 > value => binarySearch_acc(start, i - 1, value)
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
+
+
       }
       if(dindex(0).value == value) 0
       else if(dindex(dindex.length-1).value == value) {
@@ -144,13 +147,17 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
         }
         newest
       }
-      else binarySearch_acc( 0, dindex.length - 1, value)
+      else {
+        //println(s"looking for $value ..., within ${dindex.map(x => x.value).distinct.mkString(",")}")
+        binarySearch_acc(0, dindex.length - 1, value)
+      }
     }
 
-    //println(s"want to delete: $todelete, want to insert: $newpoint")
+    //println(s"to delete: $todelete, to insert: $newpoint, within ${dindex.map(x => x.value).distinct.mkString(",")}")
+    //println(dindex.mkString(","))
     val indextodelete = binarySearch_delete(0, dindex.length-1, todelete) // will always be pointing to an object
     val indextoinsert = binarySearch_insert(0, dindex.length-1, newpoint) // will always be pointing to an object or between two, in that case, the one after.
-    //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
+    //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
       dindex(indextodelete) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
@@ -160,16 +167,24 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
           dindex(x) = dindex(x + 1)
         }
         dindex(indextoinsert - 1) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+      } else if (indextoinsert == 0) {
+        for (x <- (indextoinsert + 1 to indextodelete).reverse) {
+          dindex(x) = dindex(x - 1)
+        }
+        dindex(indextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
       } else {
         val actualindextoinsert = if(dindex(indextoinsert).value == newpoint) indextoinsert +1 else indextoinsert
 
         if (actualindextoinsert < indextodelete) {
-          for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
+          // for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
+          for (x <- (actualindextoinsert to indextodelete).reverse) {
             dindex(x) = dindex(x - 1)
           }
+          //dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
           dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
         } else if (actualindextoinsert > indextodelete) {
-          for (x <- indextodelete until actualindextoinsert-1) {
+          //for (x <- indextodelete until actualindextoinsert-1) {
+          for (x <- indextodelete until actualindextoinsert) {
             dindex(x) = dindex(x + 1)
           }
           dindex(actualindextoinsert - 1) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
@@ -178,5 +193,6 @@ class D_CRank_Stream(values: Array[Double]) extends D_CRank(values) with Dimensi
     }
     offset += 1
     queue += newpoint
+    //assert(dindex.sortBy(_._2).deep == dindex.deep, "Sorting broken in this round")
   }
 }

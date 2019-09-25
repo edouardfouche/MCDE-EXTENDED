@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import io.github.edouardfouche.preprocess.Preprocess
-import io.github.edouardfouche.mcde.StatsFactory
-import io.github.edouardfouche.utils.StopWatch
 import com.typesafe.scalalogging.LazyLogging
-import io.github.edouardfouche.experiments.Contrast
+import io.github.edouardfouche.experiments._
+import io.github.edouardfouche.utils.StopWatch
 
 
 /**
@@ -70,6 +68,9 @@ object Main extends LazyLogging {
 
   def experimentFactory(arg: String): Unit = arg match {
     case "com.edouardfouche.experiments.Contrast" => Contrast.run()
+    case "com.edouardfouche.experiments.IndexPerfRandom" => IndexPerfRandom.run()
+    case "com.edouardfouche.experiments.IndexPerfProcess" => IndexPerfProcess.run()
+    case "com.edouardfouche.experiments.IndexPerfW" => IndexPerfW.run()
     case _ => throw new Error(s"Unknown experiment $arg")
   }
 

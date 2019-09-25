@@ -30,10 +30,13 @@ import scala.annotation.tailrec
   */
 class D_CRank(val values: Array[Double]) extends DimensionIndex {
   type T = T_CRank
+  val id = "CRank"
 
   var dindex: Array[T] = createDimensionIndex(values)
 
   def apply(n: Int): T = dindex(n) // access in the index
+
+  override def toString: String = dindex mkString ";"
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
     dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))

@@ -55,6 +55,8 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
   def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
+
+    // TODO: I realized it might not make so much sense to select this way.
     val restrictedCategories: Array[Double] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
     //val restrictedCategories: List[String] = ref.categories.toList
     val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))

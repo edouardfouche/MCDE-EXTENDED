@@ -21,6 +21,7 @@ import io.github.edouardfouche.index.tuple.TupleIndex
 abstract class DimensionIndex {
   val values: Array[Double] // An array of values corresponding to the values in a column
   type T <: TupleIndex
+  val id: String
   //var dindex: Object
 
   def insert(newpoint: Double): Unit // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override

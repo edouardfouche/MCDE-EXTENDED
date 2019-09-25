@@ -26,7 +26,9 @@ import scala.collection.mutable
   *
   * @param values An array of values corresponding to the values in a column
   */
-class D_Rank_Stream(values: Array[Double]) extends D_Rank(values) with DimensionIndexStream {
+class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) with DimensionIndexStream {
+  override val id = "RankStream"
+
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset: Int = 0
 
@@ -39,7 +41,7 @@ class D_Rank_Stream(values: Array[Double]) extends D_Rank(values) with Dimension
     offset = 0
   }
 
-  override def insert(newPoint: Double): Unit = {
+  override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
     // the binary search returns the index on the match with oldest position
     // if no match, the index just after
@@ -49,7 +51,7 @@ class D_Rank_Stream(values: Array[Double]) extends D_Rank(values) with Dimension
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
         (dindex(i).value, dindex(i + 1).value) match {
-          case x if (x._1 < value) & (x._2 >= value) =>
+          case x if (x._1 <= value) & (x._2 >= value) =>
             if(x._2 > value) i+1 // in this case, no multiple same value
             else { // in case of match, return position at the oldest index
               var newest = i+1
@@ -71,13 +73,13 @@ class D_Rank_Stream(values: Array[Double]) extends D_Rank(values) with Dimension
         var j = newest + 1
         //println(s"some match; current: $oldest")
         while((j < dindex.length) && (dindex(j).value == value)) {
-          if(dindex(j).position > dindex(newest).position) newest = j+1
+          if (dindex(j).position > dindex(newest).position) newest = j
           j+=1
         }
         newest+1
       }
-      else if(dindex(dindex.length-1).value == value) dindex.length-1
-      else if(dindex(dindex.length-1).value < value) dindex.length
+      else if (dindex(dindex.length - 1).value <= value) dindex.length
+      //else if(dindex(dindex.length-1).value < value) dindex.length
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
 
@@ -121,35 +123,47 @@ class D_Rank_Stream(values: Array[Double]) extends D_Rank(values) with Dimension
     }
 
     //println(s"want to delete: $todelete, want to insert: $newPoint")
+    //println(s"to delete: $todelete, to insert: $newpoint, within ${dindex.map(x => x.value).distinct.mkString(",")}")
+    //println(dindex.mkString(","))
     val indextodelete = binarySearch_delete(0, dindex.length-1, todelete) // will always be pointing to an object
-    val indextoinsert = binarySearch_insert(0, dindex.length-1, newPoint) // will always be pointing to an object or between two, in that case, the one after.
+    val indextoinsert = binarySearch_insert(0, dindex.length - 1, newpoint) // will always be pointing to an object or between two, in that case, the one after.
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
+    //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
-      dindex(indextodelete) = new T_Rank(dindex.length + offset, newPoint)
+      dindex(indextodelete) = new T_Rank(dindex.length + offset, newpoint)
     } else {
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {
           dindex(x) = dindex(x + 1)
         }
-        dindex(indextoinsert - 1) = new T_Rank(dindex.length + offset, newPoint)
+        dindex(indextoinsert - 1) = new T_Rank(dindex.length + offset, newpoint)
+      } else if (indextoinsert == 0) {
+        for (x <- (indextoinsert + 1 to indextodelete).reverse) {
+          dindex(x) = dindex(x - 1)
+        }
+        dindex(indextoinsert) = new T_Rank(dindex.length + offset, newpoint)
       } else {
-        val actualindextoinsert = if(dindex(indextoinsert).value == newPoint) indextoinsert +1 else indextoinsert
+        val actualindextoinsert = if (dindex(indextoinsert).value == newpoint) indextoinsert + 1 else indextoinsert
 
         if (actualindextoinsert < indextodelete) {
-          for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
+          // for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
+          for (x <- (actualindextoinsert to indextodelete).reverse) {
             dindex(x) = dindex(x - 1)
           }
-          dindex(actualindextoinsert) = new T_Rank(dindex.length + offset, newPoint)
+          //dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+          dindex(actualindextoinsert) = new T_Rank(dindex.length + offset, newpoint)
         } else if (actualindextoinsert > indextodelete) {
-          for (x <- indextodelete until actualindextoinsert-1) {
+          //for (x <- indextodelete until actualindextoinsert-1) {
+          for (x <- indextodelete until actualindextoinsert) {
             dindex(x) = dindex(x + 1)
           }
-          dindex(actualindextoinsert - 1) = new T_Rank(dindex.length + offset, newPoint)
+          dindex(actualindextoinsert - 1) = new T_Rank(dindex.length + offset, newpoint)
         }
       }
     }
     offset += 1
-    queue += newPoint
+    queue += newpoint
+    //assert(dindex.sortBy(_._2).deep == dindex.deep, s"Sorting broken in this round: \n ${dindex.mkString(",")}")
   }
 }

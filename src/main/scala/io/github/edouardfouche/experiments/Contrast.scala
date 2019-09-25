@@ -17,7 +17,6 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.preprocess.DataRef
 import io.github.edouardfouche.mcde._
 
 /**
@@ -43,28 +42,28 @@ object Contrast extends Experiment {
 
     val references = Vector(
       // the categorical stuff
-      IndependentCat(3,0,"gaussian",5),
-      IndependentCat(3,0,"gaussian",10),
-      IndependentCat(3,0,"gaussian",20),
+      IndependentCat(2, 0, "gaussian", 5),
+      IndependentCat(2, 0, "gaussian", 10),
+      IndependentCat(2, 0, "gaussian", 20),
       // the ordinal stuff
-      Independent(3,0,"gaussian",5),
-      Independent(3,0,"gaussian",10),
-      Independent(3,0,"gaussian",20),
+      Independent(2, 0, "gaussian", 5),
+      Independent(2, 0, "gaussian", 10),
+      Independent(2, 0, "gaussian", 20),
       // the numeric stuff
-      Independent(3,0,"gaussian",0)
+      Independent(2, 0, "gaussian", 0)
     )
 
     val generators = Vector(
       // the categorical stuff
-      LinearCat(3,_,"gaussian",5),
-      LinearCat(3,_,"gaussian",10),
-      LinearCat(3,_,"gaussian",20),
+      LinearCat(2, _, "gaussian", 5),
+      LinearCat(2, _, "gaussian", 10),
+      LinearCat(2, _, "gaussian", 20),
       // the ordinal stuff
-      Linear(3,_,"gaussian",5),
-      Linear(3,_,"gaussian",10),
-      Linear(3,_,"gaussian",20),
+      Linear(2, _, "gaussian", 5),
+      Linear(2, _, "gaussian", 10),
+      Linear(2, _, "gaussian", 20),
       // the numeric stuff
-      Linear(3,_,"gaussian",0)
+      Linear(2, _, "gaussian", 0)
     )
 
     info(s"Dealing with {${references.map(_.id) mkString ","}}")

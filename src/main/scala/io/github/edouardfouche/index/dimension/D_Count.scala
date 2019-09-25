@@ -27,6 +27,7 @@ import scala.collection.mutable
   */
 class D_Count(val values: Array[Double]) extends DimensionIndex {
   type T = T_Count
+  val id = "Count"
 
   //var dindex: Array[T] = createDimensionIndex(values)
   var dindex: mutable.Map[Double, T] = createDimensionIndex(values)
@@ -46,14 +47,13 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(false)
-    //TODO: Problem: The categories might as well not be uniform. So deciding the number of categories is misleading
-    //TODO: Check that it works now.
     val selectedCategories: Array[Double] = selectCategories(sliceSize)
     val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(x)._1)
     selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray
   }
 
+  /*
   def selectCategories(sliceSize: Int): Array[Double] = {
     val shuffledCategories: List[Double] = scala.util.Random.shuffle(dindex.keys.toList) //.take(sliceSize)
 
@@ -70,5 +70,14 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
       } else selectedCategories
     }
     cumulative(0, shuffledCategories, List[Double]()).toArray
+  }
+  */
+
+
+  def selectCategories(sliceSize: Int): Array[Double] = {
+    val ratio = sliceSize / values.size
+    val categories = dindex.keys
+    val toselect: Int = (categories.size * ratio).max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
+    scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray
   }
 }
