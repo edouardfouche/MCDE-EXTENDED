@@ -42,7 +42,7 @@ object Power extends Experiment {
       CSP(1, 0.5, 0.5)
     )
 
-    val ndims = Array(2, 3, 5, 10)
+    val ndims = Array(2, 3, 5, 10, 20)
 
     val constructors = Vector(
       // the categorical stuff
@@ -57,20 +57,18 @@ object Power extends Experiment {
       Linear(_, _, "gaussian", 0)
     )
 
-    val generators = constructors.flatMap(x => ndims.map(y => x(y, _)))
-
     for {
-      generator <- generators.par
+      constructor <- constructors
     } {
       for {
+        ndim <- ndims
         level <- 0 to 30
       } {
-        val gens = generators.map(y => y("%.2f".format(level.toDouble / 30.0).toDouble))
-        info(s"Generators: {${gens.map(_.id) mkString ","}}")
+        val generators = constructors.map(y => y(ndim, "%.2f".format(level.toDouble / 30.0).toDouble))
+        info(s"Generators: {${generators.map(_.id) mkString ","}}")
         for {
-          generator <- gens
+          generator <- generators.par
         } {
-          info(s"Dealing with ${generator.id}")
           val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
           val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
           val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
@@ -117,6 +115,7 @@ object Power extends Experiment {
             summary.add("power", "%.6f".format(power))
             summary.write(summaryPath)
           }
+          info(s"Done with ${generator.id}")
         }
       }
     }

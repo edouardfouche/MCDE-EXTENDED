@@ -43,5 +43,5 @@ trait TestData {
   val kspn = KSPn(100, 0.5)
   val kspp = KSPP(100, 0.5)
 
-  val input = Vector(mwp, mwpr, csp, ksp, kspn, kspp)
+  val input = Vector(mwp, mwpr, ksp, kspn, kspp) // csp, too long because the data is continuous
 }
