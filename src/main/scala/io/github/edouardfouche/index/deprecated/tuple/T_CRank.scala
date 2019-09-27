@@ -1,4 +1,4 @@
-package io.github.edouardfouche.index.tuple
+package io.github.edouardfouche.index.deprecated.tuple
 
 import scala.language.implicitConversions
 
@@ -12,7 +12,7 @@ case class T_CRank(tuple: (Int, Double, Float, Double)) extends TupleIndex {
 
   override def toString = s"($position,$value,$adjustedrank,$correction)"
 
-  def toTuple: (Int, Double, Float, Double) = (position, value, adjustedrank, correction)
+  //def toTuple: (Int, Double, Float, Double) = (position, value, adjustedrank, correction)
 
   //implicit def TupleIndexToTuple(input : T_CRank) : (Int, Double, Float, Double) =
   //  (input.position, input.value, input.adjustedrank, input.correction)

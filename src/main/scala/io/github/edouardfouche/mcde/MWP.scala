@@ -67,7 +67,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + ref(n).adjustedrank, count + 1)
+        else if (indexSelection(ref(n)._1)) cumulative(n + 1, acc + ref(n)._3, count + 1)
         else cumulative(n + 1, acc, count)
       }
 
@@ -81,8 +81,8 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
         val n2:Long = cutLength - n1
         if(n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0
-        val corrMax = ref(cutEnd-1).correction
-        val corrMin = if(cutStart == 0) 0.0 else ref(cutStart-1).correction
+        val corrMax = ref(cutEnd - 1)._4
+        val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
         val correction = (corrMax - corrMin) / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
         

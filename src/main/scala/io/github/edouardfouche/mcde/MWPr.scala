@@ -68,7 +68,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
         if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
-        else if (indexSelection(ref(n).position)) cumulative(n + 1, acc + n, count + 1)
+        else if (indexSelection(ref(n)._1)) cumulative(n + 1, acc + n, count + 1)
         else cumulative(n + 1, acc, count)
       }
 

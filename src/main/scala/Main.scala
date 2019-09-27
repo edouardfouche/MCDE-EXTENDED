@@ -71,6 +71,7 @@ object Main extends LazyLogging {
     case "com.edouardfouche.experiments.IndexPerfRandom" => IndexPerfRandom.run()
     case "com.edouardfouche.experiments.IndexPerfProcess" => IndexPerfProcess.run()
     case "com.edouardfouche.experiments.IndexPerfW" => IndexPerfW.run()
+    case "com.edouardfouche.experiments.Power" => Power.run()
     case _ => throw new Error(s"Unknown experiment $arg")
   }
 

@@ -40,30 +40,32 @@ object Contrast extends Experiment {
       CSP(1,0.5, 0.5)
     )
 
+    val ndim = 5
+
     val references = Vector(
       // the categorical stuff
-      IndependentCat(2, 0, "gaussian", 5),
-      IndependentCat(2, 0, "gaussian", 10),
-      IndependentCat(2, 0, "gaussian", 20),
+      IndependentCat(ndim, 0, "gaussian", 5),
+      IndependentCat(ndim, 0, "gaussian", 10),
+      IndependentCat(ndim, 0, "gaussian", 20),
       // the ordinal stuff
-      Independent(2, 0, "gaussian", 5),
-      Independent(2, 0, "gaussian", 10),
-      Independent(2, 0, "gaussian", 20),
+      Independent(ndim, 0, "gaussian", 5),
+      Independent(ndim, 0, "gaussian", 10),
+      Independent(ndim, 0, "gaussian", 20),
       // the numeric stuff
-      Independent(2, 0, "gaussian", 0)
+      Independent(ndim, 0, "gaussian", 0)
     )
 
     val generators = Vector(
       // the categorical stuff
-      LinearCat(2, _, "gaussian", 5),
-      LinearCat(2, _, "gaussian", 10),
-      LinearCat(2, _, "gaussian", 20),
+      LinearCat(ndim, _, "gaussian", 5),
+      LinearCat(ndim, _, "gaussian", 10),
+      LinearCat(ndim, _, "gaussian", 20),
       // the ordinal stuff
-      Linear(2, _, "gaussian", 5),
-      Linear(2, _, "gaussian", 10),
-      Linear(2, _, "gaussian", 20),
+      Linear(ndim, _, "gaussian", 5),
+      Linear(ndim, _, "gaussian", 10),
+      Linear(ndim, _, "gaussian", 20),
       // the numeric stuff
-      Linear(2, _, "gaussian", 0)
+      Linear(ndim, _, "gaussian", 0)
     )
 
     info(s"Dealing with {${references.map(_.id) mkString ","}}")

@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_CRank
-
 import scala.annotation.tailrec
 import scala.collection.mutable
 
@@ -30,6 +28,12 @@ import scala.collection.mutable
   * @param values An array of values corresponding to the values in a column
   */
 class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values) with DimensionIndexStream {
+  //Recall:
+  //first element (Int) -> position
+  //second element (Double) -> value
+  //third element (Float) -> adjustedrank
+  //fourth element (Double) -> correction
+
   override val id = "CRankStream"
   val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
   var offset: Int = 0
@@ -38,7 +42,7 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
 
   override def refresh: Unit = {
     if(offset > 0) {
-      dindex = dindex.zipWithIndex.map(x => new T_CRank(x._1.position - offset, x._1.value, x._2, x._1.value))
+      dindex = dindex.zipWithIndex.map(x => (x._1._1 - offset, x._1._2, x._2.toFloat, x._1._2))
 
       val m = dindex.length - 1
       var j = 0
@@ -47,23 +51,24 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
         var k = j
         var acc = 0.0
         // && is quite important here, as if the first condition is false you don't want to evaluate the second
-        while ((k < m) && (dindex(k).value == dindex(k + 1).value)) { // Wooo we are comparing doubles here, is that ok? I guess yes
-          acc += dindex(k).adjustedrank
+        while ((k < m) && (dindex(k)._2 == dindex(k + 1)._2)) { // Wooo we are comparing doubles here, is that ok? I guess yes
+          acc += dindex(k)._3
           k += 1
         }
         if (k > j) {
-          val newval = ((acc + dindex(k).adjustedrank) / (k - j + 1.0)).toFloat
+          val newval = ((acc + dindex(k)._3) / (k - j + 1.0)).toFloat
           val t = k - j + 1.0
           acc_corr = acc_corr + math.pow(t , 3) - t
-          (j to k).foreach(y => dindex(y) = T_CRank(dindex(y).position, dindex(y).value, newval, acc_corr))
+          (j to k).foreach(y => dindex(y) = (dindex(y)._1, dindex(y)._2, newval, acc_corr))
           j += k - j + 1 // jump to after the replacement
         } else {
-          dindex(j) = T_CRank(dindex(j).position, dindex(j).value, dindex(j).adjustedrank, acc_corr)
+          dindex(j) = (dindex(j)._1, dindex(j)._2, dindex(j)._3, acc_corr)
           j += 1
         }
       }
+      offset = 0
     }
-    offset = 0
+
   }
 
   override def insert(newpoint: Double): Unit = {
@@ -76,15 +81,15 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
       def binarySearch_acc(start: Int, end: Int, value: Double): Int = { // this binary search is good only for finding the point where to insert
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
-        (dindex(i).value, dindex(i + 1).value) match {
+        (dindex(i)._2, dindex(i + 1)._2) match {
           case x if (x._1 <= value) & (x._2 >= value) =>
             if(x._2 > value) i+1 // in this case, no multiple same value
             else { // in case of match, return position at the oldest index
               var newest = i+1
               var j = newest + 1
               //println(s"some match; current: $newest")
-              while((j < dindex.length) && (dindex(j).value == value)) {
-                if(dindex(j).position > dindex(newest).position) newest = j
+              while ((j < dindex.length) && (dindex(j)._2 == value)) {
+                if (dindex(j)._1 > dindex(newest)._1) newest = j
                 j+=1
               }
               newest+1
@@ -93,18 +98,19 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
       }
-      if(dindex(0).value > value) 0
-      else if(dindex(0).value == value) {
+
+      if (dindex(0)._2 > value) 0
+      else if (dindex(0)._2 == value) {
         var newest = 0
         var j = newest + 1
         //println(s"some match; current: $oldest")
-        while((j < dindex.length) && (dindex(j).value == value)) {
-          if (dindex(j).position > dindex(newest).position) newest = j
+        while ((j < dindex.length) && (dindex(j)._2 == value)) {
+          if (dindex(j)._1 > dindex(newest)._1) newest = j
           j+=1
         }
         newest+1
       }
-      else if (dindex(dindex.length - 1).value <= value) dindex.length
+      else if (dindex(dindex.length - 1)._2 <= value) dindex.length
       //else if(dindex(dindex.length-1).value < value) dindex.length
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
@@ -114,20 +120,20 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
       def binarySearch_acc(start: Int, end: Int, value: Double): Int = {
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
-        (dindex(i).value, dindex(i + 1).value) match {
+        (dindex(i)._2, dindex(i + 1)._2) match {
           case x if x._1 == value =>
             var oldest = i
             var j = oldest - 1
-            while ((j >= 0) && (dindex(j).value == value)) {
-              if (dindex(j).position < dindex(oldest).position) oldest = j
+            while ((j >= 0) && (dindex(j)._2 == value)) {
+              if (dindex(j)._1 < dindex(oldest)._1) oldest = j
               j -= 1
             }
             oldest
           case x if x._2 == value =>
             var oldest = i + 1
             var j = oldest - 1
-            while ((j >= 0) && (dindex(j).value == value)) {
-              if (dindex(j).position < dindex(oldest).position) oldest = j
+            while ((j >= 0) && (dindex(j)._2 == value)) {
+              if (dindex(j)._1 < dindex(oldest)._1) oldest = j
               j -= 1
             }
             oldest
@@ -137,12 +143,13 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
 
 
       }
-      if(dindex(0).value == value) 0
-      else if(dindex(dindex.length-1).value == value) {
+
+      if (dindex(0)._2 == value) 0
+      else if (dindex(dindex.length - 1)._2 == value) {
         var newest = dindex.length-1
         var j = newest - 1
-        while((j >= 0) && (dindex(j).value == value)) {
-          if(dindex(j).position < dindex(newest).position) newest = j
+        while ((j >= 0) && (dindex(j)._2 == value)) {
+          if (dindex(j)._1 < dindex(newest)._1) newest = j
           j-=1
         }
         newest
@@ -160,20 +167,20 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
-      dindex(indextodelete) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+      dindex(indextodelete) = (dindex.length + offset, newpoint, -1, -1)
     } else {
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {
           dindex(x) = dindex(x + 1)
         }
-        dindex(indextoinsert - 1) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+        dindex(indextoinsert - 1) = (dindex.length + offset, newpoint, -1, -1)
       } else if (indextoinsert == 0) {
         for (x <- (indextoinsert + 1 to indextodelete).reverse) {
           dindex(x) = dindex(x - 1)
         }
-        dindex(indextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+        dindex(indextoinsert) = (dindex.length + offset, newpoint, -1, -1)
       } else {
-        val actualindextoinsert = if(dindex(indextoinsert).value == newpoint) indextoinsert +1 else indextoinsert
+        val actualindextoinsert = if (dindex(indextoinsert)._2 == newpoint) indextoinsert + 1 else indextoinsert
 
         if (actualindextoinsert < indextodelete) {
           // for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
@@ -181,13 +188,13 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
             dindex(x) = dindex(x - 1)
           }
           //dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
-          dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+          dindex(actualindextoinsert) = (dindex.length + offset, newpoint, -1, -1)
         } else if (actualindextoinsert > indextodelete) {
           //for (x <- indextodelete until actualindextoinsert-1) {
           for (x <- indextodelete until actualindextoinsert) {
             dindex(x) = dindex(x + 1)
           }
-          dindex(actualindextoinsert - 1) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
+          dindex(actualindextoinsert - 1) = (dindex.length + offset, newpoint, -1, -1)
         }
       }
     }

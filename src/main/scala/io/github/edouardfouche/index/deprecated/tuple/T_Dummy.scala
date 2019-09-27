@@ -1,4 +1,4 @@
-package io.github.edouardfouche.index.tuple
+package io.github.edouardfouche.index.deprecated.tuple
 
 import scala.language.implicitConversions
 
@@ -11,7 +11,7 @@ case class T_Dummy(tuple: Double) extends TupleIndex {
 
   override def toString = s"($value)"
 
-  def toTuple: Double = value
+  //def toTuple: Double = value
 
   //implicit def TupleIndexToTuple(input : T_Dummy) : input.T = (input.value)
 }

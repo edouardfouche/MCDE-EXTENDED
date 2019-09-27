@@ -1,4 +1,4 @@
-package io.github.edouardfouche.index.tuple
+package io.github.edouardfouche.index.deprecated.tuple
 
 import scala.language.implicitConversions
 
@@ -11,7 +11,7 @@ case class T_Rank(tuple: (Int, Double)) extends TupleIndex {
 
   override def toString = s"($position,$value,X)"
 
-  def toTuple: (Int, Double) = (position, value)
+  //def toTuple: (Int, Double) = (position, value)
 
   //implicit def TupleIndexToTuple(input : T_Rank) : input.T = (input.position, input.value)
 }

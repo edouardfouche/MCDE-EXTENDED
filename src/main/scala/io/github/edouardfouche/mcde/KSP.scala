@@ -41,6 +41,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   def preprocess(input: DataSet): I_Rank = {
     new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
+
   /**
     * Compute the Kolmogorov Smirnov test using a reference vector (the indices of a dimension ordered by the rank) and
     * a set of Int that correspond to the intersection of the position of the element in the slices in the other
@@ -71,12 +72,12 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
     //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
 
-    val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x).position))
+      val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x)._1))
     val inSlize = theref.count(_ == true)
     val outSlize = theref.length - inSlize
 
 
-    if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
+      if (inSlize == 0 || outSlize == 0) return 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
 
     val selectIncrement = 1.0 / inSlize
     val refIncrement = 1.0 / outSlize

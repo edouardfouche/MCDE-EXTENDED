@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_Count
-
 import scala.collection.mutable
 
 /**
@@ -26,7 +24,8 @@ import scala.collection.mutable
   * @param values An array of values corresponding to the values in a column
   */
 class D_Count(val values: Array[Double]) extends DimensionIndex {
-  type T = T_Count
+  //type T = (scala.collection.immutable.Queue[Int], Int) // First element is a queue of the index of a given value in the map, second element in the size of this queue.
+  type T = (Array[Int], Int)
   val id = "Count"
 
   //var dindex: Array[T] = createDimensionIndex(values)
@@ -42,7 +41,18 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
     //Array(T_Count(
     //  collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
     //))
-    collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({ case (x, y) => (x, T_Count(y.map(_._2), y.length)) }).toSeq: _*)
+    //collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({ case (x, y) => (x, T_Count(y.map(_._2), y.length)) }).toSeq: _*)
+
+    val map = mutable.Map[Double, (Array[Int], Int)]()
+    for {
+      x <- input.indices
+    } {
+      val current: (Array[Int], Int) = map.getOrElse(input(x),
+        (Array[Int](), 0))
+      val c: Array[Int] = current._1
+      map(input(x)) = (c :+ x, current._2 + 1) // we use a queue so that we can know efficiently which to delete.
+    }
+    map.map({ case (x, y) => (x, (y._1, y._2)) })
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
@@ -75,9 +85,9 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
 
 
   def selectCategories(sliceSize: Int): Array[Double] = {
-    val ratio = sliceSize / values.size
+    val ratio = sliceSize.toDouble / values.length.toDouble
     val categories = dindex.keys
-    val toselect: Int = (categories.size * ratio).max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
+    val toselect: Int = math.floor(categories.size * ratio).toInt.max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
     scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray
   }
 }

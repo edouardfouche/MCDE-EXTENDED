@@ -4,6 +4,7 @@ import breeze.stats.distributions.Uniform
 
 case class LinearCat(nDim: Int, noise: Double, noisetype: String, discretize: Int) extends DataGenerator {
   val name = "linearcat"
+  override lazy val shortname = "lc"
 
   def getPoints(n: Int): Array[Array[Double]] = {
     (1 to n).toArray.map { _ =>

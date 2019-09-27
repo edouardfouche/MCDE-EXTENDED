@@ -1,6 +1,6 @@
 package io.github.edouardfouche.index.deprecated
 
-import io.github.edouardfouche.index.tuple.TupleIndex
+import io.github.edouardfouche.index.deprecated.tuple.TupleIndex
 
 case class TI_Rank_old(tuple: Int) extends TupleIndex {
   type T = Int

@@ -1,6 +1,6 @@
 package io.github.edouardfouche.index.deprecated
 
-import io.github.edouardfouche.index.tuple.TupleIndex
+import io.github.edouardfouche.index.deprecated.tuple.TupleIndex
 
 case class AdjustedRankTupleIndex(tuple: (Int, Float)) extends TupleIndex {
   type T = (Int, Float)

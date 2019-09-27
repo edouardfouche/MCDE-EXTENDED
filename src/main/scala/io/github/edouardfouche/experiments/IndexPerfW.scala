@@ -16,7 +16,7 @@
  */
 package io.github.edouardfouche.experiments
 
-import breeze.stats.distributions.{Gaussian, Uniform}
+import breeze.stats.distributions.Gaussian
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.utils.StopWatch
@@ -28,7 +28,7 @@ import scala.annotation.tailrec
   * Test the influence of M on the scores
   */
 object IndexPerfW extends Experiment {
-  val nrep = 1000
+  val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -61,52 +61,53 @@ object IndexPerfW extends Experiment {
       gaussianprocess(inboundval, current :+ inboundval, n - 1)
     }
 
-    val datasets: Vector[Array[Double]] = Vector(
-      // the numeric stuff
-      Independent(1, 0, "gaussian", 0).generate(20000).transpose.head,
+    val generators: Vector[DataGenerator] = Vector( // the numeric stuff
+      Independent(1, 0, "gaussian", 0),
       // the ordinal stuff
       //Independent(1,0,"gaussian",5),
-      Independent(1, 0, "gaussian", 10).generate(20000).transpose.head,
+      Independent(1, 0, "gaussian", 20),
       //Independent(1,0,"gaussian",20),
       // the gaussian process
-      gaussianprocess(Uniform(0, 1).draw(), Array[Double](), 20000) //TODO: In fact I am not sure that this is changing anything w.r.t. the first case
+      //gaussianprocess(Uniform(0, 1).draw(), Array[Double](), 200000) //TODO: In fact I am not sure that this is changing anything w.r.t. the first case
 
       // the categorical stuff
       //IndependentCat(1,0,"gaussian",5),
-      // IndependentCat(1,0,"gaussian",10), // Basically same results as with ordinal
+      IndependentCat(1, 0, "gaussian", 10) // Basically same results as with ordinal
       //IndependentCat(1,0,"gaussian",20),
     )
+
+    val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(20000).transpose.head, x.id))
 
     for {
       windowsize <- (100 to 10000)
     } {
 
       for {
-        (dataset, i) <- datasets.zipWithIndex
+        (dataset, id) <- datasets
       } {
-        info(s"Starting with windowsize: $windowsize, dataset: ${i}")
+        info(s"Starting with windowsize: $windowsize, dataset: ${id}, nrep: $nrep")
         // initialize the indexes
         val initdata: Array[Double] = dataset.take(windowsize)
 
-        val measures = scala.collection.mutable.Map[String, Double]()
-        val rmeasures = scala.collection.mutable.Map[String, Double]()
+        val measures = scala.collection.mutable.Map[String, Array[Double]]()
+        val rmeasures = scala.collection.mutable.Map[String, Array[Double]]()
 
         val indexes: Vector[DimensionIndex] = indexesconstructors.map(x => {
           val (cpu, wall, index) = StopWatch.measureTime(x(initdata))
           val (rcpu, rwall, a) = StopWatch.measureTime(index.refresh())
-          val attributes = List("refId", "indexId", "w", "cpu", "wall", "rcup", "rwall", "rep")
+          val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
           val summary = ExperimentSummary(attributes)
-          summary.add("refId", i + "_init")
+          summary.add("refId", id + "-init")
           summary.add("indexId", index.id)
           summary.add("w", windowsize)
-          summary.add("cpu", "%.6f".format(cpu))
-          summary.add("wall", "%.6f".format(wall))
-          summary.add("rcpu", "%.6f".format(rcpu))
-          summary.add("rwall", "%.6f".format(rwall))
-          summary.add("rep", 0)
+          summary.add("avg_cpu", "%.6f".format(cpu))
+          summary.add("avg_rcup", "%.6f".format(rcpu))
+          summary.add("std_cpu", 0)
+          summary.add("std_rcup", 0)
+          //summary.add("rep", 0)
           summary.write(summaryPath)
-          measures(index.id) = cpu
-          rmeasures(index.id) = rcpu
+          measures(index.id) = Array[Double]()
+          rmeasures(index.id) = Array[Double]()
           index
         })
 
@@ -116,28 +117,35 @@ object IndexPerfW extends Experiment {
           val newpoint: Double = dataset(windowsize + n - 1)
           //if(newpoint.isNaN) println("generator produced a NaN !")
           for {
-            index <- indexes.par
+            index <- indexes
           } {
             val (cpu, wall, a) = StopWatch.measureTime(index.insert(newpoint))
             val (rcpu, rwall, b) = StopWatch.measureTime(index.refresh())
             //val (rcpu, rwall, b) = StopWatch.measureTime({})
-            val attributes = List("refId", "indexId", "w", "cpu", "wall", "rcup", "rwall", "rep")
-            val summary = ExperimentSummary(attributes)
-            summary.add("refId", i)
-            summary.add("indexId", index.id)
-            summary.add("w", windowsize)
-            summary.add("cpu", "%.6f".format(cpu))
-            summary.add("wall", "%.6f".format(wall))
-            summary.add("rcpu", "%.6f".format(rcpu))
-            summary.add("rwall", "%.6f".format(rwall))
-            summary.add("rep", n)
-            summary.write(summaryPath)
-            measures(index.id) = measures(index.id) + cpu
-            rmeasures(index.id) = rmeasures(index.id) + rcpu
+            measures(index.id) = measures(index.id) :+ cpu
+            rmeasures(index.id) = rmeasures(index.id) :+ rcpu
           }
         }
-        info(s"Avg ins cpu (ms): ${measures.mapValues(x => "%.6f".format(x / nrep)).mkString(",")}")
-        info(s"Avg ref cpu (ms): ${rmeasures.mapValues(x => "%.6f".format(x / nrep)).mkString(",")}")
+        for {
+          index <- measures.keys
+        } {
+          val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
+          val summary = ExperimentSummary(attributes)
+          summary.add("refId", id)
+          summary.add("indexId", index)
+          summary.add("w", windowsize)
+          summary.add("avg_cpu", "%.6f".format(measures(index).sum / measures(index).length))
+          //summary.add("avg_wall", "%.6f".format(wall))
+          summary.add("avg_rcup", "%.6f".format(rmeasures(index).sum / rmeasures(index).length))
+          summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures(index))))
+          summary.add("std_rcup", "%.6f".format(breeze.stats.stddev(rmeasures(index))))
+          //summary.add("rwall", "%.6f".format(rwall))
+          //summary.add("rep", n)
+          summary.write(summaryPath)
+        }
+
+        info(s"Avg ins cpu (ms): ${measures.toArray.sortBy(_._1).map(x => s"${x._1} -> " + "%.6f".format(x._2.sum / nrep)).mkString(", ")} ($id)")
+        info(s"Avg ref cpu (ms): ${rmeasures.toArray.sortBy(_._1).map(x => s"${x._1} -> " + "%.6f".format(x._2.sum / nrep)).mkString(", ")} ($id)")
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_CRank
-
 import scala.annotation.tailrec
 
 /**
@@ -29,7 +27,12 @@ import scala.annotation.tailrec
   * @param values An array of values corresponding to the values in a column
   */
 class D_CRank(val values: Array[Double]) extends DimensionIndex {
-  type T = T_CRank
+  type T = (Int, Double, Float, Double) //T_CRank
+  //first element (Int) -> position
+  //second element (Double) -> value
+  //third element (Float) -> adjustedrank
+  //fourth element (Double) -> correction
+
   val id = "CRank"
 
   var dindex: Array[T] = createDimensionIndex(values)
@@ -48,7 +51,7 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     val nonadjusted = {
       input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
     }
-    val adjusted = new Array[T_CRank](input.length)
+    val adjusted = new Array[T](input.length)
 
     val m = nonadjusted.length - 1
     var j = 0
@@ -65,10 +68,10 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
         val newval = ((acc + nonadjusted(k)._3) / (k - j + 1.0)).toFloat
         val t = k - j + 1.0
         acc_corr = acc_corr + math.pow(t , 3) - t
-        (j to k).foreach(y => adjusted(y) = T_CRank(nonadjusted(y)._1, nonadjusted(y)._2, newval, acc_corr))
+        (j to k).foreach(y => adjusted(y) = (nonadjusted(y)._1, nonadjusted(y)._2, newval, acc_corr))
         j += k - j + 1 // jump to after the replacement
       } else {
-        adjusted(j) = T_CRank(nonadjusted(j)._1, nonadjusted(j)._2, nonadjusted(j)._3, acc_corr)
+        adjusted(j) = (nonadjusted(j)._1, nonadjusted(j)._2, nonadjusted(j)._3, acc_corr)
         j += 1
       }
     }
@@ -80,10 +83,10 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     val logicalArray = Array.fill[Boolean](length)(true)
     val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
     for {x <- 0 until sliceStart} {
-      logicalArray(dindex(x).position) = false
+      logicalArray(dindex(x)._1) = false
     }
     for {x <- sliceStart + sliceSize until dindex.length} {
-      logicalArray(dindex(x).position) = false
+      logicalArray(dindex(x)._1) = false
     }
     logicalArray
   }
@@ -94,9 +97,9 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     //println(s"ref.length: ${ref.length}: ref($cut): ${ref(cut)} : ref(${cut+1}): ${ref(cut+1)}")
     @tailrec def cutSearch(a: Int, inc: Int = 0, ref: D_CRank): Int = {
       // "It's easier to ask forgiveness than it is to get permission"
-      try if(ref(a+inc).value != ref(a+inc-1).value) return a+inc
+      try if (ref(a + inc)._2 != ref(a + inc - 1)._2) return a + inc
       else {
-        try if (ref(a - inc).value != ref(a - inc - 1).value) return a - inc
+        try if (ref(a - inc)._2 != ref(a - inc - 1)._2) return a - inc
         catch{case _: Throwable => return a-inc}
       }
       catch {case _: Throwable => return a+inc}

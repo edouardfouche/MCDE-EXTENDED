@@ -52,14 +52,17 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
+  // @param reference      The original position of the elements of a reference dimension ordered by their rank
   def twoSample(ref: D_Rank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction
-    //val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
-    //val sliceStart = ref.getSafeCut(start)
+    //TODO: What is the effect of this safecut ? I am thinking in particular about the case with much same values.
+    //val sliceStartSearchStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1) // TODO: some bug in beta = 1 (without the +1)
+    //val sliceStart = ref.getSafeCut(sliceStartSearchStart)
     //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     //val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
+
     val sliceStart = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
     val sliceEnd = sliceStart + (indexSelection.length * beta).toInt//.min(indexSelection.length - 1)
 
@@ -70,16 +73,16 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
     //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
 
-    val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x).position))
+    val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x)._1))
     val inSlize = theref.count(_ == true)
     val outSlize = theref.length - inSlize
 
-    if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and we also avoid divisions by 0)
 
-    val selectIncrement = 1.0 / inSlize //  TODO: Maybe this is inSlice + outSlice
-    val refIncrement = 1.0 / outSlize  // TODO: Maybe this is inSlice + outSlice
+    if (inSlize == 0 || outSlize == 0) return 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
 
-    // This step is impossible (or difficult) to parallelize, but at least it is tail recursive
+    val selectIncrement = 1.0 / inSlize
+    val refIncrement = 1.0 / outSlize
+
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
       if (n == theref.length) currentMax
       else {
@@ -90,8 +93,12 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
           cumulative(n + 1, acc1, acc2 + refIncrement, currentMax max math.abs(acc2 + refIncrement - acc1))
       }
     }
-    //get_p_from_D(cumulative(sliceStart, 0, 0, 0), inSlize, outSlize)
-    get_p_from_D(cumulative(0, 0, 0, 0), inSlize, outSlize)
+
+    //val D = cumulative(sliceStart, 0, 0, 0)
+    val D = cumulative(0, 0, 0, 0)
+    val p = get_p_from_D(D, inSlize, outSlize)
+    //println(s"ref.length: ${ref.length}, start: ${sliceStart}, end: ${sliceEnd}, inSlice: $inSlize, outSLice: $outSlize, inc1: ${selectIncrement}, inc2: $refIncrement, D: $D")
+    p
   }
 
   /**
@@ -105,6 +112,7 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @return p-value of two-sided two-sample KSP
     */
   def get_p_from_D(D: Double, n1: Long, n2: Long): Double = {
+
     val (m,n) = if(n1 > n2) (n2,n1) else (n1,n2)
     val md = m.toDouble
     val nd = n.toDouble
@@ -132,6 +140,7 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
         }
       }
     }
+    //println(s"n1 : $n1, n2 : $n2 -> ${u(n.toInt)}")
     u(n.toInt)
   }
 }

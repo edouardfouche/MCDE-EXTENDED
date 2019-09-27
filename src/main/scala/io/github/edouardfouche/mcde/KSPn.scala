@@ -38,7 +38,7 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   //type PreprocessedData = D_Rank
   type I = I_Rank
   type D = D_Rank
-  val id = "KSP"
+  val id = "KSPn"
 
   //TODO: We are not handling the marginal restriction for the moment
 
@@ -75,7 +75,7 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
     //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
 
-    if (inSlize == 0 || outSlize == 0) 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
+    if (inSlize == 0 || outSlize == 0) return 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
 
     val selectIncrement = 1.0 / inSlize
     val refIncrement = 1.0 / outSlize
@@ -83,7 +83,7 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
       if (n == ref.length) currentMax
       else {
-        if (indexSelection(ref(n).position))
+        if (indexSelection(ref(n)._1))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
         else
           cumulative(n + 1, acc1, acc2 + refIncrement, currentMax max math.abs(acc2 + refIncrement - acc1))

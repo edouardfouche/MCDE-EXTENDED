@@ -1,4 +1,4 @@
-package io.github.edouardfouche.index.tuple
+package io.github.edouardfouche.index.deprecated.tuple
 import scala.language.implicitConversions
 
 trait TupleIndex {

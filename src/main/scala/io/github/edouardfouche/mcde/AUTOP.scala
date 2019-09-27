@@ -35,7 +35,7 @@ case class AUTOP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
   type D = DimensionIndex
   type I = I_Multi
 
-  val id = "CSP"
+  val id = "AUTOP"
 
   //TODO: How is the handling of marginal restriction?
 

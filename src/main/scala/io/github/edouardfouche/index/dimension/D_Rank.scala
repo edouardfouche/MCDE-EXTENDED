@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_Rank
-
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   *
@@ -25,7 +23,9 @@ import io.github.edouardfouche.index.tuple.T_Rank
   */
 class D_Rank(val values: Array[Double]) extends DimensionIndex {
   val id = "Rank"
-  type T = T_Rank
+  type T = (Int, Double) // T_Rank
+  // first element (Int) -> position
+  // second elements (Double) -> value
 
   var dindex: Array[T] = createDimensionIndex(values)
 
@@ -38,17 +38,17 @@ class D_Rank(val values: Array[Double]) extends DimensionIndex {
   }
 
   def createDimensionIndex(input: Array[Double]): Array[T] = {
-    input.zipWithIndex.sortBy(_._1).map(x => T_Rank(x._2, x._1))
+    input.zipWithIndex.sortBy(_._1).map(x => (x._2, x._1))
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)
     val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
     for {x <- 0 until sliceStart} {
-      logicalArray(dindex(x).position) = false
+      logicalArray(dindex(x)._1) = false
     }
     for {x <- sliceStart + sliceSize until dindex.length} {
-      logicalArray(dindex(x).position) = false
+      logicalArray(dindex(x)._1) = false
     }
     logicalArray
   }

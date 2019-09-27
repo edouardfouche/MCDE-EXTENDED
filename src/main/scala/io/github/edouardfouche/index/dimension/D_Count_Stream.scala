@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_Count
-
 import scala.collection.mutable
 
 /**
@@ -37,25 +35,32 @@ class D_Count_Stream(override val values: Array[Double]) extends D_Count(values)
       //if(dindex.keys.toArray.exists(x=> x.isNaN)) {
       //  println(dindex.keys.mkString(","))
       //}
-      dindex.keys.foreach(x => dindex(x) = T_Count(dindex(x)._1.map(y => y - offset), dindex(x)._2))
+      //dindex.keys.foreach(x => dindex(x) = T_Count(dindex(x)._1.map(y => y - offset), dindex(x)._2))
+      dindex = dindex.map(x => (x._1, (x._2._1.map(y => y - offset), x._2._2)))
+      offset = 0
     }
-    offset = 0
+
   }
 
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue()
     // handle insertion
-    if (dindex.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
-      dindex(newpoint) = T_Count(dindex(newpoint)._1 :+ values.length + offset, dindex(newpoint)._2 + 1)
-    } else {
-      // Handle the case were this is a new category
-      dindex(newpoint) = T_Count(Array(values.length + offset), 1)
-    }
+
+    val current = dindex.getOrElseUpdate(newpoint, (Array[Int](), 0))
+    //dindex(newpoint) = (current._1.enqueue(values.length + offset),current._2 +1)
+    dindex(newpoint) = (current._1 :+ (values.length + offset), current._2 + 1)
+
+    //if (dindex.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
+    //  dindex(newpoint) = T_Count(dindex(newpoint)._1.enqueue(values.length + offset), dindex(newpoint)._2 + 1)
+    //} else {
+    //  // Handle the case were this is a new category
+    //  dindex(newpoint) = T_Count(scala.collection.immutable.Queue[Int](values.length + offset), 1)
+    //}
     // handle deletion
     if (dindex(todelete)._2 > 1) { // In that case we don't need to remove the entry
-      val position = dindex(todelete)._1.zipWithIndex.min._2
-      dindex(todelete) = T_Count(dindex(todelete)._1.take(position) ++ dindex(todelete)._1.drop(position + 1),
-        dindex(todelete)._2 - 1)
+      //val position = dindex(todelete)._1.zipWithIndex.min._2
+      //dindex(todelete) = (dindex(todelete)._1.dequeue._2, dindex(todelete)._2 - 1)
+      dindex(todelete) = (dindex(todelete)._1.tail, dindex(todelete)._2 - 1)
     } else {
       dindex.remove(todelete)
       // For those guys, we need to find where it is.

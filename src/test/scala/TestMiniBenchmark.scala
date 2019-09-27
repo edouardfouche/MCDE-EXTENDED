@@ -23,6 +23,7 @@ import org.scalatest.FunSuite
   */
 class TestMiniBenchmark extends FunSuite with TestData {
   input.foreach { i =>
+    /*
     test(s"${i.id} - Computing big 2-D deviation matrix alpha:0.1") {
       val res = StatsFactory.getTest(i.id, 100, 0.1, 0.1, parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
       assert(!res.isEmpty)
@@ -31,10 +32,13 @@ class TestMiniBenchmark extends FunSuite with TestData {
       val res = StatsFactory.getTest(i.id, 100, 0.3, 0.3, parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
       assert(!res.isEmpty)
     }
+    */
+
     test(s"${i.id} - Computing big 2-D deviation matrix alpha:0.5") {
-      val res = StatsFactory.getTest(i.id, 100, 0.5, 0.5, parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
+      val res = StatsFactory.getTest(i.id, 50, 0.5, 0.5, parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
       assert(!res.isEmpty)
     }
+    /*
     test(s"${i.id} - Computing big 2-D deviation matrix alpha:0.7") {
       val res = StatsFactory.getTest(i.id, 100, 0.7, 0.7,  parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
       assert(!res.isEmpty)
@@ -43,5 +47,6 @@ class TestMiniBenchmark extends FunSuite with TestData {
       val res = StatsFactory.getTest(i.id, 100, 0.9, 0.9, parallelize = i.parallelize).contrastMatrix(lowcontrast_100D)
       assert(!res.isEmpty)
     }
+     */
   }
 }

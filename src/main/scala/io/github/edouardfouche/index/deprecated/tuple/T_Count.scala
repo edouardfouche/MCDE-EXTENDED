@@ -1,9 +1,9 @@
-package io.github.edouardfouche.index.tuple
+package io.github.edouardfouche.index.deprecated.tuple
 
 import scala.language.implicitConversions
 
-case class T_Count(tuple: (Array[Int], Int)) extends TupleIndex {
-  type T = (Array[Int], Int) // For each category, we get a list of indexes
+case class T_Count(tuple: (scala.collection.immutable.Queue[Int], Int)) extends TupleIndex {
+  type T = (scala.collection.immutable.Queue[Int], Int) // For each category, we get a list of indexes
   //val map: scala.collection.mutable.Map[Double, (Array[Int], Int)] = tuple
   //val position = 0
   //val value =
@@ -19,11 +19,15 @@ case class T_Count(tuple: (Array[Int], Int)) extends TupleIndex {
 
   override def toString = s"[${tuple._1.mkString(",")}], ${tuple._2})"
 
-  implicit def TupleIndexToTuple(input: T_Count): (Array[Int], Int) =
-    (input.tuple._1, input.tuple._2)
+  //def decrementQueue(offset: Int): Unit = {
+  //  tuple._1 = tuple._1.map(x => x - offset)
+  //}
+
+  //implicit def TupleIndexToTuple(input: T_Count): (scala.collection.immutable.Queue[Int], Int) =
+  //  (input.tuple._1, input.tuple._2)
 }
 
 object T_Count {
-  implicit def TupleIndexToTuple(input: T_Count): (Array[Int], Int) =
+  implicit def TupleIndexToTuple(input: T_Count): (scala.collection.immutable.Queue[Int], Int) =
     (input.tuple._1, input.tuple._2)
 }

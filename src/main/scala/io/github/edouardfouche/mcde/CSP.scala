@@ -56,7 +56,6 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     */
   def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
 
-    // TODO: I realized it might not make so much sense to select this way.
     val restrictedCategories: Array[Double] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
     //val restrictedCategories: List[String] = ref.categories.toList
     val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
@@ -122,6 +121,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
       //println(s"ndegree: $ndegree, sample1size: ${sample1.size}, sample2size: ${sample2.size}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories mkString ","}")
       //println(s"restrictedcats: ${restrictedCategories.toString}")
+      //println(s"nrestr: ${restrictedCategories.length}, n1: ${sample1.size}, n2: ${sample2.size} stat: $teststatistics, chsq: $chsq")
       //println(s"s: ${selectedcounts.toString}")
       //println(s"e: ${expectedcounts.toString}")
       //println(s"a: ${ref.counts.toString}")

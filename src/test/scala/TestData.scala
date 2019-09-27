@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import io.github.edouardfouche.preprocess.{DataRef, DataSet, Preprocess}
-import io.github.edouardfouche.mcde.{KSP, MWP}
+
+import io.github.edouardfouche.mcde._
+import io.github.edouardfouche.preprocess.{DataSet, Preprocess}
 
 /**
   * Created by fouchee on 12.07.17.
@@ -35,7 +36,12 @@ trait TestData {
   val lowcontrast_100D: DataSet = Preprocess.openCSV(
     getClass.getResource("/data/Independent-100-0.0.csv").getPath)
 
-  val mwp = MWP(1000, 0.5)
+  val mwp = MWP(100, 0.5)
+  val mwpr = MWPr(100, 0.5)
+  val csp = CSP(100, 0.5)
+  val ksp = KSP(100, 0.5)
+  val kspn = KSPn(100, 0.5)
+  val kspp = KSPP(100, 0.5)
 
-  val input = Vector(mwp)
+  val input = Vector(mwp, mwpr, csp, ksp, kspn, kspp)
 }

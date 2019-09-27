@@ -62,6 +62,33 @@ StopWatch.measureTime{
   AUTOP(500).contrast(d, Set(0,1,2))
 }
 
+val d_ = new DataSet(Independent(3, 0, "gaussian", 10).generate(1000).transpose,
+  types = Array("o", "o", "o"))
+
+d_(0).length
+d_(0).distinct.length
+
+StopWatch.measureTime {
+  MWP().contrast(d_, Set(0, 1))
+}
+StopWatch.measureTime { // having some problem here
+  KSP(200).contrast(d_, Set(0, 1))
+}
+StopWatch.measureTime { // having some problem here
+  KSPn(200).contrast(d_, Set(0, 1))
+}
+StopWatch.measureTime { // having some problem here
+  KSPP(200).contrast(d_, Set(0, 1))
+}
+
+StopWatch.measureTime {
+  CSP(500).contrast(d_, Set(0, 1))
+}
+
+StopWatch.measureTime {
+  AUTOP(500).contrast(d_, Set(0, 1, 2))
+}
+
 val dd = new DataSet(Linear(3, 0.0, "gaussian", 0).generate(1000).transpose,
   types=Array("c", "o", "n"))
 

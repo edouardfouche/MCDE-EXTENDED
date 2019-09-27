@@ -16,11 +16,9 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.TupleIndex
-
 abstract class DimensionIndex {
   val values: Array[Double] // An array of values corresponding to the values in a column
-  type T <: TupleIndex
+  type T // <: TupleIndex
   val id: String
   //var dindex: Object
 

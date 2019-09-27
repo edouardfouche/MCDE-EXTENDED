@@ -16,8 +16,6 @@
  */
 package io.github.edouardfouche.index.dimension
 
-import io.github.edouardfouche.index.tuple.T_Rank
-
 import scala.annotation.tailrec
 import scala.collection.mutable
 
@@ -36,9 +34,9 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
 
   override def refresh: Unit = {
     if(offset > 0) {
-      dindex = dindex.map(x => new T_Rank(x.position - offset, x.value))
+      dindex = dindex.map(x => (x._1 - offset, x._2))
+      offset = 0
     }
-    offset = 0
   }
 
   override def insert(newpoint: Double): Unit = {
@@ -50,15 +48,15 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
       def binarySearch_acc(start: Int, end: Int, value: Double): Int = { // this binary search is good only for finding the point where to insert
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
-        (dindex(i).value, dindex(i + 1).value) match {
+        (dindex(i)._2, dindex(i + 1)._2) match {
           case x if (x._1 <= value) & (x._2 >= value) =>
             if(x._2 > value) i+1 // in this case, no multiple same value
             else { // in case of match, return position at the oldest index
               var newest = i+1
               var j = newest + 1
               //println(s"some match; current: $newest")
-              while((j < dindex.length) && (dindex(j).value == value)) {
-                if(dindex(j).position > dindex(newest).position) newest = j
+              while ((j < dindex.length) && (dindex(j)._2 == value)) {
+                if (dindex(j)._1 > dindex(newest)._1) newest = j
                 j+=1
               }
               newest+1
@@ -67,18 +65,19 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
       }
-      if(dindex(0).value > value) 0
-      else if(dindex(0).value == value) {
+
+      if (dindex(0)._2 > value) 0
+      else if (dindex(0)._2 == value) {
         var newest = 0
         var j = newest + 1
         //println(s"some match; current: $oldest")
-        while((j < dindex.length) && (dindex(j).value == value)) {
-          if (dindex(j).position > dindex(newest).position) newest = j
+        while ((j < dindex.length) && (dindex(j)._2 == value)) {
+          if (dindex(j)._1 > dindex(newest)._1) newest = j
           j+=1
         }
         newest+1
       }
-      else if (dindex(dindex.length - 1).value <= value) dindex.length
+      else if (dindex(dindex.length - 1)._2 <= value) dindex.length
       //else if(dindex(dindex.length-1).value < value) dindex.length
       else binarySearch_acc( 0, dindex.length - 1, value)
     }
@@ -88,20 +87,20 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
       def binarySearch_acc(start: Int, end: Int, value: Double): Int = {
         val i = (end+start) / 2
         //println(s"start: $start, end: $end, i:$i")
-        (dindex(i).value, dindex(i + 1).value) match {
+        (dindex(i)._2, dindex(i + 1)._2) match {
           case x if x._1 == value =>
             var oldest = i
             var j = oldest - 1
-            while((j >= 0) && (dindex(j).value == value)) {
-              if(dindex(j).position < dindex(oldest).position) oldest = j
+            while ((j >= 0) && (dindex(j)._2 == value)) {
+              if (dindex(j)._1 < dindex(oldest)._1) oldest = j
               j-=1
             }
             oldest
           case x if x._2 == value =>
             var oldest = i+1
             var j = oldest - 1
-            while((j >= 0) && (dindex(j).value == value)) {
-              if(dindex(j).position < dindex(oldest).position) oldest = j
+            while ((j >= 0) && (dindex(j)._2 == value)) {
+              if (dindex(j)._1 < dindex(oldest)._1) oldest = j
               j-=1
             }
             oldest
@@ -109,12 +108,13 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
           case x if x._2 < value => binarySearch_acc(i + 1, end, value)
         }
       }
-      if(dindex(0).value == value) 0
-      else if(dindex(dindex.length-1).value == value) {
+
+      if (dindex(0)._2 == value) 0
+      else if (dindex(dindex.length - 1)._2 == value) {
         var newest = dindex.length-1
         var j = newest - 1
-        while((j >= 0) && (dindex(j).value == value)) {
-          if(dindex(j).position < dindex(newest).position) newest = j
+        while ((j >= 0) && (dindex(j)._2 == value)) {
+          if (dindex(j)._1 < dindex(newest)._1) newest = j
           j-=1
         }
         newest
@@ -131,20 +131,20 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
 
     if((indextoinsert == indextodelete) | (indextoinsert == (indextodelete+1))) { // in that case it simply replaces the point
-      dindex(indextodelete) = new T_Rank(dindex.length + offset, newpoint)
+      dindex(indextodelete) = (dindex.length + offset, newpoint)
     } else {
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {
           dindex(x) = dindex(x + 1)
         }
-        dindex(indextoinsert - 1) = new T_Rank(dindex.length + offset, newpoint)
+        dindex(indextoinsert - 1) = (dindex.length + offset, newpoint)
       } else if (indextoinsert == 0) {
         for (x <- (indextoinsert + 1 to indextodelete).reverse) {
           dindex(x) = dindex(x - 1)
         }
-        dindex(indextoinsert) = new T_Rank(dindex.length + offset, newpoint)
+        dindex(indextoinsert) = (dindex.length + offset, newpoint)
       } else {
-        val actualindextoinsert = if (dindex(indextoinsert).value == newpoint) indextoinsert + 1 else indextoinsert
+        val actualindextoinsert = if (dindex(indextoinsert)._2 == newpoint) indextoinsert + 1 else indextoinsert
 
         if (actualindextoinsert < indextodelete) {
           // for (x <- (actualindextoinsert+1 to indextodelete).reverse) {
@@ -152,13 +152,13 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
             dindex(x) = dindex(x - 1)
           }
           //dindex(actualindextoinsert) = new T_CRank(dindex.length + offset, newpoint, -1, -1)
-          dindex(actualindextoinsert) = new T_Rank(dindex.length + offset, newpoint)
+          dindex(actualindextoinsert) = (dindex.length + offset, newpoint)
         } else if (actualindextoinsert > indextodelete) {
           //for (x <- indextodelete until actualindextoinsert-1) {
           for (x <- indextodelete until actualindextoinsert) {
             dindex(x) = dindex(x + 1)
           }
-          dindex(actualindextoinsert - 1) = new T_Rank(dindex.length + offset, newpoint)
+          dindex(actualindextoinsert - 1) = (dindex.length + offset, newpoint)
         }
       }
     }
