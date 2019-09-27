@@ -20,6 +20,7 @@ import io.github.edouardfouche.generators._
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
+import org.slf4j.MDC
 
 /**
   * Created by fouchee on 12.07.17.
@@ -31,7 +32,7 @@ object Power extends Experiment {
 
   def run(): Unit = {
 
-    info(s"Starting com.edouardfouche.experiments")
+    info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
 
     val tests = Vector(
       MWP(1, 0.5, 0.5),
@@ -44,7 +45,7 @@ object Power extends Experiment {
 
     val ndims = Array(2, 3, 5, 10, 20)
 
-    val constructors = Vector(
+    val constructors: Vector[(Int, Double) => DataGenerator] = Vector(
       // the categorical stuff
       LinearCat(_, _, "gaussian", 5),
       LinearCat(_, _, "gaussian", 10),
@@ -69,6 +70,7 @@ object Power extends Experiment {
         for {
           generator <- generators.par
         } {
+          MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
           val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
           val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
           val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)

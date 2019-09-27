@@ -8,8 +8,7 @@ import io.github.edouardfouche.generators._
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.utils.StopWatch
 import org.slf4j.MDC
-//import grizzled.slf4j.Logging
-import breeze.stats.{mean, stddev}
+
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -17,15 +16,14 @@ import com.typesafe.scalalogging.LazyLogging
   */
 trait Experiment extends LazyLogging {
 
+  // output formatting
   val output_folder: String = System.getProperty("user.dir")
-
   val master_experiment_folder: String = output_folder concat "/" concat "experiments"
   utils.createFolderIfNotExisting(master_experiment_folder)
-
   val formatter = new java.text.SimpleDateFormat("yyy-MM-dd-HH-mm")
   val dirname: String = s"${formatter.format(java.util.Calendar.getInstance().getTime)}_${this.getClass.getSimpleName.init}_"
   val experiment_folder: String = master_experiment_folder concat "/" concat dirname
-  val summaryPath: String = experiment_folder + "/" + this.getClass.getSimpleName.init + ".csv"
+  val summaryPath = experiment_folder + "/" + this.getClass.getSimpleName.init + ".csv"
 
   MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
 
@@ -36,7 +34,11 @@ trait Experiment extends LazyLogging {
 
   def run(): Unit
 
-  def info(s: String): Unit = logger.info(s)
+  def info(s: String): Unit = {
+    // Repeat the MDC so that we are sure that, even if we are in a subprocess, that the information will be logged centrally
+    MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
+    logger.info(s)
+  }
 
   val defaulttests: Vector[McdeStats] = Vector(MWP(50,alpha=0.5,beta=0.5),
     KSP(50,alpha=0.5,beta=0.5),

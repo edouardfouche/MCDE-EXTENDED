@@ -17,9 +17,10 @@
 package io.github.edouardfouche.experiments
 
 import breeze.stats.distributions.Gaussian
-import io.github.edouardfouche.generators._
+import io.github.edouardfouche.generators.{Independent, _}
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.utils.StopWatch
+import org.slf4j.MDC
 
 import scala.annotation.tailrec
 
@@ -28,14 +29,13 @@ import scala.annotation.tailrec
   * Test the influence of M on the scores
   */
 object IndexPerfW extends Experiment {
-  val nrep = 100
+  val nrep = 1000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
+    info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
 
-    info(s"Starting com.edouardfouche.experiments")
-
-    val indexesconstructors = Vector(
+    val indexes: Vector[Array[Double] => DimensionIndex] = Vector(
       new D_Count(_),
       new D_Count_Stream(_),
       new D_CRank(_),
@@ -43,109 +43,75 @@ object IndexPerfW extends Experiment {
       new D_Rank(_),
       new D_Rank_Stream(_)
     )
-
-    //val windowsizes = Vector(100, 1000, 10000)
-
-    @tailrec
-    def gaussianprocess(start: Double, current: Array[Double], n: Int): Array[Double] = {
-      if (n == 0) return current
-      val newval: Double = start + Gaussian(0, 0.05).draw()
-
-      val inboundval: Double = if ((newval <= 1) && (newval >= 0)) {
-        newval
-      } else if (newval < 0) {
-        -newval
-      } else {
-        1 - (newval - 1)
-      }
-      gaussianprocess(inboundval, current :+ inboundval, n - 1)
-    }
-
-    val generators: Vector[DataGenerator] = Vector( // the numeric stuff
-      Independent(1, 0, "gaussian", 0),
-      // the ordinal stuff
-      //Independent(1,0,"gaussian",5),
+    info(s"initialize indexes")
+    val generators: Vector[DataGenerator] = Vector (
+      IndependentCat(1, 0, "gaussian", 10),
+      IndependentCat(1, 0, "gaussian", 10),
       Independent(1, 0, "gaussian", 20),
-      //Independent(1,0,"gaussian",20),
-      // the gaussian process
-      //gaussianprocess(Uniform(0, 1).draw(), Array[Double](), 200000) //TODO: In fact I am not sure that this is changing anything w.r.t. the first case
-
-      // the categorical stuff
-      //IndependentCat(1,0,"gaussian",5),
-      IndependentCat(1, 0, "gaussian", 10) // Basically same results as with ordinal
-      //IndependentCat(1,0,"gaussian",20),
+      Independent(1, 0, "gaussian", 20),
+      Independent(1, 0, "gaussian", 0),
+      Independent(1, 0, "gaussian", 0)
     )
+    info(s"initialize generators")
 
-    val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(20000).transpose.head, x.id))
+    //val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(200000).transpose.head, x.id))
 
     for {
-      windowsize <- (100 to 10000)
+      i <- indexes.indices.par
     } {
+      val index = indexes(i)
+      val generator = generators(i)
+      //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
+      info(s"Starting with index: ${index(Array(1,2,3)).id}")
+      val dataset = generator.generate(200000).transpose.head
 
       for {
-        (dataset, id) <- datasets
+        windowsize <- (100 to 100000)
       } {
-        info(s"Starting with windowsize: $windowsize, dataset: ${id}, nrep: $nrep")
-        // initialize the indexes
         val initdata: Array[Double] = dataset.take(windowsize)
 
-        val measures = scala.collection.mutable.Map[String, Array[Double]]()
-        val rmeasures = scala.collection.mutable.Map[String, Array[Double]]()
+        val (cpu, wall, initalizedindex) = StopWatch.measureTime(index(initdata))
+        val (rcpu, rwall, a) = StopWatch.measureTime(initalizedindex.refresh())
+        val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcpu", "std_cpu", "std_rcpu")
+        val initsummary = ExperimentSummary(attributes)
+        initsummary.add("refId", generator.id + "-init")
+        initsummary.add("indexId", initalizedindex.id)
+        initsummary.add("w", windowsize)
+        initsummary.add("avg_cpu", "%.6f".format(cpu))
+        initsummary.add("avg_rcpu", "%.6f".format(rcpu))
+        initsummary.add("std_cpu", 0)
+        initsummary.add("std_rcpu", 0)
+        //summary.add("rep", 0)
+        initsummary.write(summaryPath)
 
-        val indexes: Vector[DimensionIndex] = indexesconstructors.map(x => {
-          val (cpu, wall, index) = StopWatch.measureTime(x(initdata))
-          val (rcpu, rwall, a) = StopWatch.measureTime(index.refresh())
-          val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
-          val summary = ExperimentSummary(attributes)
-          summary.add("refId", id + "-init")
-          summary.add("indexId", index.id)
-          summary.add("w", windowsize)
-          summary.add("avg_cpu", "%.6f".format(cpu))
-          summary.add("avg_rcup", "%.6f".format(rcpu))
-          summary.add("std_cpu", 0)
-          summary.add("std_rcup", 0)
-          //summary.add("rep", 0)
-          summary.write(summaryPath)
-          measures(index.id) = Array[Double]()
-          rmeasures(index.id) = Array[Double]()
-          index
-        })
-
+        var measures: Array[Double] = Array()
+        var rmeasures: Array[Double] = Array()
         for {
           n <- (1 to nrep)
         } {
           val newpoint: Double = dataset(windowsize + n - 1)
-          //if(newpoint.isNaN) println("generator produced a NaN !")
-          for {
-            index <- indexes
-          } {
-            val (cpu, wall, a) = StopWatch.measureTime(index.insert(newpoint))
-            val (rcpu, rwall, b) = StopWatch.measureTime(index.refresh())
-            //val (rcpu, rwall, b) = StopWatch.measureTime({})
-            measures(index.id) = measures(index.id) :+ cpu
-            rmeasures(index.id) = rmeasures(index.id) :+ rcpu
-          }
+          val (cpu, wall, a) = StopWatch.measureTime(initalizedindex.insert(newpoint))
+          val (rcpu, rwall, b) = StopWatch.measureTime(initalizedindex.refresh())
+          //val (rcpu, rwall, b) = StopWatch.measureTime({})
+          measures = measures :+ cpu
+          rmeasures = rmeasures :+ rcpu
         }
-        for {
-          index <- measures.keys
-        } {
-          val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
-          val summary = ExperimentSummary(attributes)
-          summary.add("refId", id)
-          summary.add("indexId", index)
-          summary.add("w", windowsize)
-          summary.add("avg_cpu", "%.6f".format(measures(index).sum / measures(index).length))
-          //summary.add("avg_wall", "%.6f".format(wall))
-          summary.add("avg_rcup", "%.6f".format(rmeasures(index).sum / rmeasures(index).length))
-          summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures(index))))
-          summary.add("std_rcup", "%.6f".format(breeze.stats.stddev(rmeasures(index))))
-          //summary.add("rwall", "%.6f".format(rwall))
-          //summary.add("rep", n)
-          summary.write(summaryPath)
-        }
+        //val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
+        val summary = ExperimentSummary(attributes)
+        summary.add("refId", generator.id)
+        summary.add("indexId", index)
+        summary.add("w", windowsize)
+        summary.add("avg_cpu", "%.6f".format(measures.sum / measures.length))
+        //summary.add("avg_wall", "%.6f".format(wall))
+        summary.add("avg_rcup", "%.6f".format(rmeasures.sum / rmeasures.length))
+        summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures)))
+        summary.add("std_rcup", "%.6f".format(breeze.stats.stddev(rmeasures)))
+        //summary.add("rwall", "%.6f".format(rwall))
+        //summary.add("rep", n)
+        summary.write(summaryPath)
 
-        info(s"Avg ins cpu (ms): ${measures.toArray.sortBy(_._1).map(x => s"${x._1} -> " + "%.6f".format(x._2.sum / nrep)).mkString(", ")} ($id)")
-        info(s"Avg ref cpu (ms): ${rmeasures.toArray.sortBy(_._1).map(x => s"${x._1} -> " + "%.6f".format(x._2.sum / nrep)).mkString(", ")} ($id)")
+        info(s"Avg ins cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(measures.sum / measures.length))
+        info(s"Avg ref cpu w=$windowsize): ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum /rmeasures.length))
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
