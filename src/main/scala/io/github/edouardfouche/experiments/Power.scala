@@ -42,7 +42,7 @@ object Power extends Experiment {
       CSP(1, 0.5, 0.5)
     )
 
-    val ndims = Array(2, 3, 5, 10, 20)
+    val ndims = Array(2, 3, 5, 10)
 
     val constructors = Vector(
       // the categorical stuff
@@ -59,59 +59,65 @@ object Power extends Experiment {
 
     val generators = constructors.flatMap(x => ndims.map(y => x(y, _)))
 
-    val gens = (0 to 30).toVector.flatMap(x => generators.map(y => y("%.2f".format(x.toDouble / 30.0).toDouble)))
-    info(s"Generators: {${gens.map(_.id) mkString ","}}")
     for {
-      generator <- gens
+      generator <- generators.par
     } {
-      info(s"Dealing with ${generator.id}")
-      val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
-      val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
-      val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
-
       for {
-        rep <- 1 to nrep
+        level <- 0 to 30
       } {
-        val raw = new DataSet(generator.generate(1000).transpose, types = (1 to generator.nDim).toArray.map(x => "c"))
-
-        // Save data samples (debugging purpose)
-        utils.createFolderIfNotExisting(experiment_folder + "/data")
-        if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
+        val gens = generators.map(y => y("%.2f".format(level.toDouble / 30.0).toDouble))
+        info(s"Generators: {${gens.map(_.id) mkString ","}}")
         for {
-          test <- tests
+          generator <- gens
         } {
-          val (prepCPUtime, prepWalltime, data) = StopWatch.measureTime(test.preprocess(raw))
-          val (runCPUtime, runWalltime, contrast) = StopWatch.measureTime(test.contrast(data, (0 until generator.nDim).toSet))
-          precpus(test.id) = prepCPUtime :: precpus(test.id)
-          runcpus(test.id) = runCPUtime :: runcpus(test.id)
-          contrasts(test.id) = contrast :: contrasts(test.id)
+          info(s"Dealing with ${generator.id}")
+          val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
+          val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
+          val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
+          for {
+            rep <- 1 to nrep
+          } {
+            val raw = new DataSet(generator.generate(1000).transpose, types = (1 to generator.nDim).toArray.map(x => "c"))
+            // Save data samples (debugging purpose)
+            utils.createFolderIfNotExisting(experiment_folder + "/data")
+            if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
+            for {
+              test <- tests
+            } {
+              val (prepCPUtime, prepWalltime, data) = StopWatch.measureTime(test.preprocess(raw))
+              val (runCPUtime, runWalltime, contrast) = StopWatch.measureTime(test.contrast(data, (0 until generator.nDim).toSet))
+              precpus(test.id) = prepCPUtime :: precpus(test.id)
+              runcpus(test.id) = runCPUtime :: runcpus(test.id)
+              contrasts(test.id) = contrast :: contrasts(test.id)
+            }
+          }
+
+          for {
+            test <- tests
+          } {
+            val avgprecpu = precpus(test.id).sum / nrep
+            val stdpre = breeze.stats.stddev(precpus(test.id))
+            val avgruncpu = runcpus(test.id).sum / nrep
+            val stdrun = breeze.stats.stddev(runcpus(test.id))
+            val avgcon = contrasts(test.id).sum / nrep
+            val stdcon = breeze.stats.stddev(contrasts(test.id))
+            val power = contrasts(test.id).count(_ > 0.95).toDouble / nrep
+
+            val attributes = List("refId", "testId", "ncols", "avgprecpu", "stdpre", "avgruncpu", "stdrun", "avgcon", "stdcon", "power")
+            val summary = ExperimentSummary(attributes)
+            summary.add("refId", generator.id)
+            summary.add("testId", test.id)
+            summary.add("ncols", generator.nDim)
+            summary.add("avgprecpu", "%.6f".format(avgprecpu))
+            summary.add("stdpre", "%.6f".format(stdpre))
+            summary.add("avgruncpu", "%.6f".format(avgruncpu))
+            summary.add("stdrun", "%.6f".format(stdrun))
+            summary.add("avgcon", "%.6f".format(avgcon))
+            summary.add("stdcon", "%.6f".format(stdcon))
+            summary.add("power", "%.6f".format(power))
+            summary.write(summaryPath)
+          }
         }
-      }
-
-      for {
-        test <- tests
-      } {
-        val avgprecpu = precpus(test.id).sum / nrep
-        val stdpre = breeze.stats.stddev(precpus(test.id))
-        val avgruncpu = runcpus(test.id).sum / nrep
-        val stdrun = breeze.stats.stddev(runcpus(test.id))
-        val avgcon = contrasts(test.id).sum / nrep
-        val stdcon = breeze.stats.stddev(contrasts(test.id))
-        val power = contrasts(test.id).count(_ > 0.95).toDouble / nrep
-
-        val attributes = List("refId", "testId", "ncols", "avgprecpu", "stdpre", "avgruncpu", "stdrun", "avgcon", "stdcon", "power")
-        val summary = ExperimentSummary(attributes)
-        summary.add("refId", generator.id)
-        summary.add("testId", test.id)
-        summary.add("ncols", generator.nDim)
-        summary.add("avgprecpu", "%.6f".format(avgprecpu))
-        summary.add("stdpre", "%.6f".format(stdpre))
-        summary.add("avgruncpu", "%.6f".format(avgruncpu))
-        summary.add("stdrun", "%.6f".format(stdrun))
-        summary.add("avgcon", "%.6f".format(avgcon))
-        summary.add("stdcon", "%.6f".format(stdcon))
-        summary.add("power", "%.6f".format(power))
-        summary.write(summaryPath)
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
