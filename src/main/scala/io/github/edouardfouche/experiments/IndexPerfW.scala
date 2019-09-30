@@ -16,14 +16,10 @@
  */
 package io.github.edouardfouche.experiments
 
-import breeze.stats.distributions.Gaussian
-import io.github.edouardfouche.generators.{Independent, _}
-import io.github.edouardfouche.index.deprecated.generators.IndependentCat
+import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.utils.StopWatch
-import org.slf4j.MDC
 
-import scala.annotation.tailrec
 
 /**
   * Created by fouchee on 12.07.17.

@@ -17,7 +17,6 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.deprecated.generators.LinearCat
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch

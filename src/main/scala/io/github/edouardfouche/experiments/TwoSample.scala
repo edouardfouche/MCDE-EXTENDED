@@ -17,10 +17,7 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.deprecated.generators.IndependentCat
-import io.github.edouardfouche.index.dimension.{D_CRank, D_CRank_Stream, D_Count, D_Count_Stream, D_Rank, D_Rank_Stream}
 import io.github.edouardfouche.mcde._
-import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
 /**
