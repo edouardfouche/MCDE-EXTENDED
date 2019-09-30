@@ -18,6 +18,7 @@ package io.github.edouardfouche.experiments
 
 import breeze.stats.distributions.Gaussian
 import io.github.edouardfouche.generators.{Independent, _}
+import io.github.edouardfouche.index.deprecated.generators.IndependentCat
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.utils.StopWatch
 import org.slf4j.MDC
@@ -45,8 +46,8 @@ object IndexPerfW extends Experiment {
     )
     info(s"initialize indexes")
     val generators: Vector[DataGenerator] = Vector (
-      IndependentCat(1, 0, "gaussian", 10),
-      IndependentCat(1, 0, "gaussian", 10),
+      Independent(1, 0, "gaussian", 10),
+      Independent(1, 0, "gaussian", 10),
       Independent(1, 0, "gaussian", 20),
       Independent(1, 0, "gaussian", 20),
       Independent(1, 0, "gaussian", 0),
@@ -66,7 +67,7 @@ object IndexPerfW extends Experiment {
       val dataset = generator.generate(200000).transpose.head
 
       for {
-        windowsize <- (100 to 100000)
+        windowsize <- (100 to 100000) by 10
       } {
         val initdata: Array[Double] = dataset.take(windowsize)
 

@@ -16,8 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.I_Rank
-import io.github.edouardfouche.index.dimension.D_Rank
+import io.github.edouardfouche.index.{I_Count, I_Rank}
+import io.github.edouardfouche.index.dimension.{D_Count, D_Rank}
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -37,6 +37,9 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   type I = I_Rank
   type D = D_Rank
   val id = "KSP"
+
+  override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
+  override def getIndexConstruct: DataSet => I_Rank = new I_Rank(_)
 
   def preprocess(input: DataSet): I_Rank = {
     new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?

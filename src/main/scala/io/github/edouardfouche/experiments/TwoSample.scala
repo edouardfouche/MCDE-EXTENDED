@@ -17,41 +17,40 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
+import io.github.edouardfouche.index.deprecated.generators.IndependentCat
+import io.github.edouardfouche.index.dimension.{D_CRank, D_CRank_Stream, D_Count, D_Count_Stream, D_Rank, D_Rank_Stream}
 import io.github.edouardfouche.mcde._
+import io.github.edouardfouche.preprocess.DataSet
+import io.github.edouardfouche.utils.StopWatch
 
 /**
   * Created by fouchee on 12.07.17.
   * Test the influence of M on the scores
   */
-object Contrast extends Experiment {
-  val nrep = 10000
+object TwoSample extends Experiment {
+  val nrep = 100000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
 
     info(s"Starting com.edouardfouche.experiments")
 
-    val tests = Vector(
+    val tests_Dindex = Vector(
       MWP(1,0.5, 0.5),
-      MWPr(1,0.5, 0.5),
       KSP(1,0.5, 0.5),
-      KSPn(1,0.5, 0.5),
       KSPP(1,0.5, 0.5),
       CSP(1,0.5, 0.5)
     )
 
-    val ndim = 3
-
+    val ndim = 1
     val references = Vector(
       // the categorical stuff
-      IndependentCat(ndim, 0, "gaussian", 1),
       IndependentCat(ndim, 0, "gaussian", 2),
       IndependentCat(ndim, 0, "gaussian", 3),
       IndependentCat(ndim, 0, "gaussian", 5),
       IndependentCat(ndim, 0, "gaussian", 10),
       IndependentCat(ndim, 0, "gaussian", 20),
       // the ordinal stuff
-      Independent(ndim, 0, "gaussian", 1),
       Independent(ndim, 0, "gaussian", 2),
       Independent(ndim, 0, "gaussian", 3),
       Independent(ndim, 0, "gaussian", 5),
@@ -61,44 +60,41 @@ object Contrast extends Experiment {
       Independent(ndim, 0, "gaussian", 0)
     )
 
-    val generators = Vector(
-      // the categorical stuff
-      LinearCat(ndim, _, "gaussian", 1),
-      LinearCat(ndim, _, "gaussian", 2),
-      LinearCat(ndim, _, "gaussian", 3),
-      LinearCat(ndim, _, "gaussian", 5),
-      LinearCat(ndim, _, "gaussian", 10),
-      LinearCat(ndim, _, "gaussian", 20),
-      // the ordinal stuff
-      Linear(ndim, _, "gaussian", 1),
-      Linear(ndim, _, "gaussian", 2),
-      Linear(ndim, _, "gaussian", 3),
-      Linear(ndim, _, "gaussian", 5),
-      Linear(ndim, _, "gaussian", 10),
-      Linear(ndim, _, "gaussian", 20),
-      // the numeric stuff
-      Linear(ndim, _, "gaussian", 0)
-    )
-
-    info(s"Dealing with {${references.map(_.id) mkString ","}}")
     for {
-      rep <- 1 to nrep
+      ref <- references.par
     } {
-      if(rep % 1000 == 0) {
-        info(s"Reached rep = $rep")
-      }
-      compareContrast(references, tests, rep)
-    }
+      for {
+        rep <- 1 to nrep
+      } {
+        if(rep % 10000 == 0) {
+          info(s"${ref.id} -> Reached rep $rep")
+        }
+        val raw = ref.generate(1000).transpose.head
+        // Save data samples (debugging purpose)
+        //utils.createFolderIfNotExisting(experiment_folder + "/data")
+        //if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
 
-    val gens = (0 to 10).toVector.flatMap(x => generators.map(y => y(x.toDouble/10.0)))
-    info(s"Dealing with {${gens.map(_.id) mkString ","}}")
-    for {
-      rep <- 1 to nrep
-    } {
-      if(rep % 1000 == 0) {
-        info(s"Reached rep = $rep")
+        for {
+          test <- tests_Dindex
+        } {
+          val (prepcpu, prepwall, dindex) = StopWatch.measureTime(test.getDIndexConstruct(raw))
+          val randomboolean: Array[Boolean] = (1 to dindex.length).map(x => math.random < 0.50).toArray
+          val (runcpu, runwall, contrast) = StopWatch.measureTime(test.twoSample(dindex, randomboolean))
+
+          val attributes = List("refId", "testId", "prepcpu", "prepwall",
+            "runcpu", "runwall", "contrast", "rep")
+          val summary = ExperimentSummary(attributes)
+          summary.add("refId", ref.id)
+          summary.add("testId", test.id)
+          summary.add("prepcpu", prepcpu)
+          summary.add("prepwall", prepwall)
+          summary.add("runcpu", runcpu)
+          summary.add("runwall", runwall)
+          summary.add("contrast", contrast)
+          summary.add("rep", rep)
+          summary.write(summaryPath)
+        }
       }
-      compareContrast(gens, tests, rep)
     }
 
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

@@ -39,6 +39,9 @@ case class KSPP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   type D = D_Rank
   val id = "KSPP"
 
+  override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
+  override def getIndexConstruct: DataSet => I_Rank = new I_Rank(_)
+
   def preprocess(input: DataSet): I_Rank = {
     new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }

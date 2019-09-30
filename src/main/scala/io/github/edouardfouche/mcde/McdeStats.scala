@@ -31,6 +31,9 @@ trait McdeStats extends Stats {
   type D <: DimensionIndex
   type I <: Index[D]
 
+  def getIndexConstruct: DataSet => I
+  def getDIndexConstruct: Array[Double] => D
+
   val id: String
   val alpha: Double
   val beta: Double // Added to loose the dependence of beta from alpha

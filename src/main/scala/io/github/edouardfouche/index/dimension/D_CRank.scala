@@ -81,11 +81,19 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)
-    val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
+    //val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
+
+    val start = scala.util.Random.nextInt(length - sliceSize)//+1)
+    val sliceStart = getSafeCut(start)
+    val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
+    val sliceEnd = getSafeCut(sliceEndSearchStart)
+
+
     for {x <- 0 until sliceStart} {
       logicalArray(dindex(x)._1) = false
     }
-    for {x <- sliceStart + sliceSize until dindex.length} {
+    //for {x <- sliceStart + sliceSize until dindex.length} {
+    for {x <- sliceEnd until dindex.length} {
       logicalArray(dindex(x)._1) = false
     }
     logicalArray
@@ -106,5 +114,20 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
       cutSearch(a, inc+1, ref)
     }
     cutSearch(cut, 0, this)
+  }
+
+  def getSafeCutRight(cut: Int): Int = {
+    var i = 0
+    while((cut+i+1) < this.length && this(cut)._2 == this(cut+i+1)._2) {
+      i = i + 1
+    }
+    cut+i+1 // be careful with this plus one, it is because we return
+  }
+  def getSafeCutLeft(cut: Int): Int = {
+    var i = 0
+    while((cut+i-1) >= 0 && this(cut)._2 == this(cut+i-1)._2) {
+      i = i - 1
+    }
+    cut+i
   }
 }

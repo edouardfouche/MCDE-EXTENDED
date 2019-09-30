@@ -59,7 +59,7 @@ StopWatch.measureTime{
 }
 
 StopWatch.measureTime{
-  AUTOP(500).contrast(d, Set(0,1,2))
+  MCDEP(500).contrast(d, Set(0,1,2))
 }
 
 val d_ = new DataSet(Independent(3, 0, "gaussian", 10).generate(1000).transpose,
@@ -86,7 +86,7 @@ StopWatch.measureTime {
 }
 
 StopWatch.measureTime {
-  AUTOP(500).contrast(d_, Set(0, 1, 2))
+  MCDEP(500).contrast(d_, Set(0, 1, 2))
 }
 
 val dd = new DataSet(Linear(3, 0.0, "gaussian", 0).generate(1000).transpose,
@@ -107,7 +107,7 @@ StopWatch.measureTime{
 }
 
 StopWatch.measureTime{
-  AUTOP(100).contrast(dd, Set(0,1,2))
+  MCDEP(100).contrast(dd, Set(0,1,2))
 }
 
 print("lol")

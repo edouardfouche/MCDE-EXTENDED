@@ -57,7 +57,7 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(false)
-    val selectedCategories: Array[Double] = selectCategories(sliceSize)
+    val selectedCategories: Array[Double] = selectSlice(sliceSize)
     val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(x)._1)
     selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray
@@ -84,10 +84,17 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
   */
 
 
-  def selectCategories(sliceSize: Int): Array[Double] = {
+  def selectSlice(sliceSize: Int): Array[Double] = {
     val ratio = sliceSize.toDouble / values.length.toDouble
     val categories = dindex.keys
     val toselect: Int = math.floor(categories.size * ratio).toInt.max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
+    scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray
+  }
+
+  def selectRestriction(sliceSize: Int): Array[Double] = {
+    val ratio = sliceSize.toDouble / values.length.toDouble
+    val categories = dindex.keys
+    val toselect: Int = math.floor(categories.size * ratio).toInt.max(2).min(categories.size) // Make sure at least 2, a most ncategories
     scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray
   }
 }

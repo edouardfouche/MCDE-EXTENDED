@@ -17,6 +17,7 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
+import io.github.edouardfouche.index.deprecated.generators.LinearCat
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
@@ -27,7 +28,7 @@ import org.slf4j.MDC
   * Test the influence of M on the scores
   */
 object Power extends Experiment {
-  val nrep = 10000
+  val nrep = 1000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -47,10 +48,16 @@ object Power extends Experiment {
 
     val constructors: Vector[(Int, Double) => DataGenerator] = Vector(
       // the categorical stuff
-      LinearCat(_, _, "gaussian", 5),
-      LinearCat(_, _, "gaussian", 10),
-      LinearCat(_, _, "gaussian", 20),
+      //LinearCat(_, _, "gaussian", 1),
+      //LinearCat(_, _, "gaussian", 2),
+      //LinearCat(_, _, "gaussian", 3),
+      //LinearCat(_, _, "gaussian", 5),
+      //LinearCat(_, _, "gaussian", 10),
+      //LinearCat(_, _, "gaussian", 20),
       // the ordinal stuff
+      Linear(_, _, "gaussian", 1),
+      Linear(_, _, "gaussian", 2),
+      Linear(_, _, "gaussian", 3),
       Linear(_, _, "gaussian", 5),
       Linear(_, _, "gaussian", 10),
       Linear(_, _, "gaussian", 20),

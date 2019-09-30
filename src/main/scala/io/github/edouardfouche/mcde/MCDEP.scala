@@ -29,13 +29,16 @@ import io.github.edouardfouche.preprocess.DataSet
   *
   */
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
-case class AUTOP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = D_Rank
   type D = DimensionIndex
   type I = I_Multi
 
-  val id = "AUTOP"
+  override def getDIndexConstruct: Array[Double] => DimensionIndex = new D_Rank(_) // because whatever...
+  override def getIndexConstruct: DataSet => I_Multi = new I_Multi(_)
+
+  val id = "MCDEP"
 
   //TODO: How is the handling of marginal restriction?
 

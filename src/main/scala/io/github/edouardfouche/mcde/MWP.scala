@@ -40,6 +40,9 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   type D = D_CRank
   val id = "MWP"
 
+  override def getDIndexConstruct: Array[Double] => D_CRank = new D_CRank(_)
+  override def getIndexConstruct: DataSet => I_CRank = new I_CRank(_)
+
   def preprocess(input: DataSet): I_CRank = {
     new I_CRank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
   }
@@ -55,11 +58,34 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     */
   def twoSample(ref: D_CRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
-    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt+1)
-    val sliceStart = ref.getSafeCut(start)
-    val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
-    val sliceEnd = ref.getSafeCut(sliceEndSearchStart)
+    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)//+1)
+    val safeSliceStart = ref.getSafeCut(start)
+    val sliceEndSearchStart = (safeSliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
+    val safeSliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
+    /*
+    try {
+      val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
+        if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
+        else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
+        else (safeSliceStart, safeSliceEnd)
+      } else (safeSliceStart, safeSliceEnd)
+    } catch {
+      case e: Throwable => {
+        println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd")
+        throw e
+      }
+    }
+    */
+
+    val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
+      if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
+      else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
+      else (safeSliceStart, safeSliceEnd)
+    } else (safeSliceStart, safeSliceEnd)
+
+
+    //println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd, sliceStart = $sliceStart, sliceEnd = $sliceEnd")
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
 
     //val ref: D_CRank[String] = index(reference)
@@ -74,8 +100,10 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       lazy val cutLength = cutEnd - cutStart
       val (r1, n1:Long) = cumulative(cutStart, 0, 0)
 
-      if (n1 == 0 | n1 == cutLength) {
-        1 // when one of the two sample is empty, this just means maximal possible score.
+      if (n1 == 0){ //| n1 == cutLength) {
+        1 // If the inslice is empty, this just means maximal possible score.
+      } else if (n1 == cutLength) {
+        0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
       }
       else {
         val n2:Long = cutLength - n1

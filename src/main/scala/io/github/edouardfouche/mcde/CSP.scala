@@ -36,6 +36,9 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
   type D = D_Count
   type I = I_Count
 
+  override def getDIndexConstruct: Array[Double] => D_Count = new D_Count(_)
+  override def getIndexConstruct: DataSet => I_Count = new I_Count(_)
+
   val id = "CSP"
 
   //TODO: How is the handling of marginal restriction?
@@ -56,8 +59,9 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     */
   def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
 
-    val restrictedCategories: Array[Double] = ref.selectCategories(math.ceil(ref.values.length*beta).toInt)
+    val restrictedCategories: Array[Double] = ref.selectRestriction(math.ceil(ref.values.length*beta).toInt) // ref.dindex.keys.toArray
     //val restrictedCategories: List[String] = ref.categories.toList
+    if(restrictedCategories.length == 1) return 0 // In that case, contrast is undefined.
     val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
     val sample1 = restrictedselection.filter(_._1 == true).map(_._2)
     val sample2 = restrictedselection.filter(_._1 == false).map(_._2)
@@ -108,7 +112,9 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
         val e1 = (tot * n1) /  N
         val e2 = (tot * n2) /  N
 
-        math.pow(o1 - e1, 2) / e1 + math.pow(o2 - e2, 2) / e2
+        val s = math.pow(o1 - e1, 2) / e1 + math.pow(o2 - e2, 2) / e2
+        //println(s"o1 : $o1, o2 : $o2, e1: $e1, e2: $e2, s: $s")
+        s
       })
       val teststatistics = statistics.sum
 
@@ -121,7 +127,10 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
       //println(s"ndegree: $ndegree, sample1size: ${sample1.size}, sample2size: ${sample2.size}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories mkString ","}")
       //println(s"restrictedcats: ${restrictedCategories.toString}")
-      //println(s"nrestr: ${restrictedCategories.length}, n1: ${sample1.size}, n2: ${sample2.size} stat: $teststatistics, chsq: $chsq")
+
+      //println(s"nrestr: ${restrictedCategories.length}, ([${restrictedCategories.mkString(",")}), n1: ${sample1.size}, n2: ${sample2.size} stat: $teststatistics, chsq: $chsq")
+      //println(s"s1 : ${sample1counts}; s2 : ${sample2counts}")
+
       //println(s"s: ${selectedcounts.toString}")
       //println(s"e: ${expectedcounts.toString}")
       //println(s"a: ${ref.counts.toString}")

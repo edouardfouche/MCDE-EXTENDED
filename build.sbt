@@ -12,7 +12,7 @@ scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation")
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
-libraryDependencies += "io.github.edouardfouche" %% "datagenerator" % "0.1.0"
+libraryDependencies += "io.github.edouardfouche" %% "datagenerator" % "0.1.1"
 
 resolvers += "Java.net Maven2 Repository" at "http://download.java.net/maven/2/"
 

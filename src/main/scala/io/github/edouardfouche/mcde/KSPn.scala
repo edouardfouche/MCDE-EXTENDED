@@ -40,6 +40,9 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   type D = D_Rank
   val id = "KSPn"
 
+  override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
+  override def getIndexConstruct: DataSet => I_Rank = new I_Rank(_)
+
   //TODO: We are not handling the marginal restriction for the moment
 
   def preprocess(input: DataSet): I_Rank = {
