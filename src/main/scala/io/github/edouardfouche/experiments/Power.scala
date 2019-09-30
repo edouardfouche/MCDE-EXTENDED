@@ -47,12 +47,12 @@ object Power extends Experiment {
 
     val constructors: Vector[(Int, Double) => DataGenerator] = Vector(
       // the categorical stuff
-      //LinearCat(_, _, "gaussian", 1),
-      //LinearCat(_, _, "gaussian", 2),
-      //LinearCat(_, _, "gaussian", 3),
-      //LinearCat(_, _, "gaussian", 5),
-      //LinearCat(_, _, "gaussian", 10),
-      //LinearCat(_, _, "gaussian", 20),
+      LinearCat(_, _, "gaussian", 1),
+      LinearCat(_, _, "gaussian", 2),
+      LinearCat(_, _, "gaussian", 3),
+      LinearCat(_, _, "gaussian", 5),
+      LinearCat(_, _, "gaussian", 10),
+      LinearCat(_, _, "gaussian", 20),
       // the ordinal stuff
       Linear(_, _, "gaussian", 1),
       Linear(_, _, "gaussian", 2),

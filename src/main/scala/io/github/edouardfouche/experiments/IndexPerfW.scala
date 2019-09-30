@@ -108,7 +108,7 @@ object IndexPerfW extends Experiment {
         summary.write(summaryPath)
 
         info(s"Avg ins cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(measures.sum / measures.length))
-        info(s"Avg ref cpu w=$windowsize): ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum /rmeasures.length))
+        info(s"Avg ref cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

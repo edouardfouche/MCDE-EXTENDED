@@ -24,6 +24,7 @@ import scala.annotation.tailrec
 abstract class Index[+T <: DimensionIndex] {
   val data: DataSet
   val parallelize:Int
+  val id: String
 
   //type T <: DimensionIndex[_]
   val index: Vector[T] = createIndex(data)

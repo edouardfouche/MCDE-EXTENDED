@@ -21,6 +21,7 @@ import io.github.edouardfouche.preprocess.DataSet
 
 // Here the inputs may be row-oriented
 class I_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[DimensionIndex] {
+  val id = "Multi"
   //type T = DimensionIndex[String]
   /**
     *

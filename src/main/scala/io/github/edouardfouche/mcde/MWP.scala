@@ -100,12 +100,16 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       lazy val cutLength = cutEnd - cutStart
       val (r1, n1:Long) = cumulative(cutStart, 0, 0)
 
-      if (n1 == 0){ //| n1 == cutLength) {
-        1 // If the inslice is empty, this just means maximal possible score.
-      } else if (n1 == cutLength) {
-        0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
-      }
-      else {
+      //if (n1 == 0){ //| n1 == cutLength) {
+      //  1 // If the inslice is empty, this just means maximal possible score.
+      //} else if (n1 == cutLength) {
+      //  0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
+      //}
+      if (n1 == indexSelection.length) { // In that case the slicing process led to selecting everything, contrast is not defined
+        0
+      } else if (n1 == 0 || n1 == cutLength) {
+        1
+      } else {
         val n2:Long = cutLength - n1
         if(n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0

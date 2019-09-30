@@ -22,6 +22,7 @@ import io.github.edouardfouche.preprocess.DataSet
 // Here the inputs may be row-oriented
 // This is good but restricted to the same time for each Array
 class I_CRank(val data: DataSet, val parallelize: Int = 0) extends Index[D_CRank] {
+  val id = "CRank"
   //type T = D_CRank[String]
 
   protected def createIndex(data: DataSet): Vector[D_CRank] = {
