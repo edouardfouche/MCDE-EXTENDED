@@ -40,7 +40,7 @@ object Contrast extends Experiment {
       CSP(1,0.5, 0.5)
     )
 
-    val ndim = 3
+    val ndim = 2
 
     val references = Vector(
       // the categorical stuff

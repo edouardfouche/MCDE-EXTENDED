@@ -1,7 +1,6 @@
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess._
-import io.github.edouardfouche.utils.StopWatch
 
 val m = 1
 
@@ -29,19 +28,19 @@ val ddd = new DataSet(Independent(3, 0.0, "gaussian", 3).generate(1000).transpos
 
 CSP(1000).contrast(ddd, Set(0, 1))
 MWP(1000).contrast(ddd, Set(0, 1))
-KSPP(1000).contrast(ddd, Set(0, 1))
+KSPP(10).contrast(ddd, Set(0, 1))
 
 val ddd2 = new DataSet(Independent(3, 0.0, "gaussian", 2).generate(1000).transpose)
 
 CSP(1000).contrast(ddd2, Set(0, 1))
 MWP(1000).contrast(ddd2, Set(0, 1))
-KSPP(1000).contrast(ddd2, Set(0, 1))
+KSPP(10).contrast(ddd2, Set(0, 1))
 
 val ddd3 = new DataSet(Independent(3, 0.0, "gaussian", 1).generate(1000).transpose)
 
 CSP(1000).contrast(ddd3, Set(0, 1))
 MWP(1000).contrast(ddd3, Set(0, 1))
-KSPP(1000).contrast(ddd3, Set(0, 1))
+KSPP(10).contrast(ddd3, Set(0, 1, 2))
 
 
 (1 to 1000).toArray.map(x =>

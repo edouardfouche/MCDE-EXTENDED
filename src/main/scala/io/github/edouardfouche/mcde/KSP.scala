@@ -16,8 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.{I_Count, I_Rank}
-import io.github.edouardfouche.index.dimension.{D_Count, D_Rank}
+import io.github.edouardfouche.index.I_Rank
+import io.github.edouardfouche.index.dimension.D_Rank
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -78,7 +78,6 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x)._1))
     val inSlize = theref.count(_ == true)
     val outSlize = theref.length - inSlize
-
 
       if (inSlize == 0 || outSlize == 0) return 1.0 // If one is empty they are perfectly different --> score = 1 (and no prob with division by 0)
 
