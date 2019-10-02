@@ -59,7 +59,16 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
     val logicalArray = Array.fill[Boolean](length)(false)
     val selectedCategories: Array[Double] = selectSlice(sliceSize)
     val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(x)._1)
-    selectedIndexes.foreach(x => logicalArray(x) = true)
+    // New correcting part
+    val c_selectedIndexes: Array[Int] = if (selectedIndexes.length > sliceSize) {
+      scala.util.Random.shuffle(selectedIndexes.toList).drop(selectedIndexes.length - sliceSize).toArray
+    } else if (selectedIndexes.length < sliceSize) {
+      val othercategories = dindex.keys.filter(!selectedCategories.contains(_))
+      val otherindexes = othercategories.flatMap(x => dindex(x)._1)
+      selectedIndexes ++ scala.util.Random.shuffle(otherindexes.toList).take(sliceSize - selectedIndexes.length)
+    } else selectedIndexes
+
+    c_selectedIndexes.foreach(x => logicalArray(x) = true)
     logicalArray
   }
 
@@ -88,7 +97,7 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
     val ratio = sliceSize.toDouble / values.length.toDouble
     val categories = dindex.keys
     val toselect: Int = math.floor(categories.size * ratio).toInt.max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
-    scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray
+    scala.util.Random.shuffle(categories.toList).take(toselect).toArray
   }
 
   def selectRestriction(sliceSize: Int): Array[Double] = {

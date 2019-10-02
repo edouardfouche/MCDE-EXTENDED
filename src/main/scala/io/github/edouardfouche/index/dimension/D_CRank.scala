@@ -83,10 +83,17 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     val logicalArray = Array.fill[Boolean](length)(true)
     //val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
 
+    /* // Performing safe cut
     val start = scala.util.Random.nextInt(length - sliceSize)//+1)
     val sliceStart = getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
     val sliceEnd = getSafeCut(sliceEndSearchStart)
+    */
+
+    //val start = scala.util.Random.nextInt(length - sliceSize)//+1)
+    val sliceStart = scala.util.Random.nextInt(length - sliceSize) //+1)//getSafeCut(start)
+    //val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
+    val sliceEnd = (sliceStart + sliceSize).min(length) //getSafeCut(sliceEndSearchStart)
 
 
     for {x <- 0 until sliceStart} {
