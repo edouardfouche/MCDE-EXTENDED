@@ -96,19 +96,21 @@ object IndexPerfW extends Experiment {
         //val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
-        summary.add("indexId", index)
+        summary.add("indexId", initalizedindex.id)
         summary.add("w", windowsize)
         summary.add("avg_cpu", "%.6f".format(measures.sum / measures.length))
         //summary.add("avg_wall", "%.6f".format(wall))
-        summary.add("avg_rcup", "%.6f".format(rmeasures.sum / rmeasures.length))
+        summary.add("avg_rcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
         summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures)))
-        summary.add("std_rcup", "%.6f".format(breeze.stats.stddev(rmeasures)))
+        summary.add("std_rcpu", "%.6f".format(breeze.stats.stddev(rmeasures)))
         //summary.add("rwall", "%.6f".format(rwall))
         //summary.add("rep", n)
         summary.write(summaryPath)
 
-        info(s"Avg ins cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(measures.sum / measures.length))
-        info(s"Avg ref cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
+        if (windowsize % 1000 == 0) {
+          info(s"Avg ins cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(measures.sum / measures.length))
+          info(s"Avg ref cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
+        }
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
