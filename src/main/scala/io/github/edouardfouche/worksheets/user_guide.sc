@@ -10,7 +10,7 @@
   */
 
 import io.github.edouardfouche.mcde._
-// import io.github.edouardfouche.mcde.{MWP, MWPi, MWPr, MWPs, MWPu, KSP}
+// import io.github.edouardfouche.mcde.{MWP, MWPi, MWPr, MWPs, MWPu, KSP_bis}
 
 // Optionally import data generators for creating given dependencies.
 // For more information see: https://github.com/edouardfouche/DataGenerator
@@ -113,13 +113,13 @@ val mwpr = MWPr()
 // val mwpu = MWPu()
 
 /**
-  * KSP: Like MWP but using Kolmogorow-Smirnow-Test for dependency estimation instead of Mann–Whitney P test
+  * KSP_bis: Like MWP but using Kolmogorow-Smirnow-Test for dependency estimation instead of Mann–Whitney P test
   *
-  * Note that beta default value for KSP is 1.0. It is not recommended to change this value.
+  * Note that beta default value for KSP_bis is 1.0. It is not recommended to change this value.
   * All other parameters are defined as for MWP.
   *
   */
 
-val ksp = KSP(alpha = 0.1, beta = 1.0)
+val ksp = KSP_bis(alpha = 0.1, beta = 1.0)
 println(ksp.contrast(linear_4, linear_4(0).indices.toSet))
 println(ksp.contrast(independent, independent(0).indices.toSet))

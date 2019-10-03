@@ -29,18 +29,19 @@ import scala.annotation.tailrec
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
-  *        Added with respect to the original paper to loose the dependence of beta from alpha.
+  *              Added with respect to the original paper to loose the dependence of beta from alpha.
   */
 
-case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
-                  var parallelize: Int = 0) extends McdeStats {
+case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
+                var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = D_CRank
   //type U = Double
   type I = I_CRank
   type D = D_CRank
-  val id = "MWP"
+  val id = "MWPn"
 
   override def getDIndexConstruct: Array[Double] => D_CRank = new D_CRank(_)
+
   override def getIndexConstruct: DataSet => I_CRank = new I_CRank(_)
 
   def preprocess(input: DataSet): I_CRank = {
@@ -58,6 +59,8 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     */
   def twoSample(ref: D_CRank, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
+
+    /* // Marginal restriction
     val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)//+1)
     val safeSliceStart = ref.getSafeCut(start)
     val sliceEndSearchStart = (safeSliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
@@ -68,6 +71,10 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
       else (safeSliceStart, safeSliceEnd)
     } else (safeSliceStart, safeSliceEnd)
+     */
+
+    val sliceStart = 0
+    val sliceEnd = ref.length
 
     /*
     try {
@@ -98,7 +105,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       }
 
       lazy val cutLength = cutEnd - cutStart
-      val (r1, n1:Long) = cumulative(cutStart, 0, 0)
+      val (r1, n1: Long) = cumulative(cutStart, 0, 0)
 
       //if (n1 == 0){ //| n1 == cutLength) {
       //  1 // If the inslice is empty, this just means maximal possible score.
@@ -110,15 +117,15 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       } else if (n1 == 0 || n1 == cutLength) {
         1
       } else {
-        val n2:Long = cutLength - n1
-        if(n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
+        val n2: Long = cutLength - n1
+        if (n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0
         val corrMax = ref(cutEnd - 1)._4
         val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
         val correction = (corrMax - corrMin) / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
-        
-        if(std == 0) 0 // This happens in the extreme case that the cut consists in only one unique value
+
+        if (std == 0) 0 // This happens in the extreme case that the cut consists in only one unique value
         else {
           val mean = (n1.toDouble * n2.toDouble) / 2.0
           val Z = math.abs((U1 - mean) / std)
@@ -131,6 +138,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
         }
       }
     }
+
     val res = getStat(sliceStart, sliceEnd)
     //println(s"res : $res")
     res

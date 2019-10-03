@@ -18,7 +18,6 @@ package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators.{Linear, _}
 import io.github.edouardfouche.mcde._
-import io.github.edouardfouche.preprocess.DataRef
 
 /**
   * Created by fouchee on 12.07.17.
@@ -38,7 +37,7 @@ object ContrastAlpha extends Experiment {
 
       val tests = Vector(
         MWP(1,alpha, 0.5),
-        KSP(1,alpha, 0.5),
+        KSP_bis(1, alpha, 0.5),
         CSP(1,alpha, 0.5)
       )
 

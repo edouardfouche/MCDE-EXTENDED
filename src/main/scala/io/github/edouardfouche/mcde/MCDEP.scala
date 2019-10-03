@@ -28,7 +28,7 @@ import io.github.edouardfouche.preprocess.DataSet
   *       Added with respect to the original paper to loose the dependence of beta from alpha.
   *
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSP-test AND all the improvements proposed by MCDE
+//TODO: It would be actually interesting to compare MCDE with a version with the KSP_bis-test AND all the improvements proposed by MCDE
 case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = D_Rank
@@ -62,8 +62,8 @@ case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
         //println(s"$ref : CSP!")
         CSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case x: D_Rank =>
-        //println(s"$ref : KSP!")
-        KSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
+        //println(s"$ref : KSP_bis!")
+        KSP_bis(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case x: D_CRank =>
         //println(s"$ref : MWP!")
         MWP(M, alpha, beta, parallelize).twoSample(x, indexSelection)

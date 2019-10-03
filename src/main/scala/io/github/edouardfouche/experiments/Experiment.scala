@@ -2,14 +2,12 @@ package io.github.edouardfouche.experiments
 
 import java.io.{File, FileWriter}
 
-import io.github.edouardfouche.generators.DataGenerator
-import io.github.edouardfouche.preprocess.{DataRef, DataSet}
-import io.github.edouardfouche.generators._
+import com.typesafe.scalalogging.LazyLogging
+import io.github.edouardfouche.generators.{DataGenerator, _}
 import io.github.edouardfouche.mcde._
+import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 import org.slf4j.MDC
-
-import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Created by fouchee on 26.07.17.
@@ -41,7 +39,7 @@ trait Experiment extends LazyLogging {
   }
 
   val defaulttests: Vector[McdeStats] = Vector(MWP(50,alpha=0.5,beta=0.5),
-    KSP(50,alpha=0.5,beta=0.5),
+    KSP_bis(50, alpha = 0.5, beta = 0.5),
     CSP(50,alpha=0.5,beta=0.5),
     MCDEP(50,alpha=0.5,beta=0.5))
 

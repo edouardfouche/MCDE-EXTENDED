@@ -19,7 +19,7 @@ package io.github.edouardfouche.experiments
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.index.{I_CRank, I_Count, I_Rank, Index}
-import io.github.edouardfouche.mcde.{CSP, KSPP, MWP, McdeStats}
+import io.github.edouardfouche.mcde.{CSP, KSP, MWP, McdeStats}
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
@@ -58,8 +58,8 @@ object ContrastPerfW extends Experiment {
       //CSP(),
       MWP(),
       //MWP(),
-      KSPP()
-      //KSPP()
+      KSP()
+      //KSP()
     )
     info(s"initialize generators")
 
@@ -84,7 +84,7 @@ object ContrastPerfW extends Experiment {
         var cpumeasures: Array[Double] = Array()
         var wallmeasures: Array[Double] = Array()
         for {
-          n <- (1 to nrep)
+          n <- 1 to nrep
         } {
           val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
           cpumeasures = cpumeasures :+ cpu

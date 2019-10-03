@@ -25,24 +25,22 @@ import io.github.edouardfouche.preprocess.DataSet
   * Chi-Squared test whithin the MCDE framework
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
-  * @param beta Expected share of instances in marginal restriction (reference dimension).
-  *       Added with respect to the original paper to loose the dependence of beta from alpha.
+  * @param beta  Expected share of instances in marginal restriction (reference dimension).
+  *              Added with respect to the original paper to loose the dependence of beta from alpha.
+  *              Like CSP but does not have marginal restriction (beta parameter is not used)
   *
   */
 //TODO: It would be actually interesting to compare MCDE with a version with the KSP_bis-test AND all the improvements proposed by MCDE
-case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = D_Rank
   type D = D_Count
   type I = I_Count
+  val id = "CSPn"
 
   override def getDIndexConstruct: Array[Double] => D_Count = new D_Count(_)
+
   override def getIndexConstruct: DataSet => I_Count = new I_Count(_)
-
-  val id = "CSP"
-
-  //TODO: How is the handling of marginal restriction?
-  //TODO: It does not really seems uniform in the independent case.
 
   def preprocess(input: DataSet): I_Count = {
     new I_Count(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
@@ -59,31 +57,36 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     */
   def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
 
+    /* // Marginal restriction
     val restrictedCategories: Array[Double] = ref.selectRestriction(math.ceil(ref.values.length*beta).toInt) // ref.dindex.keys.toArray
-    //val restrictedCategories: List[String] = ref.categories.toList
     if(restrictedCategories.length == 1) return 0 // In that case, contrast is undefined.
     val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
-    val sample1 = restrictedselection.filter(_._1 == true).map(_._2)
-    val sample2 = restrictedselection.filter(_._1 == false).map(_._2)
+    val sample1: Array[Double] = restrictedselection.filter(_._1 == true).map(_._2)
+    val sample2: Array[Double] = restrictedselection.filter(_._1 == false).map(_._2)
+    */
 
     //val nonrestrictedvalues: Array[Double] = indexSelection.zipWithIndex.filter(_._1 == true).map(x => ref.values(x._2))
     //val selectedvalues = nonrestrictedvalues.filter(x => restrictedCategories.contains(x))
     //val selectedvalues = nonrestrictedvalues
+    if (ref.dindex.keys.size == 1) return 0 // In that case, contrast is undefined.
+    val selection = indexSelection.zipWithIndex.map(x => (x._1, ref.values(x._2)))
+    val sample1: Array[Double] = selection.filter(_._1 == true).map(_._2)
+    val sample2: Array[Double] = selection.filter(_._1 == false).map(_._2)
 
-    if((sample1.length == 0) | (sample2.length == 0)) 1.0 // Nothing in the slide. Maximal value then
-    else{
+    if ((sample1.length == 0) | (sample2.length == 0)) 1.0 // Nothing in the slide. Maximal value then
+    else {
       // count the occurences of each categories in the selection
       // val selectedcounts: Map[Double, Int] = selectedvalues.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,y.length)})
 
 
       val sample1counts: Map[Double, Int] = sample1.groupBy(identity).mapValues(_.length)
       //val sample2counts: Map[Double, Int] = sample2.groupBy(identity).mapValues(_.length) // could we speed this up?
-      val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.dindex(x)._2 - sample1counts.getOrElse(x, 0))).toMap
+      //val sample2counts: Map[Double, Int] = restrictedCategories.map(x => x -> (ref.dindex(x)._2 - sample1counts.getOrElse(x, 0))).toMap
+      val sample2counts: Map[Double, Int] = ref.dindex.keys.map(x => x -> (ref.dindex(x)._2 - sample1counts.getOrElse(x, 0))).toMap
 
       // now let's compare the selectedcounts with the ref.counts according to chisq
 
       // ref.values.length.toDouble*alpha
-
 
       // Here this is wrong to take ref.values.length.toDouble instead:
       // restrictedCategories.map(x => ref.counts(x)).sum.toDouble
@@ -104,13 +107,13 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       val n2 = sample2.length.toDouble
       val N = n1 + n2
 
-      val statistics = restrictedCategories.map(stat => {
-        val o1 = sample1counts.getOrElse(stat,0).toDouble
-        val o2 = sample2counts.getOrElse(stat,0).toDouble
+      val statistics = ref.dindex.keys.map(stat => {
+        val o1 = sample1counts.getOrElse(stat, 0).toDouble
+        val o2 = sample2counts.getOrElse(stat, 0).toDouble
         val tot = o1 + o2
 
-        val e1 = (tot * n1) /  N
-        val e2 = (tot * n2) /  N
+        val e1 = (tot * n1) / N
+        val e2 = (tot * n2) / N
 
         val s = math.pow(o1 - e1, 2) / e1 + math.pow(o2 - e2, 2) / e2
         //println(s"o1 : $o1, o2 : $o2, e1: $e1, e2: $e2, s: $s")
@@ -120,7 +123,7 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
       //val ndegree = math.pow(restrictedCategories.size - 1,2)
       //TODO: In some extreme cases, ndegree becomes 0, (because restricting on only one categorie, in that case, this is a one-way chi-squared test
-      val ndegree = (restrictedCategories.length - 1).max(1)
+      val ndegree = (ref.dindex.keys.size - 1).max(1)
       //val ndegree = ref.categories.size - 1
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)

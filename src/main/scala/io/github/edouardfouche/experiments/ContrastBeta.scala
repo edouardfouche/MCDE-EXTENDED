@@ -16,10 +16,8 @@
  */
 package io.github.edouardfouche.experiments
 
-import io.github.edouardfouche.experiments.Contrast.compareContrast
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.mcde._
-import io.github.edouardfouche.preprocess.DataRef
 
 /**
   * Created by fouchee on 12.07.17.
@@ -38,7 +36,7 @@ object ContrastBeta extends Experiment {
 
       val tests = Vector(
         MWP(1,0.5, beta),
-        KSP(1,0.5, beta),
+        KSP_bis(1, 0.5, beta),
         CSP(1,0.5, beta)
       )
 
