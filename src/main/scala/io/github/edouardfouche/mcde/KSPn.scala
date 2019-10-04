@@ -32,7 +32,7 @@ import scala.math.pow
   *       Added with respect to the original paper to loose the dependence of beta from alpha.
   *
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSP_bis-test AND all the improvements proposed by MCDE
+//TODO: It would be actually interesting to compare MCDE with a version with the KSPs-test AND all the improvements proposed by MCDE
 case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = D_Rank
   type I = I_Rank
@@ -113,10 +113,10 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     *
     * Note: This function is basically a transcription from psmirnov2x (standart R source in C)
     *
-    * @param D  D value from KSP_bis test
+    * @param D  D value from KSPs test
     * @param n1 n Datapoints in first sample
     * @param n2 n Datapoints in second sample
-    * @return p-value of two-sided two-sample KSP_bis
+    * @return p-value of two-sided two-sample KSPs
     */
   def get_p_from_D(D: Double, n1: Long, n2: Long): Double = {
 

@@ -45,10 +45,10 @@ StopWatch.measureTime{
   MWP().contrast(d, Set(0,1))
 }
 StopWatch.measureTime{ // having some problem here
-  KSP_bis(200).contrast(d, Set(0, 1))
+  KSPs(200).contrast(d, Set(0, 1))
 }
 StopWatch.measureTime{ // having some problem here
-  KSP_bisn(200).contrast(d, Set(0, 1))
+  KSPsn(200).contrast(d, Set(0, 1))
 }
 StopWatch.measureTime{ // having some problem here
   KSP(200).contrast(d, Set(0, 1))
@@ -72,10 +72,10 @@ StopWatch.measureTime {
   MWP().contrast(d_, Set(0, 1))
 }
 StopWatch.measureTime { // having some problem here
-  KSP_bis(200).contrast(d_, Set(0, 1))
+  KSPs(200).contrast(d_, Set(0, 1))
 }
 StopWatch.measureTime { // having some problem here
-  KSP_bisn(200).contrast(d_, Set(0, 1))
+  KSPsn(200).contrast(d_, Set(0, 1))
 }
 StopWatch.measureTime { // having some problem here
   KSP(200).contrast(d_, Set(0, 1))
@@ -96,7 +96,7 @@ StopWatch.measureTime{
   MWP().contrast(dd, Set(0,1,2))
 }
 StopWatch.measureTime{
-  KSP_bis().contrast(dd, Set(0, 1, 2))
+  KSPs().contrast(dd, Set(0, 1, 2))
 }
 StopWatch.measureTime{
   KSP().contrast(dd, Set(0, 1, 2))
@@ -112,19 +112,19 @@ StopWatch.measureTime{
 
 print("lol")
 StopWatch.measureTime{
-  KSP_bis().get_p_from_D(0.1, 500, 500)
+  KSPs().get_p_from_D(0.1, 500, 500)
 }
 StopWatch.measureTime {
   KSP().get_p_from_D(0.1, 500, 500)
 }
 
 StopWatch.measureTime {
-  KSP_bis().get_p_from_D(0.1, 1000, 1000)
-  KSP_bis().get_p_from_D(0.05, 1000, 1000)
-  KSP_bis().get_p_from_D(0.05, 800, 1000)
-  KSP_bis().get_p_from_D(0.05, 1000, 100)
-  KSP_bis().get_p_from_D(0.01, 100, 1000)
-  KSP_bis().get_p_from_D(0.01, 1000, 100)
+  KSPs().get_p_from_D(0.1, 1000, 1000)
+  KSPs().get_p_from_D(0.05, 1000, 1000)
+  KSPs().get_p_from_D(0.05, 800, 1000)
+  KSPs().get_p_from_D(0.05, 1000, 100)
+  KSPs().get_p_from_D(0.01, 100, 1000)
+  KSPs().get_p_from_D(0.01, 1000, 100)
 }
 
 
@@ -138,21 +138,21 @@ StopWatch.measureTime {
 }
 
 StopWatch.measureTime {
-  KSP_bis().get_p_from_D(0.1, 1000, 1000)
+  KSPs().get_p_from_D(0.1, 1000, 1000)
 }
 StopWatch.measureTime{
   KSP().get_p_from_D(0.1, 1000, 1000)
 }
 
 StopWatch.measureTime{
-  KSP_bis().get_p_from_D(0.1, 500, 500)
+  KSPs().get_p_from_D(0.1, 500, 500)
 }
 StopWatch.measureTime{
   KSP().get_p_from_D(0.1, 500, 500)
 }
 
 StopWatch.measureTime{
-  KSP_bis().get_p_from_D(0.1, 100, 100)
+  KSPs().get_p_from_D(0.1, 100, 100)
 }
 StopWatch.measureTime{
   KSP().get_p_from_D(0.1, 100, 100)

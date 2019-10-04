@@ -30,13 +30,13 @@ import scala.math.{E, pow, sqrt}
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
   *              Added with respect to the original paper to loose the dependence of beta from alpha.
-  *
+  *              s like "speed"
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSP_bis-test AND all the improvements proposed by MCDE
-case class KSP_bis(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+//TODO: It would be actually interesting to compare MCDE with a version with the KSPs-test AND all the improvements proposed by MCDE
+case class KSPs(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   type I = I_Rank
   type D = D_Rank
-  val id = "KSP_bis"
+  val id = "KSPs"
 
   override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
 
@@ -106,10 +106,10 @@ case class KSP_bis(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var par
   /**
     * Convert the D value into a p-value
     *
-    * @param D  D value from KSP_bis test
+    * @param D  D value from KSPs test
     * @param n1 n Datapoints in first sample
     * @param n2 n Datapoints in second sample
-    * @return p-value of two-sided two-sample KSP_bis
+    * @return p-value of two-sided two-sample KSPs
     *
     *         This uses the approach from Marsaglia G, Tsang WW, Wang J (2003). "Evaluating Kolmogorov's Distribution". Journal of Statistical Software. 8 (18): 1–4. doi:10.18637/jss.v008.i18.
     *         See also:

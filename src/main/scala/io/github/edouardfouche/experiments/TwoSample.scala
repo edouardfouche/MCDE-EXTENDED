@@ -34,7 +34,7 @@ object TwoSample extends Experiment {
 
     val tests_Dindex = Vector(
       MWP(1,0.5, 0.5),
-      KSP_bis(1, 0.5, 0.5),
+      KSPs(1, 0.5, 0.5),
       KSP(1,0.5, 0.5),
       CSP(1,0.5, 0.5)
     )

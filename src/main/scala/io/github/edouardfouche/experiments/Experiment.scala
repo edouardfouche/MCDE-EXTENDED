@@ -39,7 +39,7 @@ trait Experiment extends LazyLogging {
   }
 
   val defaulttests: Vector[McdeStats] = Vector(MWP(50,alpha=0.5,beta=0.5),
-    KSP_bis(50, alpha = 0.5, beta = 0.5),
+    KSPs(50, alpha = 0.5, beta = 0.5),
     CSP(50,alpha=0.5,beta=0.5),
     MCDEP(50,alpha=0.5,beta=0.5))
 

@@ -42,6 +42,16 @@ CSP(1000).contrast(ddd3, Set(0, 1))
 MWP(1000).contrast(ddd3, Set(0, 1))
 KSP(10).contrast(ddd3, Set(0, 1, 2))
 
+val ddd4 = new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose)
+
+CSPn(1000).contrast(ddd4, Set(0, 1))
+MWPn(1000).contrast(ddd4, Set(0, 1))
+KSPn(10).contrast(ddd4, Set(0, 1, 2))
+
+CSP(1000).contrast(ddd4, Set(0, 1))
+MWP(1000).contrast(ddd4, Set(0, 1))
+KSP(10).contrast(ddd4, Set(0, 1, 2))
+
 
 (1 to 1000).toArray.map(x =>
   CSP(m).contrast(new DataSet(Independent(3, 0, "gaussian", 3).generate(1000).transpose), Set(0, 1))).sum / 1000

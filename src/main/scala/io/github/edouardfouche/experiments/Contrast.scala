@@ -35,15 +35,17 @@ object Contrast extends Experiment {
       MWP(1,0.5, 0.5),
       MWPn(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
-      //KSP_bis(1,0.5, 0.5),
-      //KSP_bisn(1,0.5, 0.5),
+      //KSPs(1,0.5, 0.5),
+      //KSPsn(1,0.5, 0.5),
       KSP(1, 0.5, 0.5),
       KSPn(1, 0.5, 0.5),
+      KSPs(1, 0.5, 0.5),
+      KSPsn(1, 0.5, 0.5),
       CSP(1, 0.5, 0.5),
       CSPn(1, 0.5, 0.5)
     )
 
-    val ndim = 2
+    val ndim = 2 // So it seems I've got the same result with 3-d (verified in 2019-10-03-14-56_Contrast_)
 
     val references = Vector(
       // the categorical stuff
