@@ -63,7 +63,7 @@ object IndexPerfW extends Experiment {
       val dataset = generator.generate(200000).transpose.head
 
       for {
-        windowsize <- (100 to 100000) by 10
+        windowsize <- (100 to 100000) by 20
       } {
         val initdata: Array[Double] = dataset.take(windowsize)
 

@@ -36,7 +36,7 @@ import scala.math.{E, pow, sqrt}
 case class KSPsn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   type I = I_Rank
   type D = D_Rank
-  val id = "KSPs"
+  val id = "KSPsn"
 
   override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
 
