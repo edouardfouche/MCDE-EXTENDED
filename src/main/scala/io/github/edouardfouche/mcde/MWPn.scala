@@ -112,9 +112,10 @@ case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       //} else if (n1 == cutLength) {
       //  0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
       //}
-      if (n1 == indexSelection.length) { // In that case the slicing process led to selecting everything, contrast is not defined
-        0
-      } else if (n1 == 0 || n1 == cutLength) {
+      //if (n1 == indexSelection.length) { // In that case the slicing process led to selecting everything, contrast is not defined
+      //  0
+      //} else
+      if (n1 == 0 || n1 == cutLength) {
         1
       } else {
         val n2: Long = cutLength - n1

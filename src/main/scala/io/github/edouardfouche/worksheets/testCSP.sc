@@ -28,29 +28,43 @@ val ddd = new DataSet(Independent(3, 0.0, "gaussian", 3).generate(1000).transpos
 
 CSP(1000).contrast(ddd, Set(0, 1))
 MWP(1000).contrast(ddd, Set(0, 1))
-KSP(10).contrast(ddd, Set(0, 1))
+KSP(1000).contrast(ddd, Set(0, 1))
 
 val ddd2 = new DataSet(Independent(3, 0.0, "gaussian", 2).generate(1000).transpose)
 
+CSPn(1000).contrast(ddd2, Set(0, 1))
+MWPn(1000).contrast(ddd2, Set(0, 1))
+KSPn(1000).contrast(ddd2, Set(0, 1))
+
 CSP(1000).contrast(ddd2, Set(0, 1))
 MWP(1000).contrast(ddd2, Set(0, 1))
-KSP(10).contrast(ddd2, Set(0, 1))
+KSP(1000).contrast(ddd2, Set(0, 1))
 
 val ddd3 = new DataSet(Independent(3, 0.0, "gaussian", 1).generate(1000).transpose)
 
 CSP(1000).contrast(ddd3, Set(0, 1))
 MWP(1000).contrast(ddd3, Set(0, 1))
-KSP(10).contrast(ddd3, Set(0, 1, 2))
+KSP(1000).contrast(ddd3, Set(0, 1))
+
+val ddd33 = new DataSet(Linear(3, 0.0, "gaussian", 1).generate(1000).transpose)
+
+CSPn(1000).contrast(ddd33, Set(0, 1))
+MWPn(1000).contrast(ddd33, Set(0, 1))
+KSPn(1000).contrast(ddd33, Set(0, 1))
+
+CSP(1000).contrast(ddd33, Set(0, 1))
+MWP(1000).contrast(ddd33, Set(0, 1))
+KSP(1000).contrast(ddd33, Set(0, 1))
 
 val ddd4 = new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose)
 
 CSPn(1000).contrast(ddd4, Set(0, 1))
 MWPn(1000).contrast(ddd4, Set(0, 1))
-KSPn(10).contrast(ddd4, Set(0, 1, 2))
+KSPn(1000).contrast(ddd4, Set(0, 1))
 
 CSP(1000).contrast(ddd4, Set(0, 1))
 MWP(1000).contrast(ddd4, Set(0, 1))
-KSP(10).contrast(ddd4, Set(0, 1, 2))
+KSP(1000).contrast(ddd4, Set(0, 1))
 
 
 (1 to 1000).toArray.map(x =>

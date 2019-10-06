@@ -59,7 +59,8 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
     val logicalArray = Array.fill[Boolean](length)(false)
     val selectedCategories: Array[Double] = selectSlice(sliceSize)
     val selectedIndexes: Array[Int] = selectedCategories.flatMap(x => dindex(x)._1)
-    // New correcting part
+
+    // Correcting the slice size
     val c_selectedIndexes: Array[Int] = if (selectedIndexes.length > sliceSize) {
       scala.util.Random.shuffle(selectedIndexes.toList).drop(selectedIndexes.length - sliceSize).toArray
     } else if (selectedIndexes.length < sliceSize) {

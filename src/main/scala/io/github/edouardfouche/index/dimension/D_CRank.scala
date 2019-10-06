@@ -83,17 +83,17 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     val logicalArray = Array.fill[Boolean](length)(true)
     //val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
 
-    /* // Performing safe cut
+    // Performing safe cut
     val start = scala.util.Random.nextInt(length - sliceSize)//+1)
     val sliceStart = getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
     val sliceEnd = getSafeCut(sliceEndSearchStart)
-    */
+
 
     //val start = scala.util.Random.nextInt(length - sliceSize)//+1)
-    val sliceStart = scala.util.Random.nextInt(length - sliceSize) //+1)//getSafeCut(start)
+    //val sliceStart = scala.util.Random.nextInt(length - sliceSize) //+1)//getSafeCut(start)
     //val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
-    val sliceEnd = (sliceStart + sliceSize).min(length) //getSafeCut(sliceEndSearchStart)
+    //val sliceEnd = (sliceStart + sliceSize).min(length) //getSafeCut(sliceEndSearchStart)
 
 
     for {x <- 0 until sliceStart} {
@@ -103,6 +103,17 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     for {x <- sliceEnd until dindex.length} {
       logicalArray(dindex(x)._1) = false
     }
+
+    // Correcting the slice size
+    val currentsliceSize = sliceEnd - sliceStart
+    if (currentsliceSize > sliceSize) { // then release some
+      val torelease = scala.util.Random.shuffle((sliceStart until sliceEnd).toList).take(currentsliceSize - sliceSize)
+      torelease.foreach(x => logicalArray(dindex(x)._1) = false)
+    } else if (currentsliceSize < sliceSize) { // then reset some to true
+      val toreset = scala.util.Random.shuffle((0 until sliceStart).toList ::: (sliceEnd until dindex.length).toList).take(sliceSize - currentsliceSize)
+      toreset.foreach(x => logicalArray(dindex(x)._1) = true)
+    }
+
     logicalArray
   }
 
