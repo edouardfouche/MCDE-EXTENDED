@@ -24,7 +24,7 @@ import io.github.edouardfouche.mcde._
   * Test the influence of M on the scores
   */
 object Contrast extends Experiment {
-  val nrep = 1000
+  val nrep = 10000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
