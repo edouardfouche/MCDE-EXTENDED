@@ -19,7 +19,7 @@ package io.github.edouardfouche.experiments
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.index.{I_CRank, I_Count, I_Rank, Index}
-import io.github.edouardfouche.mcde.{CSP, KSP, MWP, McdeStats}
+import io.github.edouardfouche.mcde.{CSPn, KSPn, MWPn, McdeStats}
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
@@ -29,7 +29,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object ContrastPerfW extends Experiment {
-  val nrep = 100
+  val nrep = 1000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -54,12 +54,14 @@ object ContrastPerfW extends Experiment {
     )
     info(s"initialize generators")
     val tests: Vector[McdeStats] = Vector(
-      CSP(),
-      //CSP(),
-      MWP(),
-      //MWP(),
-      KSP()
-      //KSP()
+      //MWP(1,0.5, 0.5),
+      MWPn(1, 0.5, 0.5),
+      //KSP(1, 0.5, 0.5),
+      KSPn(1, 0.5, 0.5),
+      //KSPs(1, 0.5, 0.5),
+      //KSPsn(1, 0.5, 0.5),
+      //CSP(1, 0.5, 0.5),
+      CSPn(1, 0.5, 0.5)
     )
     info(s"initialize generators")
 
@@ -76,7 +78,7 @@ object ContrastPerfW extends Experiment {
       val dataset = generator.generate(200000)
 
       for {
-        windowsize <- (100 to 100000) by 10
+        windowsize <- (100 to 100000) by 20
       } {
         val initdata: DataSet = new DataSet(generator.generate(windowsize))
         val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
