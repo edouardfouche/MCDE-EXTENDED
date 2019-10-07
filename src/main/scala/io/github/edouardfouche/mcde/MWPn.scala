@@ -135,6 +135,7 @@ case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
             print(s"reference: ${ref.dindex.slice(cutStart, cutEnd).take(5) mkString ","}")
             println(s"U1: $U1, U2: ${n1 * n2 - U1}, n1: $n1, n2: $n2, std: $std, correction: $correction -> res: $res")
           }
+          //println(s"U1: $U1, U2: ${n1 * n2 - U1}, n1: $n1, n2: $n2, std: $std, correction: $correction -> res: $res")
           res
         }
       }

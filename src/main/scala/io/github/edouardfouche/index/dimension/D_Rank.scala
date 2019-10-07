@@ -50,6 +50,8 @@ class D_Rank(val values: Array[Double]) extends DimensionIndex {
     for {x <- sliceStart + sliceSize until dindex.length} {
       logicalArray(dindex(x)._1) = false
     }
+
+    //println(s"sliceSize= $sliceSize")
     logicalArray
   }
 }
