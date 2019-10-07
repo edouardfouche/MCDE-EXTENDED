@@ -19,7 +19,7 @@ package io.github.edouardfouche.experiments
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.index.{I_CRank, I_Count, I_Rank, Index}
-import io.github.edouardfouche.mcde.{CSPn, KSPn, MWPn, McdeStats}
+import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
@@ -40,6 +40,7 @@ object ContrastPerfW extends Experiment {
       //new D_Count_Stream(_),
       new I_CRank(_),
       //new D_CRank_Stream(_),
+      new I_Rank(_),
       new I_Rank(_)
       //new D_Rank_Stream(_)
     )
@@ -49,19 +50,20 @@ object ContrastPerfW extends Experiment {
       //Independent(1, 0, "gaussian", 10),
       Independent(3, 0, "gaussian", 20),
       //Independent(1, 0, "gaussian", 20),
+      Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0)
       //Independent(1, 0, "gaussian", 0)
     )
     info(s"initialize generators")
     val tests: Vector[McdeStats] = Vector(
+      //CSP(1, 0.5, 0.5),
+      CSPn(1, 0.5, 0.5),
       //MWP(1,0.5, 0.5),
       MWPn(1, 0.5, 0.5),
       //KSP(1, 0.5, 0.5),
       KSPn(1, 0.5, 0.5),
       //KSPs(1, 0.5, 0.5),
-      //KSPsn(1, 0.5, 0.5),
-      //CSP(1, 0.5, 0.5),
-      CSPn(1, 0.5, 0.5)
+      KSPsn(1, 0.5, 0.5)
     )
     info(s"initialize generators")
 
