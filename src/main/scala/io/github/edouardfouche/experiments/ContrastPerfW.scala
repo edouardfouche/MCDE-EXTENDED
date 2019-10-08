@@ -57,13 +57,13 @@ object ContrastPerfW extends Experiment {
     info(s"initialize generators")
     val tests: Vector[McdeStats] = Vector(
       //CSP(1, 0.5, 0.5),
-      CSPn(1, 0.5, 0.5),
+      CSPn(50, 0.5, 0.5),
       //MWP(1,0.5, 0.5),
-      MWPn(1, 0.5, 0.5),
+      MWPn(50, 0.5, 0.5),
       //KSP(1, 0.5, 0.5),
-      KSPn(1, 0.5, 0.5),
+      KSPn(50, 0.5, 0.5),
       //KSPs(1, 0.5, 0.5),
-      KSPsn(1, 0.5, 0.5)
+      KSPsn(50, 0.5, 0.5)
     )
     info(s"initialize generators")
 
