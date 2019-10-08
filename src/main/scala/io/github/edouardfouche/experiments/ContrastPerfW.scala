@@ -94,10 +94,11 @@ object ContrastPerfW extends Experiment {
           cpumeasures = cpumeasures :+ cpu
           wallmeasures = wallmeasures :+ wall
         }
-        val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_wall", "std_cpu", "std_wall")
+        val attributes = List("refId", "testId", "indexId", "w", "avg_cpu", "avg_wall", "std_cpu", "std_wall")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
-        summary.add("indexId", index)
+        summary.add("testId", test.id)
+        summary.add("indexId", initalizedindex.id)
         summary.add("w", windowsize)
         summary.add("avg_cpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
         //summary.add("avg_wall", "%.6f".format(wall))
