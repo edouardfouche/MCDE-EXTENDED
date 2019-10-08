@@ -29,7 +29,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object ContrastPerfW extends Experiment {
-  val nrep = 1000
+  val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -93,23 +93,28 @@ object ContrastPerfW extends Experiment {
           val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
           cpumeasures = cpumeasures :+ cpu
           wallmeasures = wallmeasures :+ wall
-        }
-        val attributes = List("refId", "testId", "indexId", "w", "avg_cpu", "avg_wall", "std_cpu", "std_wall")
-        val summary = ExperimentSummary(attributes)
-        summary.add("refId", generator.id)
-        summary.add("testId", test.id)
-        summary.add("indexId", initalizedindex.id)
-        summary.add("w", windowsize)
-        summary.add("avg_cpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
-        //summary.add("avg_wall", "%.6f".format(wall))
-        summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
-        summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
-        //summary.add("rwall", "%.6f".format(rwall))
-        //summary.add("rep", n)
-        summary.write(summaryPath)
 
-        info(s"Avg cpu of ${test.id}, w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(cpumeasures.sum / cpumeasures.length))
+          val attributes = List("refId", "testId", "indexId", "w", "cpu", "wall", "contrast", "rep")
+          val summary = ExperimentSummary(attributes)
+          summary.add("refId", generator.id)
+          summary.add("testId", test.id)
+          summary.add("indexId", initalizedindex.id)
+          summary.add("w", windowsize)
+          summary.add("cpu", "%.6f".format(cpu))
+          summary.add("wall", "%.6f".format(wall))
+          summary.add("contrast", "%.6f".format(contrast))
+          summary.add("rep", n)
+          //summary.add("avg_wall", "%.6f".format(wall))
+          //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
+          //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+          //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
+          //summary.add("rwall", "%.6f".format(rwall))
+          //summary.add("rep", n)
+          summary.write(summaryPath)
+        }
+
+
+        info(s"Avg cpu of ${test.id}, w=$windowsize: ${test.id} -> " + "%.6f".format(cpumeasures.sum / cpumeasures.length))
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
