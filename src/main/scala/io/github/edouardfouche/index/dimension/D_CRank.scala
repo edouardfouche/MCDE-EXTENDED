@@ -49,7 +49,13 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     // Create an index for each column with this shape: (original position, adjusted rank, original value)
     // They are ordered by rank
     val nonadjusted = {
-      input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
+      //input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
+      // yields to java.lang.IllegalArgumentException: Comparison method violates its general contract
+      //input.zipWithIndex.sortWith((x,y) => (x._1 < y._1) || ((x._1 == y._1) && math.random < 0.5)).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
+      val rd = scala.util.Random.shuffle(input.indices.toList) // tie breaking random list
+      input.zipWithIndex.zip(rd).map(x => (x._1._1, x._1._2, x._2)).
+        sortWith((x, y) => (x._1 < y._1) || ((x._1 == y._1) && x._3 < y._3)).
+        zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
     }
     val adjusted = new Array[T](input.length)
 

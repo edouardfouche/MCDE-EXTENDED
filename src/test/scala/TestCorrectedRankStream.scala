@@ -100,7 +100,7 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"Check insert middle for even") {
     val even4 = new D_CRank_Stream(even)
     even4.insert(2.5)
-    println(even4.toString)
+    //println(even4.toString)
     assert(even4(2) == (6, 2.5, -1, -1))
   }
 
@@ -134,17 +134,34 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"A - Check insert middle for ties") {
     val ties4 = new D_CRank_Stream(tiesA)
     ties4.insert(2.0)
-    assert(ties4(0) == (3, 1.0, 0.0, 0.0))
-    assert(ties4(1) == (1, 2.0, 2.0, 24))
-    assert(ties4(2) == (2, 2.0, 2.0, 24))
-    assert(ties4(3) == (4, 2.0, 2.0, 24))
-    assert(ties4(4) == (5, 2.0, -1, -1))
+    //assert(ties4(0) == (3, 1.0, 0.0, 0.0))
+    //assert(ties4(1) == (1, 2.0, 2.0, 24))
+    //assert(ties4(2) == (2, 2.0, 2.0, 24))
+    //assert(ties4(3) == (4, 2.0, 2.0, 24))
+    //assert(ties4(4) == (5, 2.0, -1, -1))
+    assert(ties4(0)._2 == 1.0)
+    assert(ties4(1)._2 == 2.0)
+    assert(ties4(2)._2 == 2.0)
+    assert(ties4(3)._2 == 2.0)
+    assert(ties4(4)._2 == 2.0)
     ties4.refresh
-    assert(ties4(0) == (2, 1.0, 0.0, 0.0))
-    assert(ties4(1) == (0, 2.0, 2.5, 60))
-    assert(ties4(2) == (1, 2.0, 2.5, 60))
-    assert(ties4(3) == (3, 2.0, 2.5, 60))
-    assert(ties4(4) == (4, 2.0, 2.5, 60))
+    assert(ties4(0)._2 == 1.0)
+    assert(ties4(1)._2 == 2.0)
+    assert(ties4(2)._2 == 2.0)
+    assert(ties4(3)._2 == 2.0)
+    assert(ties4(4)._2 == 2.0)
+
+    assert(ties4(0)._3 == 0.0)
+    assert(ties4(1)._3 == 2.5)
+    assert(ties4(2)._3 == 2.5)
+    assert(ties4(3)._3 == 2.5)
+    assert(ties4(4)._3 == 2.5)
+
+    assert(ties4(0)._4 == 0.0)
+    assert(ties4(1)._4 == 60)
+    assert(ties4(2)._4 == 60)
+    assert(ties4(3)._4 == 60)
+    assert(ties4(4)._4 == 60)
   }
 
   val tiesB = Array(3.0, 2.0, 2.0, 4.0, 2.0)
@@ -164,10 +181,10 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"B - Check insert middle for ties") {
     val ties7 = new D_CRank_Stream(tiesB)
     ties7.insert(2.0)
-    assert(ties7(0) == (1, 2.0, 1.0, 24.0))
-    assert(ties7(1) == (2, 2.0, 1.0, 24.0))
-    assert(ties7(2) == (4, 2.0, 1.0, 24.0))
-    assert(ties7(3) == (5, 2.0, -1, -1))
+    assert(ties7(0)._2 == 2.0)
+    assert(ties7(1)._2 == 2.0)
+    assert(ties7(2)._2 == 2.0)
+    assert(ties7(3)._2 == 2.0)
   }
 
   val tiesC = Array(0.0, 2.0, 2.0, 1.0, 2.0)
@@ -189,10 +206,10 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"C - Check insert middle for ties") {
     val ties10 = new D_CRank_Stream(tiesC)
     ties10.insert(2.0)
-    assert(ties10(1) == (1, 2.0, 3.0, 24.0))
-    assert(ties10(2) == (2, 2.0, 3.0, 24.0))
-    assert(ties10(3) == (4, 2.0, 3.0, 24.0))
-    assert(ties10(4) == (5, 2.0, -1, -1))
+    assert(ties10(1)._2 == 2.0)
+    assert(ties10(2)._2 == 2.0)
+    assert(ties10(3)._2 == 2.0)
+    assert(ties10(4)._2 == 2.0)
   }
 
   val tiesD = Array(2.0, 0.0, 2.0, 1.0, 2.0)
@@ -216,10 +233,10 @@ class TestCorrectedRankStream extends FunSuite {
     //println(ties10)
     ties10.insert(2.0)
     //println(ties10)
-    assert(ties10(1) == (3, 1.0, 1.0, 0.0))
-    assert(ties10(2) == (2, 2.0, 3.0, 24))
-    assert(ties10(3) == (4, 2.0, 3.0, 24))
-    assert(ties10(4) == (5, 2.0, -1, -1))
+    assert(ties10(1)._2 == 1.0)
+    assert(ties10(2)._2 == 2.0)
+    assert(ties10(3)._2 == 2.0)
+    assert(ties10(4)._2 == 2.0)
   }
 
   val tiesE = Array(2.0, 3.0, 2.0, 1.0, 2.0)
@@ -242,10 +259,10 @@ class TestCorrectedRankStream extends FunSuite {
     //println(ties10)
     ties10.insert(2.0)
     //println(ties10)
-    assert(ties10(1) == (2, 2.0, 2.0, 24.0))
-    assert(ties10(2) == (4, 2.0, 2.0, 24.0))
-    assert(ties10(3) == (5, 2.0, -1, -1))
-    assert(ties10(4) == (1, 3.0, 4.0, 24.0))
+    assert(ties10(1)._2 == 2.0)
+    assert(ties10(2)._2 == 2.0)
+    assert(ties10(3)._2 == 2.0)
+    assert(ties10(4)._2 == 3.0)
   }
 
   val tiesF = Array(2.0, 3.0, 2.0, 4.0, 2.0)
@@ -266,44 +283,51 @@ class TestCorrectedRankStream extends FunSuite {
   test(s"F - Check insert middle for ties") {
     val ties10 = new D_CRank_Stream(tiesF)
     ties10.insert(2.0)
-    assert(ties10(0) == (2, 2.0, 1.0, 24))
-    assert(ties10(1) == (4, 2.0, 1.0, 24))
-    assert(ties10(2) == (5, 2.0, -1, -1))
-    assert(ties10(3) == (1, 3.0, 3.0, 24))
+    assert(ties10(0)._2 == 2.0)
+    assert(ties10(1)._2 == 2.0)
+    assert(ties10(2)._2 == 2.0)
+    assert(ties10(3)._2 == 3.0)
   }
 
   test(s"Test Scenario 1") {
     val odd1 = new D_CRank_Stream(Array(2.0, 2.0, 6.0, 1.0, 1.0, 0.0))
     odd1.insert(1.0)
     assert(odd1(0) == (5, 0.0, 0.0, 0.0))
-    assert(odd1(1) == (3, 1.0, 1.5, 6.0))
-    assert(odd1(2) == (4, 1.0, 1.5, 6.0))
-    assert(odd1(3) == (6, 1.0, -1, -1))
+    assert(odd1(1)._2 == 1.0)
+    assert(odd1(2)._2 == 1.0)
+    assert(odd1(3)._2 == 1.0)
     assert(odd1(4) == (1, 2.0, 3.5, 12.0))
 
     odd1.insert(1.0)
     assert(odd1(0) == (5, 0.0, 0.0, 0.0))
-    assert(odd1(1) == (3, 1.0, 1.5, 6.0))
-    assert(odd1(2) == (4, 1.0, 1.5, 6.0))
-    assert(odd1(3) == (6, 1.0, -1, -1))
-    assert(odd1(4) == (7, 1.0, -1, -1))
+    assert(odd1(1)._2 == 1.0)
+    assert(odd1(2)._2 == 1.0)
+    assert(odd1(3)._2 == 1.0)
+    assert(odd1(4)._2 == 1.0)
     assert(odd1(5) == (2, 6.0, 5.0, 12.0))
 
     odd1.insert(6.0)
     assert(odd1(0) == (5, 0.0, 0.0, 0.0))
-    assert(odd1(1) == (3, 1.0, 1.5, 6.0))
-    assert(odd1(2) == (4, 1.0, 1.5, 6.0))
-    assert(odd1(3) == (6, 1.0, -1, -1))
-    assert(odd1(4) == (7, 1.0, -1, -1))
+    assert(odd1(1)._2 == 1.0)
+    assert(odd1(2)._2 == 1.0)
+    assert(odd1(3)._2 == 1.0)
+    assert(odd1(4)._2 == 1.0)
     assert(odd1(5) == (8, 6.0, -1, -1))
 
     odd1.refresh
-    assert(odd1(0) == (2, 0.0, 0.0, 0.0))
-    assert(odd1(1) == (0, 1.0, 2.5, 60))
-    assert(odd1(2) == (1, 1.0, 2.5, 60))
-    assert(odd1(3) == (3, 1.0, 2.5, 60))
-    assert(odd1(4) == (4, 1.0, 2.5, 60))
-    assert(odd1(5) == (5, 6.0, 5.0, 60))
+    assert(odd1(0)._2 == 0.0)
+    assert(odd1(1)._2 == 1.0)
+    assert(odd1(2)._2 == 1.0)
+    assert(odd1(3)._2 == 1.0)
+    assert(odd1(4)._2 == 1.0)
+    assert(odd1(5)._2 == 6.0)
+
+    assert(odd1(0)._3 == 0.0)
+    assert(odd1(1)._3 == 2.5)
+    assert(odd1(2)._3 == 2.5)
+    assert(odd1(3)._3 == 2.5)
+    assert(odd1(4)._3 == 2.5)
+    assert(odd1(5)._3 == 5.0)
   }
 
   test("Test Scenario 2") {
@@ -312,18 +336,18 @@ class TestCorrectedRankStream extends FunSuite {
     odd2.insert(2.0)
     odd2.insert(6.0)
     assert(odd2(0) == (5, 0.0, 0.0, 0.0))
-    assert(odd2(1) == (3, 1.0, 1.5, 6.0))
-    assert(odd2(2) == (4, 1.0, 1.5, 6.0))
-    assert(odd2(3) == (6, 2.0, -1, -1))
-    assert(odd2(4) == (7, 2.0, -1, -1))
+    assert(odd2(1)._2 == 1.0)
+    assert(odd2(2)._2 == 1.0)
+    assert(odd2(3)._2 == 2.0)
+    assert(odd2(4)._2 == 2.0)
     assert(odd2(5) == (8, 6.0, -1, -1))
 
     odd2.refresh
     assert(odd2(0) == (2, 0.0, 0.0, 0.0))
-    assert(odd2(1) == (0, 1.0, 1.5, 6.0))
-    assert(odd2(2) == (1, 1.0, 1.5, 6.0))
-    assert(odd2(3) == (3, 2.0, 3.5, 12))
-    assert(odd2(4) == (4, 2.0, 3.5, 12))
+    assert(odd2(1)._2 == 1.0)
+    assert(odd2(2)._2 == 1.0)
+    assert(odd2(3)._2 == 2.0)
+    assert(odd2(4)._2 == 2.0)
     assert(odd2(5) == (5, 6.0, 5.0, 12))
 
     odd2.insert(1.0)
@@ -331,10 +355,10 @@ class TestCorrectedRankStream extends FunSuite {
     odd2.insert(0.0)
 
     assert(odd2(0) == (8, 0.0, -1, -1))
-    assert(odd2(1) == (6, 1.0, -1, -1))
-    assert(odd2(2) == (7, 1.0, -1, -1))
-    assert(odd2(3) == (3, 2.0, 3.5, 12))
-    assert(odd2(4) == (4, 2.0, 3.5, 12))
+    assert(odd2(1)._2 == 1.0)
+    assert(odd2(2)._2 == 1.0)
+    assert(odd2(3)._2 == 2.0)
+    assert(odd2(4)._2 == 2.0)
     assert(odd2(5) == (5, 6.0, 5, 12))
 
     odd2.insert(10.0)
@@ -346,10 +370,13 @@ class TestCorrectedRankStream extends FunSuite {
 
     assert(odd2(0) == (5, -1.0, 0.0, 0.0))
     assert(odd2(1) == (3, 0.0, 1.0, 0.0))
-    assert(odd2(2) == (1, 1.0, 2.5, 6))
-    assert(odd2(3) == (2, 1.0, 2.5, 6))
+    assert(odd2(2)._2 == 1.0)
+    assert(odd2(3)._2 == 1.0)
     assert(odd2(4) == (0, 6.0, 4, 6))
     assert(odd2(5) == (4, 10.0, 5, 6))
+
+    assert(odd2(2)._3 == 2.5)
+    assert(odd2(3)._3 == 2.5)
   }
 
 
