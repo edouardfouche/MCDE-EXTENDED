@@ -239,7 +239,7 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
     //val indextoinsert = binarySearch_insert(0, dindex.length - 1, newpoint) // will always be pointing to an object or between two, in that case, the one after.
 
     val indextodelete = binarySearch(0, dindex.length - 1, todelete) // will always be pointing to an object (the oldest one with value = todelete)
-    val indextoinsert = binarySearch_insert(0, dindex.length - 1, newpoint) // will pointing between two objects, i.e, the one after.
+    val indextoinsert = if (newpoint == todelete) indextodelete + 1 else binarySearch_insert(0, dindex.length - 1, newpoint) // will pointing between two objects, i.e, the one after.
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
 
