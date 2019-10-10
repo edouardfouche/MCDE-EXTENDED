@@ -116,10 +116,27 @@ object StreamEstimatorPerformance extends Experiment {
       for {
         streamestimator <- streamestimators
       } {
-        val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(streamestimator(test).run(new DataSet(slowchanging)))
-        val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(streamestimator(test).run(new DataSet(fastchanging)))
-        //TODO: Save the computation time in some CSV
-        //TODO: Save the sequences slowoutput and fastoutput into some file? (each are 500000 numbers)
+        val estimator = streamestimator(test)
+        val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(slowchanging)))
+        val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
+
+        utils.createFolderIfNotExisting(experiment_folder + "/data")
+        val slowpath = "data/" + s"slow-${estimator.id}"
+        val fastpath = "data/" + s"fast-${estimator.id}"
+        utils.saveDataSet(Array(slowoutput), experiment_folder + "/" + slowpath)
+        utils.saveDataSet(Array(fastoutput), experiment_folder + "/" + fastpath)
+
+        val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
+        val summary = ExperimentSummary(attributes)
+        summary.add("estimatorId", estimator.id)
+        summary.add("slowcpu", slowcpu)
+        summary.add("slowwall", slowwall)
+        summary.add("fastcpu", fastcpu)
+        summary.add("fastwall", fastwall)
+        summary.add("slowpath", slowpath)
+        summary.add("fastpath", fastpath)
+
+        summary.write(summaryPath)
       }
 
     }
