@@ -16,8 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.I_Rank
 import io.github.edouardfouche.index.dimension.D_Rank
+import io.github.edouardfouche.index.{I_Rank, I_Rank_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.annotation.tailrec
@@ -42,8 +42,9 @@ case class KSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
 
   override def getIndexConstruct: DataSet => I = new I(_)
 
-  def preprocess(input: DataSet): I = {
-    new I(input, parallelize)
+  def preprocess(input: DataSet, stream: Boolean = false): I = {
+    if (!stream) new I(input, parallelize)
+    else new I_Rank_Stream(input, parallelize)
   }
 
   /**

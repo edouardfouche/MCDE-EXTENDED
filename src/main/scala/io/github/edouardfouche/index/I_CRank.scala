@@ -28,6 +28,8 @@ class I_CRank(val data: DataSet, val parallelize: Int = 0) extends Index[D_CRank
   val id = "CRank"
   //type T = D_CRank[String]
 
+  def toStream: I_CRank = new I_CRank_Stream(data, parallelize)
+
   protected def createIndex(data: DataSet): Vector[D_CRank] = {
     if (parallelize == 0) {
       (0 until data.ncols).toVector.map(data(_)).map {

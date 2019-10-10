@@ -26,6 +26,9 @@ class I_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[Dimensi
   //override type T = DimensionIndex
   val id = "Multi"
   //type T = DimensionIndex[String]
+
+  def toStream: I_Multi_Stream = new I_Multi_Stream(data, parallelize)
+
   /**
     *
     * @param data a data set (column-oriented!)

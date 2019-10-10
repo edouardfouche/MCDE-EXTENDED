@@ -26,6 +26,9 @@ class I_Count(val data: DataSet, val parallelize: Int = 0) extends Index[D_Count
   //override type T = D_Count
   val id = "Count"
   //type T = D_Count[String]
+
+  def toStream: I_Count_Stream = new I_Count_Stream(data, parallelize)
+
   /**
     *
     * @param data a data set (column-oriented!)

@@ -16,8 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.I_Multi
 import io.github.edouardfouche.index.dimension.{D_CRank, D_Count, D_Rank, DimensionIndex}
+import io.github.edouardfouche.index.{I_Multi, I_Multi_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
@@ -37,8 +37,9 @@ case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
   override def getDIndexConstruct: Array[Double] => DimensionIndex = new D_Rank(_) // because whatever...
   override def getIndexConstruct: DataSet => I_Multi = new I_Multi(_)
 
-  def preprocess(input: DataSet): I = {
-    new I(input, parallelize)
+  def preprocess(input: DataSet, stream: Boolean = false): I = {
+    if (!stream) new I(input, parallelize)
+    else new I_Multi_Stream(input, parallelize)
   }
 
   val id = "MCDEP"

@@ -26,6 +26,10 @@ class I_Count_Stream(data: DataSet, parallelize: Int = 0) extends I_Count(data, 
   //override type T = D_Count
   override val id = "CountStream"
   //type T = D_Count[String]
+
+  // basically, does nothing
+  override def toStream: I_Count_Stream = this
+
   /**
     *
     * @param data a data set (column-oriented!)

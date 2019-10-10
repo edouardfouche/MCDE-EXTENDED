@@ -22,8 +22,16 @@ class DataSet(val columns: Array[Array[Double]], val types: Array[String]) {
 
    */
 
-
+  // If one does not precise the type, simply consider them all numerical
   def this(columns: Array[Array[Double]]) = this(columns, columns.map(x => "n"))
+
+  def take(nrows: Int): DataSet = new DataSet(columns.map(x => x.take(nrows)), types)
+
+  def drop(nrows: Int): DataSet = new DataSet(columns.map(x => x.drop(nrows)), types)
+
+  def head: Array[Double] = columns.map(x => x.head)
+
+  def tail: DataSet = new DataSet(columns.map(x => x.tail), types)
 
 
   //def this(columns: Array[Array[Int]]) = this(columns.map(_.map(_.toString).toVector).toList)

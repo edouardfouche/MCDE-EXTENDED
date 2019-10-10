@@ -27,6 +27,8 @@ class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[D_Rank] 
   val id = "Rank"
   //type T = DimensionIndex[String]
 
+  def toStream: I_Rank_Stream = new I_Rank_Stream(data, parallelize)
+
   /**
     *
     * @param data a data set (column-oriented!)

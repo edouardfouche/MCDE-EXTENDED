@@ -16,8 +16,8 @@
  */
 package io.github.edouardfouche.mcde
 
-import io.github.edouardfouche.index.I_CRank
 import io.github.edouardfouche.index.dimension.D_CRank
+import io.github.edouardfouche.index.{I_CRank, I_CRank_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.HalfGaussian
 
@@ -43,8 +43,10 @@ case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
 
   override def getIndexConstruct: DataSet => I = new I(_)
 
-  def preprocess(input: DataSet): I = {
-    new I(input, parallelize)
+  def preprocess(input: DataSet, stream: Boolean = false): I = {
+    if (!stream)
+      new I(input, parallelize)
+    else new I_CRank_Stream(input, parallelize)
   }
 
   /**

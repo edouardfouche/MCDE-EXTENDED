@@ -28,6 +28,9 @@ class I_CRank_Stream(data: DataSet, parallelize: Int = 0) extends I_CRank(data, 
   override val id = "CRankStream"
   //type T = D_CRank[String]
 
+  // basically, does nothing
+  override def toStream: I_CRank_Stream = this
+
   override protected def createIndex(data: DataSet): Vector[D_CRank_Stream] = {
     if (parallelize == 0) {
       (0 until data.ncols).toVector.map(data(_)).map {

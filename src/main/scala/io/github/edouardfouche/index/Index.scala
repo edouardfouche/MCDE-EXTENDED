@@ -31,6 +31,7 @@ abstract class Index[+T <: DimensionIndex] {
   //type T <: DimensionIndex[_]
   val index: Vector[T] = createIndex(data)
 
+  def toStream(): Index[T]
 
   /**
     *

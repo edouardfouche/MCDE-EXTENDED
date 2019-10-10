@@ -17,8 +17,8 @@
 package io.github.edouardfouche.mcde
 
 import breeze.stats.distributions.ChiSquared
-import io.github.edouardfouche.index.I_Count
 import io.github.edouardfouche.index.dimension.D_Count
+import io.github.edouardfouche.index.{I_Count, I_Count_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
@@ -40,8 +40,9 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
   override def getIndexConstruct: DataSet => I = new I(_)
 
-  def preprocess(input: DataSet): I = {
-    new I(input, parallelize)
+  def preprocess(input: DataSet, stream: Boolean = false): I = {
+    if (!stream) new I(input, parallelize)
+    else new I_Count_Stream(input, parallelize)
   }
 
   /**

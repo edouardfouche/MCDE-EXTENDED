@@ -26,6 +26,10 @@ class I_Multi_Stream(data: DataSet, parallelize: Int = 0) extends I_Multi(data, 
   //override type T = DimensionIndex
   override val id = "MultiStream"
   //type T = DimensionIndex[String]
+
+  // basically, does nothing
+  override def toStream: I_Multi_Stream = this
+
   /**
     *
     * @param data a data set (column-oriented!)

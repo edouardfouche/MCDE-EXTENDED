@@ -27,6 +27,9 @@ class I_Rank_Stream(data: DataSet, parallelize: Int = 0) extends I_Rank(data, pa
   override val id = "RankStream"
   //type T = DimensionIndex[String]
 
+  // basically, does nothing
+  override def toStream: I_Rank_Stream = this
+
   /**
     *
     * @param data a data set (column-oriented!)

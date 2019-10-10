@@ -22,7 +22,7 @@ abstract class Stats{
   /**
     * @param input A data set (row oriented)
    */
-  def preprocess(input: DataSet): I
+  def preprocess(input: DataSet, stream: Boolean = false): I
   //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
