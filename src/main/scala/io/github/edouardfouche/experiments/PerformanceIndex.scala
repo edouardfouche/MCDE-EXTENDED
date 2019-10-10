@@ -25,7 +25,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Created by fouchee on 12.07.17.
   * Test the influence of M on the scores
   */
-object IndexPerfW extends Experiment {
+object PerformanceIndex extends Experiment {
   val nrep = 1000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
@@ -60,11 +60,11 @@ object IndexPerfW extends Experiment {
       val generator = generators(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       info(s"Starting with index: ${index(Array(1,2,3)).id}")
-      val dataset = generator.generate(200000).transpose.head
 
       for {
-        windowsize <- (100 to 100000) by 20
+        windowsize <- (100 to 100000) by 100
       } {
+        val dataset = generator.generate(windowsize + nrep).transpose.head
         val initdata: Array[Double] = dataset.take(windowsize)
 
         val (cpu, wall, initalizedindex) = StopWatch.measureTime(index(initdata))
@@ -84,9 +84,9 @@ object IndexPerfW extends Experiment {
         var measures: Array[Double] = Array()
         var rmeasures: Array[Double] = Array()
         for {
-          n <- (1 to nrep)
+          n <- (0 until nrep)
         } {
-          val newpoint: Double = dataset(windowsize + n - 1)
+          val newpoint: Double = dataset(windowsize + n)
           val (cpu, wall, a) = StopWatch.measureTime(initalizedindex.insert(newpoint))
           val (rcpu, rwall, b) = StopWatch.measureTime(initalizedindex.refresh())
           //val (rcpu, rwall, b) = StopWatch.measureTime({})

@@ -28,7 +28,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Created by fouchee on 12.07.17.
   * Test the influence of M on the scores
   */
-object ContrastPerfW extends Experiment {
+object PerformanceContrast extends Experiment {
   val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
@@ -77,24 +77,24 @@ object ContrastPerfW extends Experiment {
       val test: McdeStats = tests(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       info(s"Starting with index: ${index(new DataSet(Array(Array(1, 2, 3)))).id}")
-      val dataset = generator.generate(200000)
+      //val dataset = generator.generate(200000)
 
       for {
-        windowsize <- (100 to 100000) by 20
+        windowsize <- (100 to 100000) by 100
       } {
-        val initdata: DataSet = new DataSet(generator.generate(windowsize))
-        val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
-
         var cpumeasures: Array[Double] = Array()
         var wallmeasures: Array[Double] = Array()
         for {
           n <- 1 to nrep
         } {
+          val initdata: DataSet = new DataSet(generator.generate(windowsize))
+          val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
+
           val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
           cpumeasures = cpumeasures :+ cpu
           wallmeasures = wallmeasures :+ wall
 
-          val attributes = List("refId", "testId", "indexId", "w", "cpu", "wall", "contrast", "rep")
+          val attributes = List("refId", "testId", "indexId", "w", "prepcpu", "prepwall", "cpu", "wall", "contrast", "rep")
           val summary = ExperimentSummary(attributes)
           summary.add("refId", generator.id)
           summary.add("testId", test.id)
@@ -102,6 +102,8 @@ object ContrastPerfW extends Experiment {
           summary.add("w", windowsize)
           summary.add("cpu", "%.6f".format(cpu))
           summary.add("wall", "%.6f".format(wall))
+          summary.add("prepcpu", "%.6f".format(prepcpu))
+          summary.add("prepwall", "%.6f".format(prepwall))
           summary.add("contrast", "%.6f".format(contrast))
           summary.add("rep", n)
           //summary.add("avg_wall", "%.6f".format(wall))
