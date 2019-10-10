@@ -32,18 +32,18 @@ import scala.math.pow
   *       Added with respect to the original paper to loose the dependence of beta from alpha.
   *
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSPs-test AND all the improvements proposed by MCDE
-case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
+case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0, stream: Boolean = false) extends McdeStats {
   //type PreprocessedData = D_Rank
   type I = I_Rank
   type D = D_Rank
   val id = "KSP"
 
-  override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
-  override def getIndexConstruct: DataSet => I_Rank = new I_Rank(_)
+  override def getDIndexConstruct: Array[Double] => D = new D(_)
 
-  def preprocess(input: DataSet): I_Rank = {
-    new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  override def getIndexConstruct: DataSet => I = new I(_)
+
+  def preprocess(input: DataSet): I = {
+    new I(input, parallelize)
   }
 
   /**
@@ -56,7 +56,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
   // @param reference      The original position of the elements of a reference dimension ordered by their rank
-  def twoSample(ref: D_Rank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     // Decide on the marginal restriction

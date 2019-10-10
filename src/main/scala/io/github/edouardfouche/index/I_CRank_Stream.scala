@@ -16,36 +16,43 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.dimension.D_Rank
+import io.github.edouardfouche.index.dimension.D_CRank_Stream
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
 // Here the inputs may be row-oriented
-class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[D_Rank] {
-  //override type T = D_Rank
-  val id = "Rank"
-  //type T = DimensionIndex[String]
+// This is good but restricted to the same time for each Array
+class I_CRank_Stream(data: DataSet, parallelize: Int = 0) extends I_CRank(data, parallelize) {
+  //override type T = D_CRank
+  override val id = "CRankStream"
+  //type T = D_CRank[String]
 
-  /**
-    *
-    * @param data a data set (column-oriented!)
-    * @return An index, which is also column-oriented
-    */
-  protected def createIndex(data: DataSet): Vector[D_Rank] = {
+  override protected def createIndex(data: DataSet): Vector[D_CRank_Stream] = {
     if (parallelize == 0) {
       (0 until data.ncols).toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
+        case x: Array[Double] => new D_CRank_Stream(x)
         case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
       }
     } else {
       val columns = (0 until data.ncols).par
       if (parallelize > 1) columns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
       columns.toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
+        case x: Array[Double] => new D_CRank_Stream(x)
         case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
       }
     }
   }
+
+  /*
+  def f(data: Array[Array[_]]): Array[Array[_ >: Double with Int with String]] = {
+    data.map {
+      case x: Array[Double] => x
+      case x: Array[Int] => x
+      case x: Array[String] => x
+      case _ => throw new Error(s"Unsupported type")
+    }
+  }
+  */
 
 }

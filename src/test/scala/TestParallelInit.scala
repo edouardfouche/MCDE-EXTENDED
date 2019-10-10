@@ -23,20 +23,20 @@ import org.scalatest.FunSuite
 /**
   * Created by fouchee on 10.07.17.
   */
-class TestParallelContrast extends FunSuite with TestData {
+class TestParallelInit extends FunSuite with TestData {
 
   val test = MWP(50, parallelize = 0)
-  val data = test.preprocess(new DataSet(Independent(3, 0.0, "gaussian", 0).generate(1000).transpose))
+  val data = new DataSet(Independent(3, 0.0, "gaussian", 0).generate(100000).transpose)
 
-  test(s"Contrast with parallelism level = 0") {
+  test(s"Init with parallelism level = 0") {
     val test = MWP(50, parallelize = 0)
-    val result = (1 to 1000).map(x => test.contrast(data, Set(0, 1, 2)))
-    assert(result.nonEmpty)
+    val result = test.preprocess(data)
+    assert(result.ncols == 3)
   }
-  test(s"Contrast with parallelism level = 1 (auto)") {
-    val test = MWP(50, parallelize = 1)
-    val result = (1 to 1000).map(x => test.contrast(data, Set(0, 1, 2)))
-    assert(result.nonEmpty)
+  test(s"Init with parallelism level = 1 (auto)") {
+    val test = MWP(50, parallelize = 0)
+    val result = test.preprocess(data)
+    assert(result.ncols == 3)
   }
   /*
   test(s"Contrast with parallelism level = 2") {

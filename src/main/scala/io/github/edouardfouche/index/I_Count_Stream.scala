@@ -16,33 +16,32 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.dimension.D_Rank
+import io.github.edouardfouche.index.dimension.D_Count_Stream
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
 // Here the inputs may be row-oriented
-class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[D_Rank] {
-  //override type T = D_Rank
-  val id = "Rank"
-  //type T = DimensionIndex[String]
-
+class I_Count_Stream(data: DataSet, parallelize: Int = 0) extends I_Count(data, parallelize) {
+  //override type T = D_Count
+  override val id = "CountStream"
+  //type T = D_Count[String]
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Vector[D_Rank] = {
+  override protected def createIndex(data: DataSet): Vector[D_Count_Stream] = {
     if (parallelize == 0) {
       (0 until data.ncols).toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
+        case x: Array[Double] => new D_Count_Stream(x)
         case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
       }
     } else {
       val columns = (0 until data.ncols).par
       if (parallelize > 1) columns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
       columns.toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
+        case x: Array[Double] => new D_Count_Stream(x)
         case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
       }
     }

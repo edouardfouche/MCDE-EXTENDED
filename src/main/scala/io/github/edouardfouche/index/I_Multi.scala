@@ -19,8 +19,11 @@ package io.github.edouardfouche.index
 import io.github.edouardfouche.index.dimension.{D_CRank, D_Count, D_Rank, DimensionIndex}
 import io.github.edouardfouche.preprocess.DataSet
 
+import scala.collection.parallel.ForkJoinTaskSupport
+
 // Here the inputs may be row-oriented
 class I_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[DimensionIndex] {
+  //override type T = DimensionIndex
   val id = "Multi"
   //type T = DimensionIndex[String]
   /**
@@ -29,13 +32,22 @@ class I_Multi(val data: DataSet, val parallelize: Int = 0) extends Index[Dimensi
     * @return An index, which is also column-oriented
     */
   protected def createIndex(data: DataSet): Vector[DimensionIndex] = {
-    (0 until data.ncols).toVector.map(x => (data.types(x), data(x))).map {
-      //case x: Vector[Double] => new D_Rank[Double](x)
-      //case x: Vector[Int] => new D_Rank[Int](x)
-      case ("n", x: Array[Double]) => new D_Rank(x)
-      case ("o", x: Array[Double]) => new D_CRank(x)
-      case ("c", x: Array[Double]) => new D_Count(x)
-      case (_,_) => throw new Error(s"Unsupported type")
+    if (parallelize == 0) {
+      (0 until data.ncols).toVector.map(x => (data.types(x), data(x))).map {
+        case ("n", x: Array[Double]) => new D_Rank(x)
+        case ("o", x: Array[Double]) => new D_CRank(x)
+        case ("c", x: Array[Double]) => new D_Count(x)
+        case (_, _) => throw new Error(s"Unsupported type")
+      }
+    } else {
+      val columns = (0 until data.ncols).par
+      if (parallelize > 1) columns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
+      columns.toVector.map(x => (data.types(x), data(x))).map {
+        case ("n", x: Array[Double]) => new D_Rank(x)
+        case ("o", x: Array[Double]) => new D_CRank(x)
+        case ("c", x: Array[Double]) => new D_Count(x)
+        case (_, _) => throw new Error(s"Unsupported type")
+      }
     }
   }
 

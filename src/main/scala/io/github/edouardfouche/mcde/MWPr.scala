@@ -36,13 +36,13 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   type D = D_Rank
   val id = "MWPr"
 
-  override def getDIndexConstruct: Array[Double] => D_Rank = new D_Rank(_)
-  override def getIndexConstruct: DataSet => I_Rank = new I_Rank(_)
+  override def getDIndexConstruct: Array[Double] => D = new D(_)
 
-  def preprocess(input: DataSet): I_Rank = {
-    new I_Rank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  override def getIndexConstruct: DataSet => I = new I(_)
+
+  def preprocess(input: DataSet): I = {
+    new I(input, parallelize)
   }
-
 
   /**
     * Compute a statistical test based on  Mann-Whitney U test using a reference vector (the indices of a dimension
@@ -53,7 +53,7 @@ case class MWPr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(ref: D_Rank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     // This returns results between 0 and reference.length (both incl.)
     // i.e. the "cut" is the place from which the cut starts, if the cut starts at 0 or reference.length, this is the same as no cut.

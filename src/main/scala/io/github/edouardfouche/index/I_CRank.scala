@@ -19,18 +19,28 @@ package io.github.edouardfouche.index
 import io.github.edouardfouche.index.dimension.D_CRank
 import io.github.edouardfouche.preprocess.DataSet
 
+import scala.collection.parallel.ForkJoinTaskSupport
+
 // Here the inputs may be row-oriented
 // This is good but restricted to the same time for each Array
 class I_CRank(val data: DataSet, val parallelize: Int = 0) extends Index[D_CRank] {
+  //override type T = D_CRank
   val id = "CRank"
   //type T = D_CRank[String]
 
   protected def createIndex(data: DataSet): Vector[D_CRank] = {
-    (0 until data.ncols).toVector.map(data(_)).map {
-      //case x: Vector[Double] => new D_CRank[Double](x)
-      //case x: Vector[Int] => new D_CRank[Int](x)
-      case x: Array[Double] => new D_CRank(x)
-      case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+    if (parallelize == 0) {
+      (0 until data.ncols).toVector.map(data(_)).map {
+        case x: Array[Double] => new D_CRank(x)
+        case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+      }
+    } else {
+      val columns = (0 until data.ncols).par
+      if (parallelize > 1) columns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
+      columns.toVector.map(data(_)).map {
+        case x: Array[Double] => new D_CRank(x)
+        case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+      }
     }
   }
 

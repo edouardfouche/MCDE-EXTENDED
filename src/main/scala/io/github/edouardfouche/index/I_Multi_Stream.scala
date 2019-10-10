@@ -16,34 +16,37 @@
  */
 package io.github.edouardfouche.index
 
-import io.github.edouardfouche.index.dimension.D_Rank
+import io.github.edouardfouche.index.dimension.{D_CRank_Stream, D_Count_Stream, D_Rank_Stream, DimensionIndex}
 import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
 // Here the inputs may be row-oriented
-class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[D_Rank] {
-  //override type T = D_Rank
-  val id = "Rank"
+class I_Multi_Stream(data: DataSet, parallelize: Int = 0) extends I_Multi(data, parallelize) {
+  //override type T = DimensionIndex
+  override val id = "MultiStream"
   //type T = DimensionIndex[String]
-
   /**
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
     */
-  protected def createIndex(data: DataSet): Vector[D_Rank] = {
+  override protected def createIndex(data: DataSet): Vector[DimensionIndex] = {
     if (parallelize == 0) {
-      (0 until data.ncols).toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
-        case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+      (0 until data.ncols).toVector.map(x => (data.types(x), data(x))).map {
+        case ("n", x: Array[Double]) => new D_Rank_Stream(x)
+        case ("o", x: Array[Double]) => new D_CRank_Stream(x)
+        case ("c", x: Array[Double]) => new D_Count_Stream(x)
+        case (_, _) => throw new Error(s"Unsupported type")
       }
     } else {
       val columns = (0 until data.ncols).par
       if (parallelize > 1) columns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
-      columns.toVector.map(data(_)).map {
-        case x: Array[Double] => new D_Rank(x)
-        case x => throw new Error(s"Unsupported type of {${x mkString ","}}")
+      columns.toVector.map(x => (data.types(x), data(x))).map {
+        case ("n", x: Array[Double]) => new D_Rank_Stream(x)
+        case ("o", x: Array[Double]) => new D_CRank_Stream(x)
+        case ("c", x: Array[Double]) => new D_Count_Stream(x)
+        case (_, _) => throw new Error(s"Unsupported type")
       }
     }
   }

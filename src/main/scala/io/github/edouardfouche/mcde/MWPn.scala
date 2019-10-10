@@ -31,7 +31,6 @@ import scala.annotation.tailrec
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
   *              Added with respect to the original paper to loose the dependence of beta from alpha.
   */
-
 case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                 var parallelize: Int = 0) extends McdeStats {
   //type PreprocessedData = D_CRank
@@ -40,12 +39,12 @@ case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   type D = D_CRank
   val id = "MWPn"
 
-  override def getDIndexConstruct: Array[Double] => D_CRank = new D_CRank(_)
+  override def getDIndexConstruct: Array[Double] => D = new D(_)
 
-  override def getIndexConstruct: DataSet => I_CRank = new I_CRank(_)
+  override def getIndexConstruct: DataSet => I = new I(_)
 
-  def preprocess(input: DataSet): I_CRank = {
-    new I_CRank(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I = {
+    new I(input, parallelize)
   }
 
   /**
@@ -57,7 +56,7 @@ case class MWPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The Mann-Whitney statistic
     */
-  def twoSample(ref: D_CRank, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
 
     /* // Marginal restriction

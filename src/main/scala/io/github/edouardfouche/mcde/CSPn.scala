@@ -30,7 +30,6 @@ import io.github.edouardfouche.preprocess.DataSet
   *              Like CSP but does not have marginal restriction (beta parameter is not used)
   *
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSPs-test AND all the improvements proposed by MCDE
 case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = D_Rank
@@ -38,12 +37,12 @@ case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
   type I = I_Count
   val id = "CSPn"
 
-  override def getDIndexConstruct: Array[Double] => D_Count = new D_Count(_)
+  override def getDIndexConstruct: Array[Double] => D = new D(_)
 
-  override def getIndexConstruct: DataSet => I_Count = new I_Count(_)
+  override def getIndexConstruct: DataSet => I = new I(_)
 
-  def preprocess(input: DataSet): I_Count = {
-    new I_Count(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I = {
+    new I(input, parallelize)
   }
 
   /**
@@ -55,7 +54,7 @@ case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     * @param indexSelection An array of Boolean where true means the value is part of the slice
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
-  def twoSample(ref: D_Count, indexSelection: Array[Boolean]): Double = {
+  def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
 
     /* // Marginal restriction
     val restrictedCategories: Array[Double] = ref.selectRestriction(math.ceil(ref.values.length*beta).toInt) // ref.dindex.keys.toArray

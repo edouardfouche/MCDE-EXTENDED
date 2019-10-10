@@ -40,7 +40,6 @@ class D_Rank(val values: Array[Double]) extends DimensionIndex {
   def createDimensionIndex(input: Array[Double]): Array[T] = {
     //input.zipWithIndex.sortBy(_._1).map(x => (x._2, x._1))
     // tie breaking random list
-    //input.zipWithIndex.sortWith((x,y) => (x._1 < y._1) || ((x._1 == y._1) && math.random < 0.5)).map(x => (x._2, x._1))
     // I had the idea for this trick from here: https://stackoverflow.com/questions/44440018/handling-scala-array-group-with-ties
     val rd = scala.util.Random.shuffle(input.indices.toList) // tie breaking random list
     input.zipWithIndex.zip(rd).map(x => (x._1._1, x._1._2, x._2)).

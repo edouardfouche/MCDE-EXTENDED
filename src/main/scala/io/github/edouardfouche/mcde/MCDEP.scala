@@ -28,7 +28,6 @@ import io.github.edouardfouche.preprocess.DataSet
   *       Added with respect to the original paper to loose the dependence of beta from alpha.
   *
   */
-//TODO: It would be actually interesting to compare MCDE with a version with the KSPs-test AND all the improvements proposed by MCDE
 case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
   //type U = Double
   //type PreprocessedData = D_Rank
@@ -38,13 +37,11 @@ case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
   override def getDIndexConstruct: Array[Double] => DimensionIndex = new D_Rank(_) // because whatever...
   override def getIndexConstruct: DataSet => I_Multi = new I_Multi(_)
 
-  val id = "MCDEP"
-
-  //TODO: How is the handling of marginal restriction?
-
-  def preprocess(input: DataSet): I_Multi = {
-    new I_Multi(input, 0) //TODO: seems that giving parallelize another value that 0 leads to slower execution, why?
+  def preprocess(input: DataSet): I = {
+    new I(input, parallelize)
   }
+
+  val id = "MCDEP"
 
   /**
     * Compute the Kolmogorov Smirnov test using a reference vector (the indices of a dimension ordered by the rank) and
