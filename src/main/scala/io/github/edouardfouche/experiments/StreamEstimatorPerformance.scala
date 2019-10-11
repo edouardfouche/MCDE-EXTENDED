@@ -117,7 +117,7 @@ object StreamEstimatorPerformance extends Experiment {
       test <- tests
     } {
       for {
-        streamestimator <- streamestimators
+        streamestimator <- streamestimators.par
       } {
         runestimator(streamestimator(test))
       }
