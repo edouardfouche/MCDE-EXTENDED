@@ -53,6 +53,10 @@ object StreamEstimatorPerformance extends Experiment {
     )
 
     val streamestimators: Vector[McdeStats => StreamEstimator] = Vector(
+      StreamEstimator(_, 1000, 500, 0.7, true),
+      StreamEstimator(_, 1000, 100, 0.7, true),
+      StreamEstimator(_, 1000, 50, 0.7, true),
+      StreamEstimator(_, 1000, 10, 0.7, true),
       StreamEstimator(_, 1000, 500, 0.8, true),
       StreamEstimator(_, 1000, 100, 0.8, true),
       StreamEstimator(_, 1000, 50, 0.8, true),
@@ -61,15 +65,16 @@ object StreamEstimatorPerformance extends Experiment {
       StreamEstimator(_, 1000, 100, 0.9, true),
       StreamEstimator(_, 1000, 50, 0.9, true),
       StreamEstimator(_, 1000, 10, 0.9, true),
-      StreamEstimator(_, 1000, 500, 0.99, true),
-      StreamEstimator(_, 1000, 100, 0.99, true),
-      StreamEstimator(_, 1000, 50, 0.99, true),
-      StreamEstimator(_, 1000, 10, 0.99, true),
-      StreamEstimator(_, 1000, 500, 1, true),
-      StreamEstimator(_, 1000, 100, 1, true),
-      StreamEstimator(_, 1000, 50, 1, true),
-      StreamEstimator(_, 1000, 10, 1, true),
-
+      StreamEstimator(_, 1000, 500, 0, true),
+      StreamEstimator(_, 1000, 100, 0, true),
+      StreamEstimator(_, 1000, 50, 0, true),
+      StreamEstimator(_, 1000, 10, 0, true)
+    )
+    val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
+      StreamEstimator(_, 1000, 500, 0.7, false),
+      StreamEstimator(_, 1000, 100, 0.7, false),
+      StreamEstimator(_, 1000, 50, 0.7, false),
+      StreamEstimator(_, 1000, 10, 0.7, false),
       StreamEstimator(_, 1000, 500, 0.8, false),
       StreamEstimator(_, 1000, 100, 0.8, false),
       StreamEstimator(_, 1000, 50, 0.8, false),
@@ -78,14 +83,10 @@ object StreamEstimatorPerformance extends Experiment {
       StreamEstimator(_, 1000, 100, 0.9, false),
       StreamEstimator(_, 1000, 50, 0.9, false),
       StreamEstimator(_, 1000, 10, 0.9, false),
-      StreamEstimator(_, 1000, 500, 0.99, false),
-      StreamEstimator(_, 1000, 100, 0.99, false),
-      StreamEstimator(_, 1000, 50, 0.99, false),
-      StreamEstimator(_, 1000, 10, 0.99, false),
-      StreamEstimator(_, 1000, 500, 1, false),
-      StreamEstimator(_, 1000, 100, 1, false),
-      StreamEstimator(_, 1000, 50, 1, false),
-      StreamEstimator(_, 1000, 10, 1, false)
+      StreamEstimator(_, 1000, 500, 0, false),
+      StreamEstimator(_, 1000, 100, 0, false),
+      StreamEstimator(_, 1000, 50, 0, false),
+      StreamEstimator(_, 1000, 10, 0, false)
     )
 
     val ndim = 2 // So it seems I've got the same result with 3-d (verified in 2019-10-03-14-56_Contrast_)
@@ -110,33 +111,45 @@ object StreamEstimatorPerformance extends Experiment {
       generateAbruptSlopUp ++ generateAbruptSlopDown ++
       generateAbruptSlopUp ++ generateAbruptSlopDown).transpose
 
+    def runestimator(estimator: StreamEstimator) = {
+      //val estimator = streamestimator(test)
+      info(s"Starting with ${estimator.id}")
+      val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(slowchanging)))
+      val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
+
+      utils.createFolderIfNotExisting(experiment_folder + "/data")
+      val slowpath = "data/" + s"slow-${estimator.id}"
+      val fastpath = "data/" + s"fast-${estimator.id}"
+      utils.save(Array(slowoutput.map("%.4f".format(_))), experiment_folder + "/" + slowpath)
+      utils.save(Array(fastoutput.map("%.4f".format(_))), experiment_folder + "/" + fastpath)
+
+      val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
+      val summary = ExperimentSummary(attributes)
+      summary.add("estimatorId", estimator.id)
+      summary.add("slowcpu", slowcpu)
+      summary.add("slowwall", slowwall)
+      summary.add("fastcpu", fastcpu)
+      summary.add("fastwall", fastwall)
+      summary.add("slowpath", slowpath)
+      summary.add("fastpath", fastpath)
+
+      summary.write(summaryPath)
+
+      info(s"${estimator.id}: slowcpu: $slowcpu, fastcpu: $fastcpu")
+    }
     for {
       test <- tests
     } {
       for {
-        streamestimator <- streamestimators
+        streamestimator <- streamestimators.par
       } {
-        val estimator = streamestimator(test)
-        val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(slowchanging)))
-        val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
+        runestimator(streamestimator(test))
+      }
 
-        utils.createFolderIfNotExisting(experiment_folder + "/data")
-        val slowpath = "data/" + s"slow-${estimator.id}"
-        val fastpath = "data/" + s"fast-${estimator.id}"
-        utils.saveDataSet(Array(slowoutput), experiment_folder + "/" + slowpath)
-        utils.saveDataSet(Array(fastoutput), experiment_folder + "/" + fastpath)
-
-        val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
-        val summary = ExperimentSummary(attributes)
-        summary.add("estimatorId", estimator.id)
-        summary.add("slowcpu", slowcpu)
-        summary.add("slowwall", slowwall)
-        summary.add("fastcpu", fastcpu)
-        summary.add("fastwall", fastwall)
-        summary.add("slowpath", slowpath)
-        summary.add("fastpath", fastpath)
-
-        summary.write(summaryPath)
+      for {
+        staticestimator <- staticestimators.par
+      } {
+        runestimator(staticestimator(test))
       }
 
     }
