@@ -19,8 +19,8 @@ case class StreamEstimator(test: McdeStats, windowsize: Int, stepsize: Int, gamm
     def cumulative_contrast(data: DataSet, listofcontrast: List[Double], acc: Int): Array[Double] = {
       if (data.nrows == 0) listofcontrast.reverse.toArray
       else {
+        if (acc % 100000 == 0) println(s"$id : reached $acc")
         if (acc % stepsize == 0) {
-          //println(s"$id : reached $acc")
           index.insert(data.head)
           val newcontrast = test.contrast(index, (0 until data.ncols).toSet)
           cumulative_contrast(data.tail, listofcontrast.head * (gamma) + newcontrast * (1 - gamma) :: listofcontrast, acc + 1)

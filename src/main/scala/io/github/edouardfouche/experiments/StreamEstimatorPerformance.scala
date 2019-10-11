@@ -53,36 +53,12 @@ object StreamEstimatorPerformance extends Experiment {
     )
 
     val streamestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 500, 0.7, true),
-      StreamEstimator(_, 1000, 100, 0.7, true),
-      StreamEstimator(_, 1000, 50, 0.7, true),
-      StreamEstimator(_, 1000, 10, 0.7, true),
-      StreamEstimator(_, 1000, 500, 0.8, true),
-      StreamEstimator(_, 1000, 100, 0.8, true),
-      StreamEstimator(_, 1000, 50, 0.8, true),
-      StreamEstimator(_, 1000, 10, 0.8, true),
-      StreamEstimator(_, 1000, 500, 0.9, true),
-      StreamEstimator(_, 1000, 100, 0.9, true),
-      StreamEstimator(_, 1000, 50, 0.9, true),
-      StreamEstimator(_, 1000, 10, 0.9, true),
       StreamEstimator(_, 1000, 500, 0, true),
       StreamEstimator(_, 1000, 100, 0, true),
       StreamEstimator(_, 1000, 50, 0, true),
       StreamEstimator(_, 1000, 10, 0, true)
     )
     val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 500, 0.7, false),
-      StreamEstimator(_, 1000, 100, 0.7, false),
-      StreamEstimator(_, 1000, 50, 0.7, false),
-      StreamEstimator(_, 1000, 10, 0.7, false),
-      StreamEstimator(_, 1000, 500, 0.8, false),
-      StreamEstimator(_, 1000, 100, 0.8, false),
-      StreamEstimator(_, 1000, 50, 0.8, false),
-      StreamEstimator(_, 1000, 10, 0.8, false),
-      StreamEstimator(_, 1000, 500, 0.9, false),
-      StreamEstimator(_, 1000, 100, 0.9, false),
-      StreamEstimator(_, 1000, 50, 0.9, false),
-      StreamEstimator(_, 1000, 10, 0.9, false),
       StreamEstimator(_, 1000, 500, 0, false),
       StreamEstimator(_, 1000, 100, 0, false),
       StreamEstimator(_, 1000, 50, 0, false),
@@ -120,8 +96,8 @@ object StreamEstimatorPerformance extends Experiment {
       utils.createFolderIfNotExisting(experiment_folder + "/data")
       val slowpath = "data/" + s"slow-${estimator.id}"
       val fastpath = "data/" + s"fast-${estimator.id}"
-      utils.save(Array(slowoutput.map("%.4f".format(_))), experiment_folder + "/" + slowpath)
-      utils.save(Array(fastoutput.map("%.4f".format(_))), experiment_folder + "/" + fastpath)
+      utils.save(Array(slowoutput.map(x => (math rint x * 1000) / 1000)), experiment_folder + "/" + slowpath)
+      utils.save(Array(fastoutput.map(x => (math rint x * 1000) / 1000)), experiment_folder + "/" + fastpath)
 
       val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
       val summary = ExperimentSummary(attributes)
@@ -141,7 +117,7 @@ object StreamEstimatorPerformance extends Experiment {
       test <- tests
     } {
       for {
-        streamestimator <- streamestimators.par
+        streamestimator <- streamestimators
       } {
         runestimator(streamestimator(test))
       }
@@ -151,6 +127,7 @@ object StreamEstimatorPerformance extends Experiment {
       } {
         runestimator(staticestimator(test))
       }
+
 
     }
 
