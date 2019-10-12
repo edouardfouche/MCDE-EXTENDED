@@ -125,6 +125,53 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
     logicalArray
   }
 
+  override def uniformslice(sliceSize: Int): Array[Boolean] = {
+    val logicalArray = Array.fill[Boolean](length)(true)
+
+    // Performing safe cut
+    //val start = scala.util.Random.nextInt((length - sliceSize).max(1)) //+1)
+    //val sliceStart = getSafeCut(start)
+    //val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
+    //val sliceEnd = getSafeCut(sliceEndSearchStart)
+    val start = scala.util.Random.nextInt(length) //+1)
+    val sliceStart = getSafeCut(start)
+    val sliceEndSearchStart = (sliceStart + sliceSize) % length
+    val sliceEnd = getSafeCut(sliceEndSearchStart)
+
+    if (sliceStart <= sliceEnd) {
+      for {x <- 0 until sliceStart} {
+        logicalArray(dindex(x)._1) = false
+      }
+      //for {x <- sliceStart + sliceSize until dindex.length} {
+      for {x <- sliceEnd until dindex.length} {
+        logicalArray(dindex(x)._1) = false
+      }
+    } else {
+      for {x <- 0 until sliceEnd} {
+        logicalArray(dindex(x)._1) = false
+      }
+      //for {x <- sliceStart + sliceSize until dindex.length} {
+      for {x <- sliceStart until dindex.length} {
+        logicalArray(dindex(x)._1) = false
+      }
+    }
+
+
+    // Correcting the slice size
+    val currentsliceSize = sliceEnd - sliceStart
+    if (currentsliceSize > sliceSize) { // then release some
+      val torelease = scala.util.Random.shuffle((sliceStart until sliceEnd).toList).take(currentsliceSize - sliceSize)
+      torelease.foreach(x => logicalArray(dindex(x)._1) = false)
+    } else if (currentsliceSize < sliceSize) { // then reset some to true
+      val toreset = scala.util.Random.shuffle((0 until sliceStart).toList ::: (sliceEnd until dindex.length).toList).take(sliceSize - currentsliceSize)
+      toreset.foreach(x => logicalArray(dindex(x)._1) = true)
+    }
+
+    //println(s"currentslicesize = $currentsliceSize, sliceSize= $sliceSize")
+
+    logicalArray
+  }
+
   def getSafeCut(cut: Int): Int = {
     //require(cut >= 0 & cut <= reference.length)
     //val ref = index(reference)

@@ -34,6 +34,8 @@ abstract class DimensionIndex {
 
   def slice(sliceSize: Int): Array[Boolean]
 
+  def uniformslice(sliceSize: Int): Array[Boolean]
+
   def isEmpty: Boolean = values.length == 0
 
   //override def toString: String = dindex mkString ";"

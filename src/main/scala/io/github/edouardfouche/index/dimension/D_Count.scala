@@ -73,6 +73,8 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
     logicalArray
   }
 
+  def uniformslice(sliceSize: Int): Array[Boolean] = slice(sliceSize)
+
   /*
   def selectCategories(sliceSize: Int): Array[Double] = {
     val shuffledCategories: List[Double] = scala.util.Random.shuffle(dindex.keys.toList) //.take(sliceSize)

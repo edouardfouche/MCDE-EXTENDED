@@ -87,6 +87,18 @@ abstract class Index[+T <: DimensionIndex] {
   }
 
   /**
+    * Produce a subspace slice by conditioning on all dimensions, except a reference dimension
+    *
+    * @param dimensions   The set of dimensions of the subspaces
+    * @param referenceDim The dimension that is considered as reference
+    * @param sliceSize    The size of the slice for each dimensions, determined by alpha
+    * @return Returns an array of booleans. True corresponds to indexes included in the slice.
+    */
+  def uniformSlice(dimensions: Set[Int], referenceDim: Int, sliceSize: Int): Array[Boolean] = {
+    dimensions.filter(_ != referenceDim).map(x => index(x).uniformslice(sliceSize)).toArray.transpose.map(x => !x.contains(false))
+  }
+
+  /**
     * Find the greatest common divisor of a and b
     * @param a integer
     * @param b integer

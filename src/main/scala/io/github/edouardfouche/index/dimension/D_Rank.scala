@@ -59,4 +59,32 @@ class D_Rank(val values: Array[Double]) extends DimensionIndex {
     //println(s"sliceSize= $sliceSize")
     logicalArray
   }
+
+  def uniformslice(sliceSize: Int): Array[Boolean] = {
+    val logicalArray = Array.fill[Boolean](length)(true)
+
+    val sliceStart = scala.util.Random.nextInt(length) //+1)
+    val sliceEnd = (sliceStart + sliceSize) % length
+
+    if (sliceStart <= sliceEnd) {
+      for {x <- 0 until sliceStart} {
+        logicalArray(dindex(x)._1) = false
+      }
+      //for {x <- sliceStart + sliceSize until dindex.length} {
+      for {x <- sliceEnd until dindex.length} {
+        logicalArray(dindex(x)._1) = false
+      }
+    } else {
+      for {x <- 0 until sliceEnd} {
+        logicalArray(dindex(x)._1) = false
+      }
+      //for {x <- sliceStart + sliceSize until dindex.length} {
+      for {x <- sliceStart until dindex.length} {
+        logicalArray(dindex(x)._1) = false
+      }
+    }
+
+    //println(s"sliceSize= $sliceSize")
+    logicalArray
+  }
 }
