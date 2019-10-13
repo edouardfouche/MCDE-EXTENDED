@@ -99,16 +99,21 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
     //val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)//+1)
-    val start = scala.util.Random.nextInt(indexSelection.length) //+1)
-    val safeSliceStart = ref.getSafeCut(start)
-    val sliceEndSearchStart = (safeSliceStart + (indexSelection.length * beta).toInt) % indexSelection.length
-    val safeSliceEnd = ref.getSafeCut(sliceEndSearchStart)
+    //val start = scala.util.Random.nextInt(ref.length) //+1)
+    //val sliceStart = ref.getSafeCut(start) %ref.length
+    //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt) % ref.length
+    //val sliceEnd = ref.getSafeCut(sliceEndSearchStart) %ref.length
 
-    val (sliceStart: Int, sliceEnd: Int) = if (ref(safeSliceStart)._2 == ref(safeSliceEnd - 1)._2) {
-      if (safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
-      else if (safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
-      else (safeSliceStart, safeSliceEnd)
-    } else (safeSliceStart, safeSliceEnd)
+    val sliceStart = 0
+    val sliceEnd = ref.length
+
+    // Correcting the marginal restriction (?)
+    //val (sliceStart: Int, sliceEnd: Int) = if (ref(safeSliceStart)._2 == ref(safeSliceEnd - 1)._2) {
+    //  val flag = math.random() < 0.5
+    //  if (flag) if(safeSliceStart == 0) (ref.getSafeCutLeft(ref.length-1), safeSliceEnd) else (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
+    //  else (safeSliceStart, ref.getSafeCutRight(safeSliceEnd % ref.length))
+    //  //else (safeSliceStart, safeSliceEnd)
+    //} else (safeSliceStart, safeSliceEnd)
 
     /*
     try {
@@ -133,12 +138,12 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
-        if (n == cutEnd) (acc - (cutStart * count), count) // correct the accumulator in case the cut does not start at 0
+        if (n == cutEnd) (acc, count) // correct the accumulator in case the cut does not start at 0
         else if (indexSelection(ref(n)._1)) cumulative(n + 1, acc + ref(n)._3, count + 1)
         else cumulative(n + 1, acc, count)
       }
 
-      lazy val cutLength = cutEnd - cutStart
+      lazy val cutLength = if(cutEnd > cutStart) cutEnd - cutStart else (ref.length - cutStart + cutEnd-1)
       val (r1, n1: Long) = cumulative(cutStart, 0, 0)
 
       //if (n1 == 0){ //| n1 == cutLength) {
@@ -156,9 +161,19 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
         val n2: Long = cutLength - n1
         if (n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0
-        val corrMax = ref(cutEnd - 1)._4
-        val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
-        val correction = (corrMax - corrMin) / (cutLength.toDouble * (cutLength.toDouble - 1.0))
+
+        //val corr = if((cutEnd == 0) & (cutStart == 0)) ref(ref.length-1)._4
+        //else if(cutEnd == 0) ref(ref.length-1)._4 - ref(cutStart - 1)._4
+        //else if(cutStart == 0) ref(cutEnd - 1)._4
+        //else if(cutEnd > cutStart) ref(cutEnd - 1)._4 - ref(cutStart - 1)._4
+        //else ref(cutEnd - 1)._4 + ref(ref.length-1)._4 - ref(cutStart - 1)._4
+
+        val corr = ref(cutEnd - 1)._4
+
+        //val corrMax = if (cut End == 0) ref(ref.length-1)._4 else ref(cutEnd - 1)._4
+        //val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
+
+        val correction = corr / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
 
         if (std == 0) 0 // This happens in the extreme case that the cut consists in only one unique value
