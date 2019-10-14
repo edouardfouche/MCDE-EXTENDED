@@ -74,9 +74,6 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
 
-    // TODO: We actually want to have random tie breaks at insertion
-    // Maybe if the initialization was random, we can simply replace the oldest by the newest (efficient!)
-
     def binarySearch(start: Int, end: Int, value: Double): Int = {
       @tailrec
       def binarySearch_acc(start: Int, end: Int, value: Double): Int = {

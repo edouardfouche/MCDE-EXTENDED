@@ -44,8 +44,10 @@ object PerformanceIndex extends Experiment {
     val generators: Vector[DataGenerator] = Vector (
       Independent(1, 0, "gaussian", 10),
       Independent(1, 0, "gaussian", 10),
-      Independent(1, 0, "gaussian", 20),
-      Independent(1, 0, "gaussian", 20),
+      //Independent(1, 0, "gaussian", 20),
+      //Independent(1, 0, "gaussian", 20),
+      Independent(1, 0, "gaussian", 0),
+      Independent(1, 0, "gaussian", 0),
       Independent(1, 0, "gaussian", 0),
       Independent(1, 0, "gaussian", 0)
     )
