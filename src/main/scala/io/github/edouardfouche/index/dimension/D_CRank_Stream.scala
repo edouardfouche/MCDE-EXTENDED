@@ -71,6 +71,7 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
 
   }
 
+  //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
 

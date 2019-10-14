@@ -39,11 +39,9 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
     }
   }
 
+  //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
-
-    // TODO: We actually want to have random tie breaks at insertion
-    // Maybe if the initialization was random, we can simply replace the oldest by the newest (efficient!)
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {
       @tailrec
