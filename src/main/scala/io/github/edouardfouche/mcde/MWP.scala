@@ -122,7 +122,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
         val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
         val correction = (corrMax - corrMin) / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
-        
+        //println(s"std: $std, correction: $correction")
         if(std == 0) 0 // This happens in the extreme case that the cut consists in only one unique value
         else {
           val mean = (n1.toDouble * n2.toDouble) / 2.0

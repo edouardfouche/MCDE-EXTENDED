@@ -3,7 +3,7 @@ organization:= "io.github.edouardfouche"
 
 version := "0.1.0"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.8" // We cannot migrate to 2.13.1 because some dependencies are not available in this version.
 crossScalaVersions := Seq("2.11.8", "2.12.8") // prefix with "+" to perform for both .e.g, "+ compile"
 //scalacOptions += "-deprecation"
 

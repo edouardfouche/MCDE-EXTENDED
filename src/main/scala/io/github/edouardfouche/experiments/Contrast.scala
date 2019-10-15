@@ -31,7 +31,7 @@ object Contrast extends Experiment {
 
     info(s"Starting com.edouardfouche.experiments")
 
-    /*
+
     val tests = Vector(
       MWP(1,0.5, 0.5),
       MWPn(1, 0.5, 0.5),
@@ -46,11 +46,11 @@ object Contrast extends Experiment {
       CSP(1, 0.5, 0.5),
       CSPn(1, 0.5, 0.5)
     )
-     */
 
-    val tests = Vector(
-      MWPu(1, 0.5, 0.5)
-    )
+
+    //val tests = Vector(
+    //  MWPu(1, 0.5, 0.5)
+    //)
 
     val ndim = 2 // So it seems I've got the same result with 3-d (verified in 2019-10-03-14-56_Contrast_)
 

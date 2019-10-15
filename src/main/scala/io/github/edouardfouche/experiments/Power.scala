@@ -34,7 +34,7 @@ object Power extends Experiment {
 
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
 
-    /*
+
     val tests = Vector(
       MWP(1, 0.5, 0.5),
       MWPn(1, 0.5, 0.5),
@@ -47,11 +47,11 @@ object Power extends Experiment {
       CSP(1, 0.5, 0.5),
       CSPn(1, 0.5, 0.5)
     )
-     */
 
-    val tests = Vector(
-      MWPu(1, 0.5, 0.5),
-    )
+
+    //val tests = Vector(
+    //  MWPu(1, 0.5, 0.5),
+    //)
 
     val ndims = Array(2, 3, 5, 10, 20)
 
