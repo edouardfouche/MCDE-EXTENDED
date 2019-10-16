@@ -17,8 +17,6 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.dimension._
-import io.github.edouardfouche.index.{I_CRank, I_Count, I_Rank, Index}
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
@@ -29,21 +27,12 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object PerformanceContrast extends Experiment {
-  val nrep = 100
+  val nrep = 1000
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
 
-    val indexes: Vector[DataSet => Index[DimensionIndex]] = Vector(
-      new I_Count(_),
-      //new D_Count_Stream(_),
-      new I_CRank(_),
-      //new D_CRank_Stream(_),
-      new I_Rank(_),
-      new I_Rank(_)
-      //new D_Rank_Stream(_)
-    )
     info(s"initialize indexes")
     val generators: Vector[DataGenerator] = Vector(
       Independent(3, 0, "gaussian", 10),
@@ -70,53 +59,50 @@ object PerformanceContrast extends Experiment {
     //val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(200000).transpose.head, x.id))
 
     for {
-      i <- indexes.indices.par
+      i <- tests.indices.par
     } {
-      val index = indexes(i)
       val generator = generators(i)
       val test: McdeStats = tests(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
-      info(s"Starting with index: ${index(new DataSet(Array(Array(1, 2, 3)))).id}")
+      info(s"Starting with test: ${test.id}")
       //val dataset = generator.generate(200000)
 
       for {
         windowsize <- (100 to 100000) by 100
       } {
         var cpumeasures: Array[Double] = Array()
-        var wallmeasures: Array[Double] = Array()
+        var prepmeasures: Array[Double] = Array()
         for {
           n <- 1 to nrep
         } {
-          val initdata: DataSet = new DataSet(generator.generate(windowsize))
+          val initdata: DataSet = new DataSet(generator.generate(windowsize).transpose)
           val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
 
           val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
           cpumeasures = cpumeasures :+ cpu
-          wallmeasures = wallmeasures :+ wall
-
-          val attributes = List("refId", "testId", "indexId", "w", "prepcpu", "prepwall", "cpu", "wall", "contrast", "rep")
-          val summary = ExperimentSummary(attributes)
-          summary.add("refId", generator.id)
-          summary.add("testId", test.id)
-          summary.add("indexId", initalizedindex.id)
-          summary.add("w", windowsize)
-          summary.add("cpu", "%.6f".format(cpu))
-          summary.add("wall", "%.6f".format(wall))
-          summary.add("prepcpu", "%.6f".format(prepcpu))
-          summary.add("prepwall", "%.6f".format(prepwall))
-          summary.add("contrast", "%.6f".format(contrast))
-          summary.add("rep", n)
-          //summary.add("avg_wall", "%.6f".format(wall))
-          //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
-          //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-          //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
-          //summary.add("rwall", "%.6f".format(rwall))
-          //summary.add("rep", n)
-          summary.write(summaryPath)
+          prepmeasures = prepmeasures :+ prepcpu
         }
+        val attributes = List("refId", "testId", "w", "avg_cpu", "std_cpu", "avg_prep", "std_prep")
+        val summary = ExperimentSummary(attributes)
+        summary.add("refId", generator.id)
+        summary.add("testId", test.id)
+        summary.add("w", windowsize)
+        summary.add("avg_cpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
+        summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        summary.add("avg_prep", "%.6f".format(prepmeasures.sum / prepmeasures.length))
+        summary.add("std_prep", "%.6f".format(breeze.stats.stddev(prepmeasures)))
+        //summary.add("rep", n)
+        //summary.add("avg_wall", "%.6f".format(wall))
+        //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
+        //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
+        //summary.add("rwall", "%.6f".format(rwall))
+        //summary.add("rep", n)
+        summary.write(summaryPath)
 
-
-        info(s"Avg cpu of ${test.id}, w=$windowsize: ${test.id} -> " + "%.6f".format(cpumeasures.sum / cpumeasures.length))
+        info(s"Avg cpu of ${test.id}, w=$windowsize -> " +
+          "%.6f".format(cpumeasures.sum / cpumeasures.length) +
+          " +/- " + "%.6f".format(breeze.stats.stddev(cpumeasures)))
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
