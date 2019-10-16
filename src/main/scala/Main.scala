@@ -74,7 +74,17 @@ object Main extends LazyLogging {
     case "com.edouardfouche.experiments.PerformanceIndex" => PerformanceIndex.run()
     case "com.edouardfouche.experiments.PerformanceContrast" => PerformanceContrast.run()
     case "com.edouardfouche.experiments.Power" => Power.run()
+    case "com.edouardfouche.experiments.PowerDiscrete" => PowerDiscrete.run()
     case "com.edouardfouche.experiments.StreamEstimatorPerformance" => StreamEstimatorPerformance.run()
+
+    case "com.edouardfouche.experiments.MCDE-PLUS" => {
+      Contrast.run()
+      PowerDiscrete.run()
+      Power.run()
+      PerformanceIndex.run()
+      PerformanceContrast.run()
+      StreamEstimatorPerformance.run()
+    }
     case _ => throw new Error(s"Unknown experiment $arg")
   }
 

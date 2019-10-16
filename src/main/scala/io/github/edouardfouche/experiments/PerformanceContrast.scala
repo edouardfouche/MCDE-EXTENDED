@@ -36,7 +36,7 @@ object PerformanceContrast extends Experiment {
     info(s"initialize indexes")
     val generators: Vector[DataGenerator] = Vector(
       Independent(3, 0, "gaussian", 10),
-      //Independent(1, 0, "gaussian", 10),
+      Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
       //Independent(1, 0, "gaussian", 20),
       Independent(3, 0, "gaussian", 0),
@@ -47,7 +47,7 @@ object PerformanceContrast extends Experiment {
     val tests: Vector[McdeStats] = Vector(
       //CSP(1, 0.5, 0.5),
       CSPn(50, 0.5, 0.5),
-      //MWP(1,0.5, 0.5),
+      MWP(50, 0.5, 0.5),
       MWPn(50, 0.5, 0.5),
       //KSP(1, 0.5, 0.5),
       KSPn(50, 0.5, 0.5),
@@ -68,7 +68,7 @@ object PerformanceContrast extends Experiment {
       //val dataset = generator.generate(200000)
 
       for {
-        windowsize <- (100 to 100000) by 100
+        windowsize <- ((100 to 100000) by 100).par
       } {
         var cpumeasures: Array[Double] = Array()
         var prepmeasures: Array[Double] = Array()

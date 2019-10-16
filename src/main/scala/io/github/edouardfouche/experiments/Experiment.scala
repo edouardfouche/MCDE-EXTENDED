@@ -111,7 +111,7 @@ trait Experiment extends LazyLogging {
       utils.createFolderIfNotExisting(experiment_folder + "/data")
       if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
       for {
-        test <- tests
+        test <- tests.par
       } {
         val (prepCPUtime, prepWalltime, data) = StopWatch.measureTime(test.preprocess(raw))
         val (runCPUtime, runWalltime, contrast) = StopWatch.measureTime(test.contrast(data, data.indices.toSet))

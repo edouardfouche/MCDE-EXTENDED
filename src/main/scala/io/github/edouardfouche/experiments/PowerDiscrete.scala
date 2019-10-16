@@ -16,28 +16,24 @@
  */
 package io.github.edouardfouche.experiments
 
+import io.github.edouardfouche.generators._
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
-//import com.edouardfouche.generators_deprecated.{DataGenerator, GeneratorFactory, Independent}
-import io.github.edouardfouche.generators.DataGenerator
-
+import org.slf4j.MDC
 
 /**
   * Created by fouchee on 12.07.17.
-  * Check the power of every approach against a selected number of generators_deprecated
+  * Test the influence of M on the scores
   */
-object Power extends Experiment {
-  val nrep = 1000 // number of data sets we use to estimate rejection rate
-  val ndims = Array(2, 3, 5, 10, 20)
-  val noiseLevels = 30
-  val generators: Vector[(Int, Double, String, Int) => DataGenerator] = selected_generators
-  val m = 50
-  val n = 1000
+object PowerDiscrete extends Experiment {
+  val nrep = 1000
+  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
-    info(s"${formatter.format(java.util.Calendar.getInstance().getTime)} - Starting com.edouardfouche.experiments - ${this.getClass.getSimpleName}")
-    info(s"Started on: ${java.net.InetAddress.getLocalHost.getHostName}")
+
+    info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
+
 
     val tests = Vector(
       MWP(1, 0.5, 0.5),
@@ -52,33 +48,57 @@ object Power extends Experiment {
       CSPn(1, 0.5, 0.5)
     )
 
+
+    //val tests = Vector(
+    //  MWPu(1, 0.5, 0.5),
+    //)
+
+    val ndims = Array(2, 3, 5, 10, 20)
+
+    val constructors: Vector[(Int, Double) => DataGenerator] = Vector(
+      // the categorical stuff
+      LinearCat(_, _, "gaussian", 1),
+      LinearCat(_, _, "gaussian", 2),
+      LinearCat(_, _, "gaussian", 3),
+      LinearCat(_, _, "gaussian", 5),
+      LinearCat(_, _, "gaussian", 10),
+      LinearCat(_, _, "gaussian", 20),
+      // the ordinal stuff
+      Linear(_, _, "gaussian", 1),
+      Linear(_, _, "gaussian", 2),
+      Linear(_, _, "gaussian", 3),
+      Linear(_, _, "gaussian", 5),
+      Linear(_, _, "gaussian", 10),
+      Linear(_, _, "gaussian", 20),
+      // the numeric stuff
+      Linear(_, _, "gaussian", 0)
+    )
+
     for {
-      ndim <- ndims
+      ndim <- ndims.par
       level <- 0 to 30
     } {
-      info(s"Starting with ndim:$ndim and level:$level")
+      val generators = constructors.map(y => y(ndim, "%.2f".format(level.toDouble / 30.0).toDouble))
+      info(s"Generators: {${generators.map(_.id) mkString ","}}")
       for {
         generator <- generators.par
       } {
+        MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
         val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
         val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
         val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
-        //val gen = generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
-
         for {
-          test <- tests.par
+          rep <- 1 to nrep
         } {
+          val raw = new DataSet(generator.generate(1000).transpose, types = (1 to generator.nDim).toArray.map(x => "c"))
+          // Save data samples (debugging purpose)
+          utils.createFolderIfNotExisting(experiment_folder + "/data")
+          if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
           for {
-            rep <- 1 to nrep
+            test <- tests
           } {
-            val gen = if (test.id contains "CSP") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
-            else generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
-            val raw = new DataSet(gen.generate(1000).transpose)
-            // Save data samples (debugging purpose)
-            //utils.createFolderIfNotExisting(experiment_folder + "/data")
-            //if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${gen.id}")
             val (prepCPUtime, prepWalltime, data) = StopWatch.measureTime(test.preprocess(raw))
-            val (runCPUtime, runWalltime, contrast) = StopWatch.measureTime(test.contrast(data, (0 until gen.nDim).toSet))
+            val (runCPUtime, runWalltime, contrast) = StopWatch.measureTime(test.contrast(data, (0 until generator.nDim).toSet))
             precpus(test.id) = prepCPUtime :: precpus(test.id)
             runcpus(test.id) = runCPUtime :: runcpus(test.id)
             contrasts(test.id) = contrast :: contrasts(test.id)
@@ -88,9 +108,6 @@ object Power extends Experiment {
         for {
           test <- tests
         } {
-          val gen = if (test.id contains "CSP") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
-          else generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
-
           val avgprecpu = precpus(test.id).sum / nrep
           val stdpre = breeze.stats.stddev(precpus(test.id))
           val avgruncpu = runcpus(test.id).sum / nrep
@@ -101,9 +118,9 @@ object Power extends Experiment {
 
           val attributes = List("refId", "testId", "ncols", "avgprecpu", "stdpre", "avgruncpu", "stdrun", "avgcon", "stdcon", "power")
           val summary = ExperimentSummary(attributes)
-          summary.add("refId", gen.id)
+          summary.add("refId", generator.id)
           summary.add("testId", test.id)
-          summary.add("ncols", gen.nDim)
+          summary.add("ncols", generator.nDim)
           summary.add("avgprecpu", "%.6f".format(avgprecpu))
           summary.add("stdpre", "%.6f".format(stdpre))
           summary.add("avgruncpu", "%.6f".format(avgruncpu))
@@ -113,10 +130,10 @@ object Power extends Experiment {
           summary.add("power", "%.6f".format(power))
           summary.write(summaryPath)
         }
-        info(s"Done with ${generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0).id}(/10)")
+        info(s"Done with ${generator.id}")
       }
-      info(s"Done with ndim:$ndim and level:$level")
     }
+
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
   }
 }

@@ -115,21 +115,20 @@ object StreamEstimatorPerformance extends Experiment {
       info(s"${estimator.id}: slowcpu: $slowcpu, fastcpu: $fastcpu")
     }
     for {
-      test <- tests
+      test <- tests.par
     } {
       for {
-        streamestimator <- streamestimators.par
+        estimator <- (streamestimators ++ staticestimators).par
       } {
-        runestimator(streamestimator(test))
+        runestimator(estimator(test))
       }
-
+      /*
       for {
         staticestimator <- staticestimators.par
       } {
         runestimator(staticestimator(test))
       }
-
-
+       */
     }
 
 
