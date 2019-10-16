@@ -66,52 +66,42 @@ object PerformanceIndex extends Experiment {
       for {
         windowsize <- (100 to 100000) by 100
       } {
-        val dataset = generator.generate(windowsize + nrep).transpose.head
-        val initdata: Array[Double] = dataset.take(windowsize)
-
-        val (cpu, wall, initalizedindex) = StopWatch.measureTime(index(initdata))
-        val (rcpu, rwall, a) = StopWatch.measureTime(initalizedindex.refresh())
-        val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcpu", "std_cpu", "std_rcpu")
-        val initsummary = ExperimentSummary(attributes)
-        initsummary.add("refId", generator.id + "-init")
-        initsummary.add("indexId", initalizedindex.id)
-        initsummary.add("w", windowsize)
-        initsummary.add("avg_cpu", "%.6f".format(cpu))
-        initsummary.add("avg_rcpu", "%.6f".format(rcpu))
-        initsummary.add("std_cpu", 0)
-        initsummary.add("std_rcpu", 0)
-        //summary.add("rep", 0)
-        initsummary.write(summaryPath)
-
+        var initmeasures: Array[Double] = Array()
         var measures: Array[Double] = Array()
         var rmeasures: Array[Double] = Array()
         for {
           n <- (0 until nrep)
         } {
+          val dataset = generator.generate(windowsize + nrep).transpose.head
+          val initdata: Array[Double] = dataset.take(windowsize)
+          val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
+
           val newpoint: Double = dataset(windowsize + n)
-          val (cpu, wall, a) = StopWatch.measureTime(initalizedindex.insert(newpoint))
-          val (rcpu, rwall, b) = StopWatch.measureTime(initalizedindex.refresh())
+          val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
+          val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
           //val (rcpu, rwall, b) = StopWatch.measureTime({})
+          initmeasures = initmeasures :+ initcpu
           measures = measures :+ cpu
           rmeasures = rmeasures :+ rcpu
         }
-        //val attributes = List("refId", "indexId", "w", "avg_cpu", "avg_rcup", "std_cpu", "std_rcup")
+        val attributes = List("refId", "indexId", "w", "avg_initcpu", "std_initcpu", "avg_cpu", "std_cpu", "avg_rcup", "std_rcup")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
-        summary.add("indexId", initalizedindex.id)
+        summary.add("indexId", index(Array(1, 2, 3)).id)
         summary.add("w", windowsize)
+        summary.add("avg_initcpu", "%.6f".format(initmeasures.sum / initmeasures.length))
+        summary.add("std_initcpu", "%.6f".format(breeze.stats.stddev(initmeasures)))
         summary.add("avg_cpu", "%.6f".format(measures.sum / measures.length))
-        //summary.add("avg_wall", "%.6f".format(wall))
-        summary.add("avg_rcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
         summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures)))
+        summary.add("avg_rcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
         summary.add("std_rcpu", "%.6f".format(breeze.stats.stddev(rmeasures)))
         //summary.add("rwall", "%.6f".format(rwall))
         //summary.add("rep", n)
         summary.write(summaryPath)
 
         if (windowsize % 1000 == 0) {
-          info(s"Avg ins cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(measures.sum / measures.length))
-          info(s"Avg ref cpu w=$windowsize: ${initalizedindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
+          info(s"Avg ins cpu w=$windowsize: ${index(Array(1, 2, 3)).id} -> " + "%.6f".format(measures.sum / measures.length))
+          info(s"Avg ref cpu w=$windowsize: ${index(Array(1, 2, 3)).id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
         }
       }
     }
