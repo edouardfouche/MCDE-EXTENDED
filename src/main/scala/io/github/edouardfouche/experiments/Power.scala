@@ -73,7 +73,8 @@ object Power extends Experiment {
           } {
             val gen = if (test.id contains "CSP") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
             else generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
-            val raw = new DataSet(gen.generate(1000).transpose)
+            val generated_data: Array[Array[Double]] = gen.generate(1000).transpose
+            val raw = new DataSet(generated_data.map(x => x.map(y => if (y.isNaN) 0.0 else y))) //TODO: Quick fix in case of NaNs (resulting from overflows or badly constructed generator I guess)
             // Save data samples (debugging purpose)
             //utils.createFolderIfNotExisting(experiment_folder + "/data")
             //if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${gen.id}")
