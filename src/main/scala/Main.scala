@@ -80,7 +80,7 @@ object Main extends LazyLogging {
     case "com.edouardfouche.experiments.MCDE-PLUS" => {
       Contrast.run()
       PowerDiscrete.run()
-      Power.run()
+      Power.run() // somehow failed at 20?
       PerformanceIndex.run()
       PerformanceContrast.run()
       StreamEstimatorPerformance.run()

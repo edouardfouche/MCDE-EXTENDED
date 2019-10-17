@@ -68,7 +68,7 @@ object PerformanceContrast extends Experiment {
       //val dataset = generator.generate(200000)
 
       for {
-        windowsize <- ((100 to 100000) by 100).par
+        windowsize <- ((100 to 100000) by 100)
       } {
         var cpumeasures: Array[Double] = Array()
         var prepmeasures: Array[Double] = Array()
