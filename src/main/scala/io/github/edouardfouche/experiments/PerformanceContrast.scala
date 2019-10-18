@@ -67,9 +67,17 @@ object PerformanceContrast extends Experiment {
       info(s"Starting with test: ${test.id}")
       //val dataset = generator.generate(200000)
 
-      for {
-        windowsize <- ((100 to 100000) by 100)
-      } {
+      for {windowsize <- ((100 until 1000) by 100).par} {
+        runit(windowsize)
+      }
+      for {windowsize <- ((1000 until 10000) by 100).par} {
+        runit(windowsize)
+      }
+      for {windowsize <- ((10000 to 100000) by 100).par} {
+        runit(windowsize)
+      }
+
+      def runit(windowsize: Int): Unit = {
         var cpumeasures: Array[Double] = Array()
         var prepmeasures: Array[Double] = Array()
         for {

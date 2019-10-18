@@ -63,9 +63,17 @@ object PerformanceIndex extends Experiment {
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       info(s"Starting with index: ${index(Array(1,2,3)).id}")
 
-      for {
-        windowsize <- ((100 to 100000) by 100)
-      } {
+      for {windowsize <- ((100 until 1000) by 100).par} {
+        runit(windowsize)
+      }
+      for {windowsize <- ((1000 until 10000) by 100).par} {
+        runit(windowsize)
+      }
+      for {windowsize <- ((10000 to 100000) by 100).par} {
+        runit(windowsize)
+      }
+
+      def runit(windowsize: Int): Unit = {
         var initmeasures: Array[Double] = Array()
         var measures: Array[Double] = Array()
         var rmeasures: Array[Double] = Array()
