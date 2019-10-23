@@ -26,7 +26,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object PerformanceIndex extends Experiment {
-  val nrep = 1000
+  val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -69,7 +69,10 @@ object PerformanceIndex extends Experiment {
       for {windowsize <- ((1000 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- (10000 to 100000 by 1000).par} {
+      for {windowsize <- (10000 until 50000 by 1000).par} {
+        runit(windowsize)
+      }
+      for {windowsize <- (50000 to 100000 by 1000).par} {
         runit(windowsize)
       }
 
