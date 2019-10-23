@@ -67,14 +67,18 @@ object PerformanceContrast extends Experiment {
       info(s"Starting with test: ${test.id}")
       //val dataset = generator.generate(200000)
 
-      for {windowsize <- ((100 until 1000) by 100).par} {
+      for {windowsize <- ((100 until 1000) by 10).par} {
         runit(windowsize)
       }
       for {windowsize <- ((1000 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- ((10000 to 100000) by 100).par} {
-        runit(windowsize)
+      for {
+        x <- 1 to 9
+      } {
+        for {windowsize <- ((10000 * x + 1000 to 10000 * (x + 1)) by 1000).par} {
+          runit(windowsize)
+        }
       }
 
       def runit(windowsize: Int): Unit = {
@@ -90,15 +94,15 @@ object PerformanceContrast extends Experiment {
           cpumeasures = cpumeasures :+ cpu
           prepmeasures = prepmeasures :+ prepcpu
         }
-        val attributes = List("refId", "testId", "w", "avg_cpu", "std_cpu", "avg_prep", "std_prep")
+        val attributes = List("refId", "testId", "w", "avgcpu", "stdcpu", "avgprep", "stdprep")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
         summary.add("testId", test.id)
         summary.add("w", windowsize)
-        summary.add("avg_cpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
-        summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        summary.add("avg_prep", "%.6f".format(prepmeasures.sum / prepmeasures.length))
-        summary.add("std_prep", "%.6f".format(breeze.stats.stddev(prepmeasures)))
+        summary.add("avgcpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
+        summary.add("stdcpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        summary.add("avgprep", "%.6f".format(prepmeasures.sum / prepmeasures.length))
+        summary.add("stdprep", "%.6f".format(breeze.stats.stddev(prepmeasures)))
         //summary.add("rep", n)
         //summary.add("avg_wall", "%.6f".format(wall))
         //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))

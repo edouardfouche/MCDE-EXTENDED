@@ -17,7 +17,7 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.mcde._
+import io.github.edouardfouche.mcde.{StreamEstimator, _}
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
@@ -53,16 +53,18 @@ object StreamEstimatorPerformance extends Experiment {
     )
 
     val streamestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 10000, 500, 0, true),
-      StreamEstimator(_, 10000, 100, 0, true),
-      StreamEstimator(_, 10000, 50, 0, true),
-      StreamEstimator(_, 10000, 10, 0, true)
+      StreamEstimator(_, 1000, 500, 0, true),
+      StreamEstimator(_, 1000, 100, 0, true),
+      StreamEstimator(_, 1000, 50, 0, true),
+      StreamEstimator(_, 1000, 10, 0, true),
+      StreamEstimator(_, 1000, 1, 0, true)
     )
     val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 10000, 500, 0, false),
-      StreamEstimator(_, 10000, 100, 0, false),
-      StreamEstimator(_, 10000, 50, 0, false),
-      StreamEstimator(_, 10000, 10, 0, false)
+      StreamEstimator(_, 1000, 500, 0, false),
+      StreamEstimator(_, 1000, 100, 0, false),
+      StreamEstimator(_, 1000, 50, 0, false),
+      StreamEstimator(_, 1000, 10, 0, false),
+      StreamEstimator(_, 1000, 1, 0, false)
     )
 
     val ndim = 3 //

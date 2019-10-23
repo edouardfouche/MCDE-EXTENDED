@@ -63,15 +63,20 @@ object PerformanceIndex extends Experiment {
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       info(s"Starting with index: ${index(Array(1,2,3)).id}")
 
-      for {windowsize <- ((100 until 1000) by 100).par} {
+      for {windowsize <- ((100 until 1000) by 10).par} {
         runit(windowsize)
       }
       for {windowsize <- ((1000 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- ((10000 to 100000) by 100).par} {
-        runit(windowsize)
+      for {
+        x <- 1 to 9
+      } {
+        for {windowsize <- ((10000 * x + 1000 to 10000 * (x + 1)) by 1000).par} {
+          runit(windowsize)
+        }
       }
+
 
       def runit(windowsize: Int): Unit = {
         var initmeasures: Array[Double] = Array()
@@ -92,17 +97,17 @@ object PerformanceIndex extends Experiment {
           measures = measures :+ cpu
           rmeasures = rmeasures :+ rcpu
         }
-        val attributes = List("refId", "indexId", "w", "avg_initcpu", "std_initcpu", "avg_cpu", "std_cpu", "avg_rcup", "std_rcup")
+        val attributes = List("refId", "indexId", "w", "avginitcpu", "stdinitcpu", "avgcpu", "stdcpu", "avgrcpu", "stdrcpu")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
         summary.add("indexId", index(Array(1, 2, 3)).id)
         summary.add("w", windowsize)
-        summary.add("avg_initcpu", "%.6f".format(initmeasures.sum / initmeasures.length))
-        summary.add("std_initcpu", "%.6f".format(breeze.stats.stddev(initmeasures)))
-        summary.add("avg_cpu", "%.6f".format(measures.sum / measures.length))
-        summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(measures)))
-        summary.add("avg_rcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
-        summary.add("std_rcpu", "%.6f".format(breeze.stats.stddev(rmeasures)))
+        summary.add("avginitcpu", "%.6f".format(initmeasures.sum / initmeasures.length))
+        summary.add("stdinitcpu", "%.6f".format(breeze.stats.stddev(initmeasures)))
+        summary.add("avgcpu", "%.6f".format(measures.sum / measures.length))
+        summary.add("stdcpu", "%.6f".format(breeze.stats.stddev(measures)))
+        summary.add("avgrcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
+        summary.add("stdrcpu", "%.6f".format(breeze.stats.stddev(rmeasures)))
         //summary.add("rwall", "%.6f".format(rwall))
         //summary.add("rep", n)
         summary.write(summaryPath)

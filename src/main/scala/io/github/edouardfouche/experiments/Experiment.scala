@@ -52,6 +52,7 @@ trait Experiment extends LazyLogging {
     HyperSphere,
     Linear,
     Parabola(_:Int,_:Double,_:String,_:Int)(scale=Some(1)),
+    Parabola2(_: Int, _: Double, _: String, _: Int)(scale = Some(1)),
     Sine(_:Int,_:Double,_:String,_:Int)(period = Some(1)),
     Sine(_:Int,_:Double,_:String,_:Int)(period = Some(5)),
     Star,
