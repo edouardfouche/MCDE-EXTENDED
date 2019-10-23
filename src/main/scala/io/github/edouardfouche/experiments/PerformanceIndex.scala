@@ -66,15 +66,11 @@ object PerformanceIndex extends Experiment {
       for {windowsize <- ((100 until 1000) by 10).par} {
         runit(windowsize)
       }
-      for {windowsize <- ((1000 to 10000) by 100).par} {
+      for {windowsize <- ((1000 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {
-        x <- 1 to 9
-      } {
-        for {windowsize <- ((10000 * x + 1000 to 10000 * (x + 1)) by 1000).par} {
-          runit(windowsize)
-        }
+      for {windowsize <- (10000 to 100000 by 1000).par} {
+        runit(windowsize)
       }
 
 
