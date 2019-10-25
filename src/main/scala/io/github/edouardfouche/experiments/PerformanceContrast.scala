@@ -38,21 +38,25 @@ object PerformanceContrast extends Experiment {
       Independent(3, 0, "gaussian", 10),
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
-      //Independent(1, 0, "gaussian", 20),
+      Independent(3, 0, "gaussian", 0),
+      Independent(3, 0, "gaussian", 10),
+      Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0)
       //Independent(1, 0, "gaussian", 0)
     )
     info(s"initialize generators")
     val tests: Vector[McdeStats] = Vector(
-      //CSP(1, 0.5, 0.5),
+      CSPn(1, 0.5, 0.5),
+      MWP(1, 0.5, 0.5),
+      KSPn(1, 0.5, 0.5),
+      KSPsn(1, 0.5, 0.5),
       CSPn(50, 0.5, 0.5),
       MWP(50, 0.5, 0.5),
-      MWPn(50, 0.5, 0.5),
-      //KSP(1, 0.5, 0.5),
       KSPn(50, 0.5, 0.5),
-      //KSPs(1, 0.5, 0.5),
       KSPsn(50, 0.5, 0.5)
+      //CSP(1, 0.5, 0.5),
+      //MWPn(50, 0.5, 0.5),
     )
     info(s"initialize generators")
 
@@ -70,10 +74,10 @@ object PerformanceContrast extends Experiment {
       for {windowsize <- ((100 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- (10000 until 50000 by 1000).par} {
+      for {windowsize <- (10000 until 50000 by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- (50000 to 100000 by 1000).par} {
+      for {windowsize <- (50000 to 100000 by 100).par} {
         runit(windowsize)
       }
 
@@ -90,10 +94,11 @@ object PerformanceContrast extends Experiment {
           cpumeasures = cpumeasures :+ cpu
           prepmeasures = prepmeasures :+ prepcpu
         }
-        val attributes = List("refId", "testId", "w", "avgcpu", "stdcpu", "avgprep", "stdprep")
+        val attributes = List("refId", "testId", "M", "w", "avgcpu", "stdcpu", "avgprep", "stdprep")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
         summary.add("testId", test.id)
+        summary.add("M", test.M)
         summary.add("w", windowsize)
         summary.add("avgcpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
         summary.add("stdcpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
@@ -108,9 +113,11 @@ object PerformanceContrast extends Experiment {
         //summary.add("rep", n)
         summary.write(summaryPath)
 
-        info(s"Avg cpu of ${test.id}, w=$windowsize -> " +
-          "%.6f".format(cpumeasures.sum / cpumeasures.length) +
-          " +/- " + "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        if (windowsize % 1000 == 0) {
+          info(s"Avg cpu of ${test.id}, w=$windowsize -> " +
+            "%.6f".format(cpumeasures.sum / cpumeasures.length) +
+            " +/- " + "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        }
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

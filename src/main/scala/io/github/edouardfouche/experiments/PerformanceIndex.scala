@@ -18,6 +18,8 @@ package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
 import io.github.edouardfouche.index.dimension._
+import io.github.edouardfouche.index._
+import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
 
@@ -32,24 +34,24 @@ object PerformanceIndex extends Experiment {
   def run(): Unit = {
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
 
-    val indexes: Vector[Array[Double] => DimensionIndex] = Vector(
-      new D_Count(_),
-      new D_Count_Stream(_),
-      new D_CRank(_),
-      new D_CRank_Stream(_),
-      new D_Rank(_),
-      new D_Rank_Stream(_)
+    val indexes: Vector[DataSet => Index[DimensionIndex]] = Vector(
+      new I_Count(_),
+      new I_Count_Stream(_),
+      new I_CRank(_),
+      new I_CRank_Stream(_),
+      new I_Rank(_),
+      new I_Rank_Stream(_)
     )
     info(s"initialize indexes")
     val generators: Vector[DataGenerator] = Vector (
-      Independent(1, 0, "gaussian", 10),
-      Independent(1, 0, "gaussian", 10),
+      Independent(3, 0, "gaussian", 10),
+      Independent(3, 0, "gaussian", 10),
       //Independent(1, 0, "gaussian", 20),
       //Independent(1, 0, "gaussian", 20),
-      Independent(1, 0, "gaussian", 0),
-      Independent(1, 0, "gaussian", 0),
-      Independent(1, 0, "gaussian", 0),
-      Independent(1, 0, "gaussian", 0)
+      Independent(3, 0, "gaussian", 0),
+      Independent(3, 0, "gaussian", 0),
+      Independent(3, 0, "gaussian", 0),
+      Independent(3, 0, "gaussian", 0)
     )
     info(s"initialize generators")
 
@@ -61,15 +63,16 @@ object PerformanceIndex extends Experiment {
       val index = indexes(i)
       val generator = generators(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
-      info(s"Starting with index: ${index(Array(1,2,3)).id}")
+      val dummyindex = index(new DataSet(Array(Array(1, 2, 3))))
+      info(s"Starting with index: ${dummyindex.id}")
 
       for {windowsize <- ((100 until 10000) by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- (10000 until 50000 by 1000).par} {
+      for {windowsize <- (10000 until 50000 by 100).par} {
         runit(windowsize)
       }
-      for {windowsize <- (50000 to 100000 by 1000).par} {
+      for {windowsize <- (50000 to 100000 by 100).par} {
         runit(windowsize)
       }
 
@@ -81,11 +84,11 @@ object PerformanceIndex extends Experiment {
         for {
           n <- (0 until nrep)
         } {
-          val dataset = generator.generate(windowsize + nrep).transpose.head
-          val initdata: Array[Double] = dataset.take(windowsize)
+          val data = generator.generate(windowsize + nrep) //.transpose.head
+          val initdata: DataSet = new DataSet(data.transpose.map(x => x.take(windowsize)))
           val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
 
-          val newpoint: Double = dataset(windowsize + n)
+          val newpoint: Array[Double] = data(windowsize + n)
           val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
           val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
           //val (rcpu, rwall, b) = StopWatch.measureTime({})
@@ -96,7 +99,7 @@ object PerformanceIndex extends Experiment {
         val attributes = List("refId", "indexId", "w", "avginitcpu", "stdinitcpu", "avgcpu", "stdcpu", "avgrcpu", "stdrcpu")
         val summary = ExperimentSummary(attributes)
         summary.add("refId", generator.id)
-        summary.add("indexId", index(Array(1, 2, 3)).id)
+        summary.add("indexId", dummyindex.id)
         summary.add("w", windowsize)
         summary.add("avginitcpu", "%.6f".format(initmeasures.sum / initmeasures.length))
         summary.add("stdinitcpu", "%.6f".format(breeze.stats.stddev(initmeasures)))
@@ -109,8 +112,8 @@ object PerformanceIndex extends Experiment {
         summary.write(summaryPath)
 
         if (windowsize % 1000 == 0) {
-          info(s"Avg ins cpu w=$windowsize: ${index(Array(1, 2, 3)).id} -> " + "%.6f".format(measures.sum / measures.length))
-          info(s"Avg ref cpu w=$windowsize: ${index(Array(1, 2, 3)).id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
+          info(s"Avg ins cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(measures.sum / measures.length))
+          info(s"Avg ref cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
         }
       }
     }
