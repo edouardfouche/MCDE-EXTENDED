@@ -93,25 +93,25 @@ object PerformanceContrast extends Experiment {
           val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
           cpumeasures = cpumeasures :+ cpu
           prepmeasures = prepmeasures :+ prepcpu
+
+          val attributes = List("refId", "testId", "M", "w", "cpu", "prepcpu", "rep")
+          val summary = ExperimentSummary(attributes)
+          summary.add("refId", generator.id)
+          summary.add("testId", test.id)
+          summary.add("M", test.M)
+          summary.add("w", windowsize)
+          summary.add("cpu", "%.6f".format(cpu))
+          summary.add("prepcpu", "%.6f".format(prepcpu))
+          //summary.add("rep", n)
+          //summary.add("avg_wall", "%.6f".format(wall))
+          //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
+          //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+          //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
+          //summary.add("rwall", "%.6f".format(rwall))
+          summary.add("rep", n)
+          summary.write(summaryPath)
         }
-        val attributes = List("refId", "testId", "M", "w", "avgcpu", "stdcpu", "avgprep", "stdprep")
-        val summary = ExperimentSummary(attributes)
-        summary.add("refId", generator.id)
-        summary.add("testId", test.id)
-        summary.add("M", test.M)
-        summary.add("w", windowsize)
-        summary.add("avgcpu", "%.6f".format(cpumeasures.sum / cpumeasures.length))
-        summary.add("stdcpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        summary.add("avgprep", "%.6f".format(prepmeasures.sum / prepmeasures.length))
-        summary.add("stdprep", "%.6f".format(breeze.stats.stddev(prepmeasures)))
-        //summary.add("rep", n)
-        //summary.add("avg_wall", "%.6f".format(wall))
-        //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
-        //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
-        //summary.add("rwall", "%.6f".format(rwall))
-        //summary.add("rep", n)
-        summary.write(summaryPath)
+
 
         if (windowsize % 1000 == 0) {
           info(s"Avg cpu of ${test.id}, w=$windowsize -> " +

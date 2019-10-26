@@ -17,8 +17,8 @@
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.generators._
-import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.index._
+import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
@@ -95,21 +95,20 @@ object PerformanceIndex extends Experiment {
           initmeasures = initmeasures :+ initcpu
           measures = measures :+ cpu
           rmeasures = rmeasures :+ rcpu
+
+          val attributes = List("refId", "indexId", "w", "initcpu", "cpu", "rcpu", "rep")
+          val summary = ExperimentSummary(attributes)
+          summary.add("refId", generator.id)
+          summary.add("indexId", dummyindex.id)
+          summary.add("w", windowsize)
+          summary.add("initcpu", "%.6f".format(initcpu))
+          summary.add("cpu", "%.6f".format(cpu))
+          summary.add("rcpu", "%.6f".format(rcpu))
+          //summary.add("rwall", "%.6f".format(rwall))
+          summary.add("rep", n)
+          summary.write(summaryPath)
         }
-        val attributes = List("refId", "indexId", "w", "avginitcpu", "stdinitcpu", "avgcpu", "stdcpu", "avgrcpu", "stdrcpu")
-        val summary = ExperimentSummary(attributes)
-        summary.add("refId", generator.id)
-        summary.add("indexId", dummyindex.id)
-        summary.add("w", windowsize)
-        summary.add("avginitcpu", "%.6f".format(initmeasures.sum / initmeasures.length))
-        summary.add("stdinitcpu", "%.6f".format(breeze.stats.stddev(initmeasures)))
-        summary.add("avgcpu", "%.6f".format(measures.sum / measures.length))
-        summary.add("stdcpu", "%.6f".format(breeze.stats.stddev(measures)))
-        summary.add("avgrcpu", "%.6f".format(rmeasures.sum / rmeasures.length))
-        summary.add("stdrcpu", "%.6f".format(breeze.stats.stddev(rmeasures)))
-        //summary.add("rwall", "%.6f".format(rwall))
-        //summary.add("rep", n)
-        summary.write(summaryPath)
+
 
         if (windowsize % 1000 == 0) {
           info(s"Avg ins cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(measures.sum / measures.length))
