@@ -114,7 +114,7 @@ object PerformanceContrast extends Experiment {
 
 
         if (windowsize % 1000 == 0) {
-          info(s"Avg cpu of ${test.id}, w=$windowsize -> " +
+          info(s"Avg cpu of ${test.id}, M=${test.M}, w=$windowsize -> " +
             "%.6f".format(cpumeasures.sum / cpumeasures.length) +
             " +/- " + "%.6f".format(breeze.stats.stddev(cpumeasures)))
         }
