@@ -28,7 +28,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object PerformanceIndex extends Experiment {
-  val nrep = 1000
+  val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -66,54 +66,45 @@ object PerformanceIndex extends Experiment {
       val dummyindex = index(new DataSet(Array(Array(1, 2, 3))))
       info(s"Starting with index: ${dummyindex.id}")
 
-      for {windowsize <- ((100 until 10000) by 100).par} {
-        runit(windowsize)
+      for {n <- (1 to nrep).par} {
+        for {windowsize <- ((100 until 100000) by 100)} runit(windowsize, n)
+        info(s"${dummyindex.id}: Reached n=$n")
       }
-      for {windowsize <- (10000 until 50000 by 100).par} {
-        runit(windowsize)
-      }
-      for {windowsize <- (50000 to 100000 by 100).par} {
-        runit(windowsize)
-      }
+      
+      def runit(windowsize: Int, n: Int): Unit = {
+        //var initmeasures: Array[Double] = Array()
+        //var measures: Array[Double] = Array()
+        //var rmeasures: Array[Double] = Array()
 
+        val data = generator.generate(windowsize + nrep) //.transpose.head
+        val initdata: DataSet = new DataSet(data.transpose.map(x => x.take(windowsize)))
+        val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
 
-      def runit(windowsize: Int): Unit = {
-        var initmeasures: Array[Double] = Array()
-        var measures: Array[Double] = Array()
-        var rmeasures: Array[Double] = Array()
-        for {
-          n <- (0 until nrep)
-        } {
-          val data = generator.generate(windowsize + nrep) //.transpose.head
-          val initdata: DataSet = new DataSet(data.transpose.map(x => x.take(windowsize)))
-          val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
+        val newpoint: Array[Double] = data(windowsize + n)
+        val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
+        val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
+        //val (rcpu, rwall, b) = StopWatch.measureTime({})
+        //initmeasures = initmeasures :+ initcpu
+        //measures = measures :+ cpu
+        //rmeasures = rmeasures :+ rcpu
 
-          val newpoint: Array[Double] = data(windowsize + n)
-          val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
-          val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
-          //val (rcpu, rwall, b) = StopWatch.measureTime({})
-          initmeasures = initmeasures :+ initcpu
-          measures = measures :+ cpu
-          rmeasures = rmeasures :+ rcpu
-
-          val attributes = List("refId", "indexId", "w", "initcpu", "cpu", "rcpu", "rep")
-          val summary = ExperimentSummary(attributes)
-          summary.add("refId", generator.id)
-          summary.add("indexId", dummyindex.id)
-          summary.add("w", windowsize)
-          summary.add("initcpu", "%.6f".format(initcpu))
-          summary.add("cpu", "%.6f".format(cpu))
-          summary.add("rcpu", "%.6f".format(rcpu))
-          //summary.add("rwall", "%.6f".format(rwall))
-          summary.add("rep", n)
-          summary.write(summaryPath)
-        }
-
-
+        val attributes = List("refId", "indexId", "w", "initcpu", "cpu", "rcpu", "rep")
+        val summary = ExperimentSummary(attributes)
+        summary.add("refId", generator.id)
+        summary.add("indexId", dummyindex.id)
+        summary.add("w", windowsize)
+        summary.add("initcpu", "%.6f".format(initcpu))
+        summary.add("cpu", "%.6f".format(cpu))
+        summary.add("rcpu", "%.6f".format(rcpu))
+        //summary.add("rwall", "%.6f".format(rwall))
+        summary.add("rep", n)
+        summary.write(summaryPath)
+        /*
         if (windowsize % 1000 == 0) {
           info(s"Avg ins cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(measures.sum / measures.length))
           info(s"Avg ref cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
         }
+         */
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

@@ -39,7 +39,8 @@ object StreamEstimatorPerformance extends Experiment {
       MWP(10, 0.5, 0.5),
       MWP(50, 0.5, 0.5),
       MWP(100, 0.5, 0.5),
-      MWP(200, 0.5, 0.5)
+      //MWP(200, 0.5, 0.5),
+      MWP(500, 0.5, 0.5)
       //MWPn(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
       //KSPs(1,0.5, 0.5),
@@ -53,6 +54,7 @@ object StreamEstimatorPerformance extends Experiment {
     )
 
     val streamestimators: Vector[McdeStats => StreamEstimator] = Vector(
+      StreamEstimator(_, 1000, 1000, 0, true),
       StreamEstimator(_, 1000, 500, 0, true),
       StreamEstimator(_, 1000, 100, 0, true),
       StreamEstimator(_, 1000, 50, 0, true),
@@ -60,6 +62,7 @@ object StreamEstimatorPerformance extends Experiment {
       StreamEstimator(_, 1000, 1, 0, true)
     )
     val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
+      StreamEstimator(_, 1000, 1000, 0, false),
       StreamEstimator(_, 1000, 500, 0, false),
       StreamEstimator(_, 1000, 100, 0, false),
       StreamEstimator(_, 1000, 50, 0, false),
@@ -70,13 +73,11 @@ object StreamEstimatorPerformance extends Experiment {
     val ndim = 3 //
 
     def generateSmoothSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-
     def generateSmoothSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-
     def generateAbruptSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
-
     def generateAbruptSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
 
+    /*
     val slowchanging: Array[Array[Double]] = (generateSmoothSlopUp ++ generateSmoothSlopDown ++
       generateSmoothSlopUp ++ generateSmoothSlopDown ++
       generateSmoothSlopUp ++ generateSmoothSlopDown ++
@@ -88,6 +89,11 @@ object StreamEstimatorPerformance extends Experiment {
       generateAbruptSlopUp ++ generateAbruptSlopDown ++
       generateAbruptSlopUp ++ generateAbruptSlopDown ++
       generateAbruptSlopUp ++ generateAbruptSlopDown).transpose
+      */
+
+    val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
+    val fastchanging: Array[Array[Double]] = Linear(ndim, 0, "gaussian", 0).generate(50000) ++
+      Linear(ndim, 1, "gaussian", 0).generate(50000)
 
     def runestimator(estimator: StreamEstimator) = {
       //val estimator = streamestimator(test)

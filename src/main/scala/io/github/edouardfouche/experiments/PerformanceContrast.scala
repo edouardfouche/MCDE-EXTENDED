@@ -27,7 +27,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object PerformanceContrast extends Experiment {
-  val nrep = 1000
+  val nrep = 100
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -71,53 +71,35 @@ object PerformanceContrast extends Experiment {
       info(s"Starting with test: ${test.id}")
       //val dataset = generator.generate(200000)
 
-      for {windowsize <- ((100 until 10000) by 100).par} {
-        runit(windowsize)
-      }
-      for {windowsize <- (10000 until 50000 by 100).par} {
-        runit(windowsize)
-      }
-      for {windowsize <- (50000 to 100000 by 100).par} {
-        runit(windowsize)
+      for {n <- (1 to nrep).par} {
+        for {windowsize <- ((100 until 100000) by 100)} runit(windowsize, n)
+        info(s"${test.id}-${test.M}: Reached n=$n")
       }
 
-      def runit(windowsize: Int): Unit = {
-        var cpumeasures: Array[Double] = Array()
-        var prepmeasures: Array[Double] = Array()
-        for {
-          n <- 1 to nrep
-        } {
-          val initdata: DataSet = new DataSet(generator.generate(windowsize).transpose)
-          val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
+      def runit(windowsize: Int, n: Int): Unit = {
+        val initdata: DataSet = new DataSet(generator.generate(windowsize).transpose)
+        val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
 
-          val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
-          cpumeasures = cpumeasures :+ cpu
-          prepmeasures = prepmeasures :+ prepcpu
+        val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
+        //cpumeasures = cpumeasures :+ cpu
+        //prepmeasures = prepmeasures :+ prepcpu
 
-          val attributes = List("refId", "testId", "M", "w", "cpu", "prepcpu", "rep")
-          val summary = ExperimentSummary(attributes)
-          summary.add("refId", generator.id)
-          summary.add("testId", test.id)
-          summary.add("M", test.M)
-          summary.add("w", windowsize)
-          summary.add("cpu", "%.6f".format(cpu))
-          summary.add("prepcpu", "%.6f".format(prepcpu))
-          //summary.add("rep", n)
-          //summary.add("avg_wall", "%.6f".format(wall))
-          //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
-          //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-          //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
-          //summary.add("rwall", "%.6f".format(rwall))
-          summary.add("rep", n)
-          summary.write(summaryPath)
-        }
-
-
-        if (windowsize % 1000 == 0) {
-          info(s"Avg cpu of ${test.id}, M=${test.M}, w=$windowsize -> " +
-            "%.6f".format(cpumeasures.sum / cpumeasures.length) +
-            " +/- " + "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        }
+        val attributes = List("refId", "testId", "M", "w", "cpu", "prepcpu", "rep")
+        val summary = ExperimentSummary(attributes)
+        summary.add("refId", generator.id)
+        summary.add("testId", test.id)
+        summary.add("M", test.M)
+        summary.add("w", windowsize)
+        summary.add("cpu", "%.6f".format(cpu))
+        summary.add("prepcpu", "%.6f".format(prepcpu))
+        //summary.add("rep", n)
+        //summary.add("avg_wall", "%.6f".format(wall))
+        //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
+        //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
+        //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
+        //summary.add("rwall", "%.6f".format(rwall))
+        summary.add("rep", n)
+        summary.write(summaryPath)
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
