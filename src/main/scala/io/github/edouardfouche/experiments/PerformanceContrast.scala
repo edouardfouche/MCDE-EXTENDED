@@ -68,11 +68,15 @@ object PerformanceContrast extends Experiment {
       val generator = generators(i)
       val test: McdeStats = tests(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
-      info(s"Starting with test: ${test.id}")
+
       //val dataset = generator.generate(200000)
 
+      // burn-in
+      runit(100, 0)
+      info(s"Starting with test: ${test.id}")
+
       for {n <- (1 to nrep).par} {
-        for {windowsize <- ((100 until 100000) by 100)} runit(windowsize, n)
+        for {windowsize <- ((100 to 100000) by 100)} runit(windowsize, n)
         info(s"${test.id}-${test.M}: Reached n=$n")
       }
 

@@ -64,10 +64,13 @@ object PerformanceIndex extends Experiment {
       val generator = generators(i)
       //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       val dummyindex = index(new DataSet(Array(Array(1, 2, 3))))
+
+      // burn-in
+      runit(100, 0)
       info(s"Starting with index: ${dummyindex.id}")
 
       for {n <- (1 to nrep).par} {
-        for {windowsize <- ((100 until 100000) by 100)} runit(windowsize, n)
+        for {windowsize <- ((100 to 100000) by 100)} runit(windowsize, n)
         info(s"${dummyindex.id}: Reached n=$n")
       }
       
@@ -76,11 +79,11 @@ object PerformanceIndex extends Experiment {
         //var measures: Array[Double] = Array()
         //var rmeasures: Array[Double] = Array()
 
-        val data = generator.generate(windowsize + nrep) //.transpose.head
+        val data = generator.generate(windowsize + 1) //.transpose.head
         val initdata: DataSet = new DataSet(data.transpose.map(x => x.take(windowsize)))
         val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
 
-        val newpoint: Array[Double] = data(windowsize + n)
+        val newpoint: Array[Double] = data(windowsize)
         val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
         val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
         //val (rcpu, rwall, b) = StopWatch.measureTime({})
