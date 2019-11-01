@@ -66,11 +66,28 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     val sliceEndSearchStart = (safeSliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     val safeSliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
+    /*
+    try {
+      val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
+        if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
+        else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
+        else (safeSliceStart, safeSliceEnd)
+      } else (safeSliceStart, safeSliceEnd)
+    } catch {
+      case e: Throwable => {
+        println(s"start: $start, safeSliceStart: $safeSliceStart, sliceEndSearchStart: $sliceEndSearchStart, safeSliceEnd: $safeSliceEnd")
+        println(s"indexSelection.length: ${indexSelection.length}, beta: $beta")
+        throw e
+      }
+    }
+     */
+
     val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
       if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
       else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
       else (safeSliceStart, safeSliceEnd)
     } else (safeSliceStart, safeSliceEnd)
+
 
     /*
     try {

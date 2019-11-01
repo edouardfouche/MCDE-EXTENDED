@@ -19,22 +19,24 @@ package io.github.edouardfouche.index.dimension
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_Rank(val values: Array[Double]) extends DimensionIndex {
+class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
   val id = "Rank"
   type T = (Int, Double) // T_Rank
   // first element (Int) -> position
   // second elements (Double) -> value
+  var currentvalues = initvalues
 
-  var dindex: Array[T] = createDimensionIndex(values)
+  var dindex: Array[T] = createDimensionIndex(initvalues)
 
   def apply(n: Int): T = dindex(n) // access in the index
 
   override def toString: String = dindex mkString ";"
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    dindex = createDimensionIndex(currentvalues)
   }
 
   def createDimensionIndex(input: Array[Double]): Array[T] = {

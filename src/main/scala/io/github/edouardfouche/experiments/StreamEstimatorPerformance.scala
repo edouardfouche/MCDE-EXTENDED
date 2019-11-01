@@ -34,13 +34,13 @@ object StreamEstimatorPerformance extends Experiment {
     info(s"Starting com.edouardfouche.experiments")
 
     val tests = Vector(
-      MWP(1, 0.5, 0.5),
-      MWP(5, 0.5, 0.5),
-      MWP(10, 0.5, 0.5),
-      MWP(50, 0.5, 0.5),
-      MWP(100, 0.5, 0.5),
+      KSPsn(1, 0.5, 0.5),
+      KSPsn(5, 0.5, 0.5),
+      KSPsn(10, 0.5, 0.5),
+      KSPsn(50, 0.5, 0.5),
+      KSPsn(100, 0.5, 0.5),
       //MWP(200, 0.5, 0.5),
-      MWP(500, 0.5, 0.5)
+      KSPsn(500, 0.5, 0.5)
       //MWPn(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
       //KSPs(1,0.5, 0.5),
@@ -91,9 +91,9 @@ object StreamEstimatorPerformance extends Experiment {
       generateAbruptSlopUp ++ generateAbruptSlopDown).transpose
       */
 
-    val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-    val fastchanging: Array[Array[Double]] = Linear(ndim, 0, "gaussian", 0).generate(50000) ++
-      Linear(ndim, 1, "gaussian", 0).generate(50000)
+    val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
+    val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
+      Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
 
     def runestimator(estimator: StreamEstimator) = {
       //val estimator = streamestimator(test)

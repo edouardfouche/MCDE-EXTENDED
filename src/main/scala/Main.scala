@@ -80,11 +80,18 @@ object Main extends LazyLogging {
     case "com.edouardfouche.experiments.MCDE-PLUS" => {
       Contrast.run()
       PowerDiscrete.run()
-      Power.run() // somehow failed at 20?
+      Power.run()
       PerformanceIndex.run()
       PerformanceContrast.run()
       StreamEstimatorPerformance.run()
     }
+
+    case "com.edouardfouche.experiments.Performance" => {
+      PerformanceIndex.run()
+      PerformanceContrast.run()
+      StreamEstimatorPerformance.run()
+    }
+
     case _ => throw new Error(s"Unknown experiment $arg")
   }
 

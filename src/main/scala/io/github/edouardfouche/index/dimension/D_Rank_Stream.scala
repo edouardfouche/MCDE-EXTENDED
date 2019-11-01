@@ -22,12 +22,12 @@ import scala.collection.mutable
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) with DimensionIndexStream {
+class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with DimensionIndexStream {
   override val id = "RankStream"
 
-  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
+  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](initvalues: _*)
   var offset: Int = 0
 
   //override var dindex: Array[T] = createDimensionIndex(values)
@@ -42,6 +42,7 @@ class D_Rank_Stream(override val values: Array[Double]) extends D_Rank(values) w
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {
       @tailrec

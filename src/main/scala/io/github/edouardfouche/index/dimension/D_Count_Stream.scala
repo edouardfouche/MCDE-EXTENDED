@@ -21,11 +21,11 @@ import scala.collection.mutable
 /**
   * A very simple index structure will only the ranks (convenient for HiCS for example)
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_Count_Stream(override val values: Array[Double]) extends D_Count(values) with DimensionIndexStream {
+class D_Count_Stream(initvalues: Array[Double]) extends D_Count(initvalues) with DimensionIndexStream {
   override val id = "CountStream"
-  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
+  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](initvalues: _*)
   var offset = 0
 
   //override var dindex: mutable.Map[Double, T] = createDimensionIndex(values)
@@ -43,12 +43,13 @@ class D_Count_Stream(override val values: Array[Double]) extends D_Count(values)
   }
 
   override def insert(newpoint: Double): Unit = {
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
     val todelete = queue.dequeue()
     // handle insertion
 
     val current = dindex.getOrElseUpdate(newpoint, (Array[Int](), 0))
     //dindex(newpoint) = (current._1.enqueue(values.length + offset),current._2 +1)
-    dindex(newpoint) = (current._1 :+ (values.length + offset), current._2 + 1)
+    dindex(newpoint) = (current._1 :+ (currentvalues.length + offset), current._2 + 1)
 
     //if (dindex.getOrElse(newpoint, -1) != -1) { // in that case we already have an entry for this category
     //  dindex(newpoint) = T_Count(dindex(newpoint)._1.enqueue(values.length + offset), dindex(newpoint)._2 + 1)

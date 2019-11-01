@@ -21,20 +21,22 @@ import scala.collection.mutable
 /**
   * A very simple index structure will only the ranks and values(convenient for HiCS for example)
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_Count(val values: Array[Double]) extends DimensionIndex {
+class D_Count(val initvalues: Array[Double]) extends DimensionIndex {
   //type T = (scala.collection.immutable.Queue[Int], Int) // First element is a queue of the index of a given value in the map, second element in the size of this queue.
   type T = (Array[Int], Int)
   val id = "Count"
+  var currentvalues = initvalues
 
   //var dindex: Array[T] = createDimensionIndex(values)
-  var dindex: mutable.Map[Double, T] = createDimensionIndex(values)
+  var dindex: mutable.Map[Double, T] = createDimensionIndex(initvalues)
 
   def apply(i: Double): (Array[Int], Int) = dindex(i)
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    dindex = createDimensionIndex(currentvalues)
   }
 
   def createDimensionIndex(input: Array[Double]): mutable.Map[Double, T] = {
@@ -97,14 +99,14 @@ class D_Count(val values: Array[Double]) extends DimensionIndex {
 
 
   def selectSlice(sliceSize: Int): Array[Double] = {
-    val ratio = sliceSize.toDouble / values.length.toDouble
+    val ratio = sliceSize.toDouble / initvalues.length.toDouble
     val categories = dindex.keys
     val toselect: Int = math.floor(categories.size * ratio).toInt.max(1).min(categories.size - 1) // Make sure at least 1, a most ncategories - 1
     scala.util.Random.shuffle(categories.toList).take(toselect).toArray
   }
 
   def selectRestriction(sliceSize: Int): Array[Double] = {
-    val ratio = sliceSize.toDouble / values.length.toDouble
+    val ratio = sliceSize.toDouble / initvalues.length.toDouble
     val categories = dindex.keys
     val toselect: Int = math.floor(categories.size * ratio).toInt.max(2).min(categories.size) // Make sure at least 2, a most ncategories
     scala.util.Random.shuffle(dindex.keys.toList).take(toselect).toArray

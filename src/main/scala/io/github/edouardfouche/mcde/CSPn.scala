@@ -69,7 +69,7 @@ case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     //val selectedvalues = nonrestrictedvalues.filter(x => restrictedCategories.contains(x))
     //val selectedvalues = nonrestrictedvalues
     if (ref.dindex.keys.size == 1) return 0 // In that case, contrast is undefined.
-    val selection = indexSelection.zipWithIndex.map(x => (x._1, ref.values(x._2)))
+    val selection = indexSelection.zipWithIndex.map(x => (x._1, ref.currentvalues(x._2)))
     val sample1: Array[Double] = selection.filter(_._1 == true).map(_._2)
     val sample2: Array[Double] = selection.filter(_._1 == false).map(_._2)
 

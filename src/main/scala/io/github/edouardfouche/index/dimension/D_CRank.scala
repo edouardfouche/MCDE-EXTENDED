@@ -24,9 +24,9 @@ import scala.annotation.tailrec
   * Also, a "correction for ties" is computed, as required to compute a Mann-Whitney U test
   * The correction is computed as a cumulative value.
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_CRank(val values: Array[Double]) extends DimensionIndex {
+class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
   type T = (Int, Double, Float, Double) //T_CRank
   //first element (Int) -> position
   //second element (Double) -> value
@@ -34,15 +34,17 @@ class D_CRank(val values: Array[Double]) extends DimensionIndex {
   //fourth element (Double) -> correction
 
   val id = "CRank"
+  var currentvalues = initvalues
 
-  var dindex: Array[T] = createDimensionIndex(values)
+  var dindex: Array[T] = createDimensionIndex(initvalues)
 
   def apply(n: Int): T = dindex(n) // access in the index
 
   override def toString: String = dindex mkString ";"
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    dindex = createDimensionIndex(values.drop(1) ++ Array(newpoint))
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    dindex = createDimensionIndex(currentvalues)
   }
 
   def createDimensionIndex(input: Array[Double]): Array[T]= {

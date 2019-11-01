@@ -17,7 +17,8 @@
 package io.github.edouardfouche.index.dimension
 
 abstract class DimensionIndex {
-  val values: Array[Double] // An array of values corresponding to the values in a column
+  val initvalues: Array[Double] // An array of values corresponding to the values in a column
+  var currentvalues: Array[Double]
   type T // <: TupleIndex
   val id: String
   //var dindex: Object
@@ -30,13 +31,13 @@ abstract class DimensionIndex {
 
   //def apply(n: Int): T = dindex(n) // access in the index
 
-  def length: Int = values.length
+  def length: Int = initvalues.length
 
   def slice(sliceSize: Int): Array[Boolean]
 
   def uniformslice(sliceSize: Int): Array[Boolean]
 
-  def isEmpty: Boolean = values.length == 0
+  def isEmpty: Boolean = initvalues.length == 0
 
   //override def toString: String = dindex mkString ";"
 

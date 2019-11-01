@@ -56,10 +56,10 @@ case class CSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     */
   def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
 
-    val restrictedCategories: Array[Double] = ref.selectRestriction(math.ceil(ref.values.length*beta).toInt) // ref.dindex.keys.toArray
+    val restrictedCategories: Array[Double] = ref.selectRestriction(math.ceil(ref.currentvalues.length * beta).toInt) // ref.dindex.keys.toArray
     //val restrictedCategories: List[String] = ref.categories.toList
     if(restrictedCategories.length == 1) return 0 // In that case, contrast is undefined.
-    val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1,ref.values(x._2))).filter(x => restrictedCategories.contains(x._2))
+    val restrictedselection = indexSelection.zipWithIndex.map(x => (x._1, ref.currentvalues(x._2))).filter(x => restrictedCategories.contains(x._2))
     val sample1 = restrictedselection.filter(_._1 == true).map(_._2)
     val sample2 = restrictedselection.filter(_._1 == false).map(_._2)
 

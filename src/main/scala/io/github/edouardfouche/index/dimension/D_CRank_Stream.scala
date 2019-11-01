@@ -25,9 +25,9 @@ import scala.collection.mutable
   * Also, a "correction for ties" is computed, as required to compute a Mann-Whitney U test
   * The correction is computed as a cumulative value.
   *
-  * @param values An array of values corresponding to the values in a column
+  * @param initvalues An array of values corresponding to the values in a column
   */
-class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values) with DimensionIndexStream {
+class D_CRank_Stream(initvalues: Array[Double]) extends D_CRank(initvalues) with DimensionIndexStream {
   //Recall:
   //first element (Int) -> position
   //second element (Double) -> value
@@ -35,7 +35,7 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
   //fourth element (Double) -> correction
 
   override val id = "CRankStream"
-  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](values: _*)
+  val queue: mutable.Queue[Double] = scala.collection.mutable.Queue[Double](initvalues: _*)
   var offset: Int = 0
 
   //override var dindex: Array[T] = createDimensionIndex(values)
@@ -73,6 +73,7 @@ class D_CRank_Stream(override val values: Array[Double]) extends D_CRank(values)
 
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
+    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
     val todelete = queue.dequeue
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {
