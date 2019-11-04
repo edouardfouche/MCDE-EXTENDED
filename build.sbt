@@ -7,6 +7,9 @@ scalaVersion := "2.12.8" // We cannot migrate to 2.13.1 because some dependencie
 crossScalaVersions := Seq("2.11.8", "2.12.8") // prefix with "+" to perform for both .e.g, "+ compile"
 //scalacOptions += "-deprecation"
 
+javaOptions += "-Xmx40G"
+javaOptions += "-Xms10G"
+
 fork in run := true
 scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation")
 

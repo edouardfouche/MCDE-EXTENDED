@@ -25,7 +25,7 @@ abstract class DimensionIndex {
 
   def insert(newpoint: Double): Unit // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
 
-  def refresh(): Unit = {} // Do nothing, DimensionIndexStream must override
+  def refresh(): Unit // Do nothing, DimensionIndexStream must override
 
   //def indices: Range = dindex.indices // this is supposed to give the indices of the columns
 

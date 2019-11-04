@@ -116,7 +116,15 @@ class D_CRank_Stream(initvalues: Array[Double]) extends D_CRank(initvalues) with
         }
       }
 
-      if (dindex(0)._2 == value) 0
+      if (dindex(0)._2 == value) {
+        var oldest = 0
+        var k = oldest + 1
+        while ((k < dindex.length) && (dindex(k)._2 == value)) {
+          if (dindex(k)._1 < dindex(oldest)._1) oldest = k
+          k += 1
+        }
+        oldest
+      }
       else if (dindex(dindex.length - 1)._2 == value) {
         var oldest = dindex.length - 1
         var j = oldest - 1

@@ -76,6 +76,8 @@ case class KSPsn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
     //val inSlize = indexSelection.slice(sliceStart, sliceEnd).count(_ == true)
     //val outSlize = indexSelection.slice(sliceStart, sliceEnd).length - inSlize
 
+    //println(s"sliceStart: $sliceStart, sliceEnd: $sliceEnd")
+    //println(s"ref: ${ref(0)}, ${ref(1)}, ${ref(2)}")
     val theref = (sliceStart until sliceEnd).map(x => indexSelection(ref(x)._1))
     val inSlize = theref.count(_ == true)
     val outSlize = theref.length - inSlize

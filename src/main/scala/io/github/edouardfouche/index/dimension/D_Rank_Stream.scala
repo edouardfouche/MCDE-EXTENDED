@@ -33,10 +33,22 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
   //override var dindex: Array[T] = createDimensionIndex(values)
 
   override def refresh: Unit = {
+    //println(s"refresh ! offset = $offset")
     if(offset > 0) {
-      dindex = dindex.map(x => (x._1 - offset, x._2))
+      dindex = dindex.map { x =>
+        //if(x._1 - offset < 0) println(s"ohoh smth is wrong at $x -> ${x._1 - offset}")
+        (x._1 - offset, x._2)
+      }
       offset = 0
     }
+    /*
+    for{x <- dindex.indices} {
+      if(dindex(x)._1 < 0) {
+        println(s"Error at $x: ${dindex(x)}")
+        println(s"Surounding: ${dindex(x)} ${dindex(x+1)} ${dindex(x+2)} ")
+      }
+    }
+     */
   }
 
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
@@ -84,7 +96,15 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
         }
       }
 
-      if (dindex(0)._2 == value) 0
+      if (dindex(0)._2 == value) {
+        var oldest = 0
+        var k = oldest + 1
+        while ((k < dindex.length) && (dindex(k)._2 == value)) {
+          if (dindex(k)._1 < dindex(oldest)._1) oldest = k
+          k += 1
+        }
+        oldest
+      }
       else if (dindex(dindex.length - 1)._2 == value) {
         var oldest = dindex.length - 1
         var j = oldest - 1
@@ -209,7 +229,7 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
     val indextodelete = binarySearch(0, dindex.length - 1, todelete) // will always be pointing to an object (the oldest one with value = todelete)
     val indextoinsert = if (newpoint == todelete) indextodelete + 1 else binarySearch_insert(0, dindex.length - 1, newpoint) // will pointing between two objects, i.e, the one after.
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
-    //println(s"todelete: $indextodelete, toinsert: $indextoinsert, currentoffset: $offset")
+    //println(s"todelete: ${dindex(indextodelete)} at $indextodelete, toinsert: $newpoint at $indextoinsert, currentoffset: $offset")
 
     if ((indextoinsert == (indextodelete + 1)) || (indextoinsert == indextodelete)) { // in that case it simply replaces the point
       dindex(indextodelete) = (dindex.length + offset, newpoint)
@@ -238,6 +258,9 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
         }
         dindex(indextoinsert - 1) = (dindex.length + offset, newpoint)
       }
+
+      //println(s"State after deletion: ${dindex(indextodelete)} at $indextodelete")
+
       /*
       if(indextoinsert == dindex.length) { // necessarily, indextoinsert > indextodelete, and indextoinsert is not matching
         for (x <- indextodelete until indextoinsert-1) {

@@ -34,6 +34,8 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
 
   override def toString: String = dindex mkString ";"
 
+  def refresh(): Unit = {}
+
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
     currentvalues = currentvalues.drop(1) ++ Array(newpoint)
     dindex = createDimensionIndex(currentvalues)
