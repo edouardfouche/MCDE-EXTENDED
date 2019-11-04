@@ -35,7 +35,7 @@ object StreamEstimatorMiner extends Experiment {
   val gamma = 0.99
   val nthread = 1
   val test = KSPsn(50, 0.5, 0.5, nthread)
-  val bioliqdata = bioliq20
+  val bioliqdata = bioliq_interesting
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
