@@ -8,7 +8,7 @@ object Data {
 
   lazy val bioliq20 = DataRef("bioliq", home + "/data/bioliq/bioliq-I-07-2016/bioliq_1wx20.csv", 1, ",", "bioliq")
   lazy val bioliq_full = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_full.csv", 1, ",", "bioliq")
-  lazy val bioliq_interesting = DataRef("bioliq", home + "/data/bioliq/bioliq_interesting.csv", 1, ",", "bioliq")
+  lazy val bioliq_interesting = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_interesting.csv", 1, ",", "bioliq")
   val currentdir: String = System.getProperty("user.dir")
   val home: String = System.getProperty("user.home")
 
