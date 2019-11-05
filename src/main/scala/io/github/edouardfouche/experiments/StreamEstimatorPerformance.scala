@@ -34,13 +34,13 @@ object StreamEstimatorPerformance extends Experiment {
     info(s"Starting com.edouardfouche.experiments")
 
     val tests = Vector(
-      KSPsn(1, 0.5, 0.5),
-      KSPsn(5, 0.5, 0.5),
-      KSPsn(10, 0.5, 0.5),
-      KSPsn(50, 0.5, 0.5),
-      KSPsn(100, 0.5, 0.5),
+      MWP(1, 0.5, 0.5),
+      MWP(5, 0.5, 0.5),
+      MWP(10, 0.5, 0.5),
+      MWP(50, 0.5, 0.5),
+      MWP(100, 0.5, 0.5),
       //MWP(200, 0.5, 0.5),
-      KSPsn(500, 0.5, 0.5)
+      MWP(500, 0.5, 0.5)
       //MWPn(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
       //KSPs(1,0.5, 0.5),
@@ -92,35 +92,35 @@ object StreamEstimatorPerformance extends Experiment {
       */
 
     val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
-    val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
-      Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
+    //val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
+    //  Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
 
     def runestimator(estimator: StreamEstimator) = {
       //val estimator = streamestimator(test)
       info(s"Starting with ${estimator.id} (slow)")
       val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(slowchanging)))
-      info(s"Starting with ${estimator.id} (fast)")
-      val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
+      //info(s"Starting with ${estimator.id} (fast)")
+      //val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
 
       utils.createFolderIfNotExisting(experiment_folder + "/data")
       val slowpath = "data/" + s"slow-${estimator.id}"
       val fastpath = "data/" + s"fast-${estimator.id}"
       utils.save(slowoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + slowpath)
-      utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
+      //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
 
       val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
       val summary = ExperimentSummary(attributes)
       summary.add("estimatorId", estimator.id)
       summary.add("slowcpu", slowcpu)
       summary.add("slowwall", slowwall)
-      summary.add("fastcpu", fastcpu)
-      summary.add("fastwall", fastwall)
+      //summary.add("fastcpu", fastcpu)
+      //summary.add("fastwall", fastwall)
       summary.add("slowpath", slowpath)
       summary.add("fastpath", fastpath)
 
       summary.write(summaryPath)
 
-      info(s"${estimator.id}: slowcpu: $slowcpu, fastcpu: $fastcpu")
+      info(s"${estimator.id}: slowcpu: $slowcpu") // , fastcpu: $fastcpu
     }
     for {
       test <- tests.par
