@@ -157,15 +157,15 @@ object StreamEstimatorPerformance extends Experiment {
     }
 
     for {
-      rep <- (0 until nrep) //.par
+      rep <- (0 until nrep).par
     } {
       info(s"Starting rep $rep")
       val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
       for {
-        test <- tests //.par
+        test <- tests.par
       } {
         for {
-          estimator <- (estimators) //.par
+          estimator <- (estimators).par
         } {
           runestimator(estimator(test, _), slowchanging, rep)
         }
