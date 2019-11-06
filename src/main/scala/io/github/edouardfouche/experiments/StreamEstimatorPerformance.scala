@@ -119,9 +119,9 @@ object StreamEstimatorPerformance extends Experiment {
         //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
       }
 
-      val abserror = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2))
-      val meansqerror = streamoutput.zip(staticoutput).map(x => math.pow(x._1 - x._2, 2))
-      val speedup = staticcpu / streamcpu
+      val abserror: Double = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2)).sum
+      val meansqerror: Double = streamoutput.zip(staticoutput).map(x => math.pow(x._1 - x._2, 2)).sum
+      val speedup: Double = staticcpu / streamcpu
 
       val attributes = List("estimatorId", "cpu", "wall", "abserror", "meansqerror", "speedup", "path", "rep")
       val summary = ExperimentSummary(attributes)
@@ -157,15 +157,15 @@ object StreamEstimatorPerformance extends Experiment {
     }
 
     for {
-      rep <- (0 until nrep).par
+      rep <- (0 until nrep) //.par
     } {
       info(s"Starting rep $rep")
       val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
       for {
-        test <- tests.par
+        test <- tests //.par
       } {
         for {
-          estimator <- (estimators).par
+          estimator <- (estimators) //.par
         } {
           runestimator(estimator(test, _), slowchanging, rep)
         }
