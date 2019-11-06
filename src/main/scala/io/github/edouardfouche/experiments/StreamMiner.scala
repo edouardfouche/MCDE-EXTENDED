@@ -28,7 +28,7 @@ import scala.annotation.tailrec
   * Created by fouchee on 12.07.17.
   * Test the influence of M on the scores
   */
-object StreamEstimatorMiner extends Experiment {
+object StreamMiner extends Experiment {
   val nrep = 1
   val windowsize = 1000
   val stepsize = 50
