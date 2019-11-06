@@ -26,7 +26,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object StreamEstimatorPerformance extends Experiment {
-  val nrep = 1
+  val nrep = 10
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -53,22 +53,25 @@ object StreamEstimatorPerformance extends Experiment {
       //CSPn(1, 0.5, 0.5)
     )
 
-    val streamestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 1000, 0, true),
-      StreamEstimator(_, 1000, 500, 0, true),
-      StreamEstimator(_, 1000, 100, 0, true),
-      StreamEstimator(_, 1000, 50, 0, true),
-      StreamEstimator(_, 1000, 10, 0, true),
-      StreamEstimator(_, 1000, 1, 0, true)
+    val estimators: Vector[(McdeStats, Boolean) => StreamEstimator] = Vector(
+      StreamEstimator(_, 1000, 1000, 0.99, _),
+      StreamEstimator(_, 1000, 500, 0.99, _),
+      StreamEstimator(_, 1000, 100, 0.99, _),
+      StreamEstimator(_, 1000, 50, 0.99, _),
+      StreamEstimator(_, 1000, 10, 0.99, _),
+      StreamEstimator(_, 1000, 1, 0.99, _)
     )
+    /*
     val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 1000, 0, false),
-      StreamEstimator(_, 1000, 500, 0, false),
-      StreamEstimator(_, 1000, 100, 0, false),
-      StreamEstimator(_, 1000, 50, 0, false),
-      StreamEstimator(_, 1000, 10, 0, false),
-      StreamEstimator(_, 1000, 1, 0, false)
+      StreamEstimator(_, 1000, 1000, 0.99, false),
+      StreamEstimator(_, 1000, 500, 0.99, false),
+      StreamEstimator(_, 1000, 100, 0.99, false),
+      StreamEstimator(_, 1000, 50, 0.99, false),
+      StreamEstimator(_, 1000, 10, 0.99, false),
+      StreamEstimator(_, 1000, 1, 0.99, false)
     )
+    */
+
 
     val ndim = 3 //
 
@@ -95,41 +98,88 @@ object StreamEstimatorPerformance extends Experiment {
     //val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
     //  Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
 
-    def runestimator(estimator: StreamEstimator) = {
+    def runestimator(estimator: Boolean => StreamEstimator, rep: Int) = {
       //val estimator = streamestimator(test)
-      info(s"Starting with ${estimator.id} (slow)")
-      val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(slowchanging)))
+      val streamestimator = estimator(true)
+      val staticestimator = estimator(false)
+      info(s"Starting with ${streamestimator.id} (slow)")
+      val (staticcpu, staticwall, staticoutput: Array[Double]) = StopWatch.measureTime(staticestimator.run(new DataSet(slowchanging)))
+      val (streamcpu, streamwall, streamoutput: Array[Double]) = StopWatch.measureTime(streamestimator.run(new DataSet(slowchanging)))
+
       //info(s"Starting with ${estimator.id} (fast)")
       //val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
 
-      utils.createFolderIfNotExisting(experiment_folder + "/data")
-      val slowpath = "data/" + s"slow-${estimator.id}"
-      val fastpath = "data/" + s"fast-${estimator.id}"
-      utils.save(slowoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + slowpath)
-      //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
+      val streampath = "data/" + s"${streamestimator.id}"
+      val staticpath = "data/" + s"${staticestimator.id}"
+      //val fastpath = "data/" + s"fast-${estimator.id}"
+      if (rep == 0) {
+        utils.createFolderIfNotExisting(experiment_folder + "/data")
+        utils.save(streamoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + streampath)
+        utils.save(staticoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + staticpath)
+        //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
+      }
 
-      val attributes = List("estimatorId", "slowcpu", "slowwall", "fastcpu", "fastwall", "slowpath", "fastpath")
+      val abserror = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2))
+      val meansqerror = streamoutput.zip(staticoutput).map(x => math.pow(x._1 - x._2, 2))
+      val speedup = staticcpu / streamcpu
+
+      val attributes = List("estimatorId", "cpu", "wall", "abserror", "meansqerror", "speedup", "path", "rep")
       val summary = ExperimentSummary(attributes)
-      summary.add("estimatorId", estimator.id)
-      summary.add("slowcpu", slowcpu)
-      summary.add("slowwall", slowwall)
+      summary.add("estimatorId", streamestimator.id)
+      summary.add("cpu", streamcpu)
+      summary.add("wall", streamwall)
+      summary.add("abserror", abserror)
+      summary.add("meansqerror", meansqerror)
+      summary.add("speedup", speedup)
       //summary.add("fastcpu", fastcpu)
       //summary.add("fastwall", fastwall)
-      summary.add("slowpath", slowpath)
-      summary.add("fastpath", fastpath)
+      summary.add("path", streampath)
+      summary.add("rep", rep)
+      //summary.add("fastpath", fastpath)
 
       summary.write(summaryPath)
 
-      info(s"${estimator.id}: slowcpu: $slowcpu") // , fastcpu: $fastcpu
+      val summary2 = ExperimentSummary(attributes)
+      summary2.add("estimatorId", staticestimator.id)
+      summary2.add("cpu", staticcpu)
+      summary2.add("wall", staticwall)
+      summary.add("abserror", 0)
+      summary.add("meansqerror", 0)
+      summary.add("speedup", 1)
+      //summary.add("fastcpu", fastcpu)
+      //summary.add("fastwall", fastwall)
+      summary2.add("path", staticpath)
+      summary2.add("rep", rep)
+
+      summary2.write(summaryPath)
+
+      //info(s"${estimator.id}: slowcpu: $slowcpu") // , fastcpu: $fastcpu
     }
+
     for {
       test <- tests.par
     } {
       for {
-        estimator <- (streamestimators ++ staticestimators).par
+        estimator <- (estimators).par
       } {
-        runestimator(estimator(test))
+        runestimator(estimator(test, _), 0)
       }
+    }
+    info(s"Done with rep 0")
+
+    for {
+      rep <- (1 until nrep).par
+    } {
+      for {
+        test <- tests.par
+      } {
+        for {
+          estimator <- (estimators).par
+        } {
+          runestimator(estimator(test, _), rep)
+        }
+      }
+      info(s"Done with rep $rep")
       /*
       for {
         staticestimator <- staticestimators.par
