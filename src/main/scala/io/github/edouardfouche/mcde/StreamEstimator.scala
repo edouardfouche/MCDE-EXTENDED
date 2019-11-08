@@ -54,7 +54,7 @@ case class StreamEstimator(test: McdeStats, windowsize: Int, stepsize: Int, gamm
     val initcontrast = test.contrast(index, (0 until data.ncols).toSet)
 
     @tailrec
-    def cumulative_contrast(data: DataSet, listofcontrast: List[Double], acc: Int): Array[Double] = {
+    def cumulative_contrast(data: DataSet, listofcontrast: List[Double], acc: Int, prevcontrast: Double): Array[Double] = {
       if (data.nrows == 0) listofcontrast.reverse.toArray
       else {
         if (acc % 10000 == 0) println(s"$id : reached $acc")
@@ -62,16 +62,16 @@ case class StreamEstimator(test: McdeStats, windowsize: Int, stepsize: Int, gamm
           //println("insert with contrast computation")
           index.insert(data.head)
           val newcontrast = test.contrast(index, (0 until data.ncols).toSet)
-          cumulative_contrast(data.tail, listofcontrast.head * (gamma) + newcontrast * (1 - gamma) :: listofcontrast, acc + 1)
+          cumulative_contrast(data.tail, listofcontrast.head * (gamma) + newcontrast * (1 - gamma) :: listofcontrast, acc + 1, newcontrast)
         } else {
           //println("insert without contrast computation")
           index.insert(data.head)
-          cumulative_contrast(data.tail, listofcontrast.head :: listofcontrast, acc + 1)
+          cumulative_contrast(data.tail, listofcontrast.head * (gamma) + prevcontrast * (1 - gamma) :: listofcontrast, acc + 1, prevcontrast)
         }
       }
     }
 
-    cumulative_contrast(restdataset, List(initcontrast), 0)
+    cumulative_contrast(restdataset, List(initcontrast), 0, initcontrast)
   }
 
 }
