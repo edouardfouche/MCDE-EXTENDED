@@ -26,7 +26,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object StreamEstimatorPerformance extends Experiment {
-  val nrep = 1 // 10
+  val nrep = 10 // 10
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -112,7 +112,7 @@ object StreamEstimatorPerformance extends Experiment {
       val streampath = "data/" + s"${streamestimator.id}"
       val staticpath = "data/" + s"${staticestimator.id}"
       //val fastpath = "data/" + s"fast-${estimator.id}"
-      if (rep == 0) {
+      if (rep == 1) {
         utils.createFolderIfNotExisting(experiment_folder + "/data")
         utils.save(streamoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + streampath)
         utils.save(staticoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + staticpath)
