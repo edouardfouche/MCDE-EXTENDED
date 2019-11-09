@@ -119,16 +119,16 @@ object StreamEstimatorPerformance extends Experiment {
         //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
       }
 
-      val relerror: Double = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2)).sum
-      val relmeansqerror: Double = streamoutput.zip(staticoutput).map(x => math.pow(x._1 - x._2, 2)).sum
+      val relerror: Double = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2)).sum / streamoutput.length
+      val relmeansqerror: Double = streamoutput.zip(staticoutput).map(x => math.pow(x._1 - x._2, 2)).sum / streamoutput.length
       val relspeedup: Double = staticcpu / streamcpu
 
-      val streamabserror: Double = if (ref._1 == 0) 0 else streamoutput.zip(ref._2).map(x => math.abs(x._1 - x._2)).sum
-      val streamabsmeansqerror: Double = if (ref._1 == 0) 0 else streamoutput.zip(ref._2).map(x => math.pow(x._1 - x._2, 2)).sum
+      val streamabserror: Double = if (ref._1 == 0) 0 else streamoutput.zip(ref._2).map(x => math.abs(x._1 - x._2)).sum / streamoutput.length
+      val streamabsmeansqerror: Double = if (ref._1 == 0) 0 else streamoutput.zip(ref._2).map(x => math.pow(x._1 - x._2, 2)).sum / streamoutput.length
       val streamabsspeedup: Double = ref._1 / streamcpu
 
-      val staticabserror: Double = if (ref._1 == 0) 0 else staticoutput.zip(ref._2).map(x => math.abs(x._1 - x._2)).sum
-      val staticabsmeansqerror: Double = if (ref._1 == 0) 0 else staticoutput.zip(ref._2).map(x => math.pow(x._1 - x._2, 2)).sum
+      val staticabserror: Double = if (ref._1 == 0) 0 else staticoutput.zip(ref._2).map(x => math.abs(x._1 - x._2)).sum / staticoutput.length
+      val staticabsmeansqerror: Double = if (ref._1 == 0) 0 else staticoutput.zip(ref._2).map(x => math.pow(x._1 - x._2, 2)).sum / staticoutput.length
       val staticabsspeedup: Double = ref._1 / staticcpu
 
       val attributes = List("estimatorId", "cpu", "wall", "abserror", "absmeansqerror", "absspeedup", "relerror", "relmeansqerror", "relspeedup", "path", "rep")
@@ -154,9 +154,9 @@ object StreamEstimatorPerformance extends Experiment {
       summary2.add("estimatorId", staticestimator.id)
       summary2.add("cpu", "%.6f".format(staticcpu))
       summary2.add("wall", "%.6f".format(staticwall))
-      summary.add("abserror", "%.6f".format(staticabserror))
-      summary.add("absmeansqerror", "%.6f".format(staticabsmeansqerror))
-      summary.add("absspeedup", "%.6f".format(staticabsspeedup))
+      summary2.add("abserror", "%.6f".format(staticabserror))
+      summary2.add("absmeansqerror", "%.6f".format(staticabsmeansqerror))
+      summary2.add("absspeedup", "%.6f".format(staticabsspeedup))
       summary2.add("relmeansqerror", 0)
       summary2.add("relmeansqerror", 0)
       summary2.add("relspeedup", 1)
