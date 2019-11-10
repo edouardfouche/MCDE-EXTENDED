@@ -26,7 +26,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object StreamEstimatorPerformance extends Experiment {
-  val nrep = 30 // 10
+  val nrep = 10 // 10
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -177,8 +177,8 @@ object StreamEstimatorPerformance extends Experiment {
       info(s"Starting rep: $rep")
       val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
 
-      val reftest = MWP(500, 0.5, 0.5)
-      val refestimator = StreamEstimator(_, 1000, 1, 0.99, _)
+      val reftest = tests.last
+      val refestimator = estimators.last
 
       info(s"Handling reference (rep: ${-rep})")
       val reference = runestimator(refestimator(reftest, _), slowchanging, -rep)
