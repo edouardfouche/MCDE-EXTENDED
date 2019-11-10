@@ -26,7 +26,7 @@ import io.github.edouardfouche.utils.StopWatch
   * Test the influence of M on the scores
   */
 object StreamEstimatorPerformance extends Experiment {
-  val nrep = 10 // 10
+  val nrep = 30 // 10
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
@@ -34,13 +34,13 @@ object StreamEstimatorPerformance extends Experiment {
     info(s"Starting com.edouardfouche.experiments")
 
     val tests = Vector(
-      MWP(1, 0.5, 0.5),
-      MWP(5, 0.5, 0.5),
-      MWP(10, 0.5, 0.5),
-      MWP(50, 0.5, 0.5),
-      MWP(100, 0.5, 0.5),
+      KSPsn(1, 0.5, 0.5),
+      KSPsn(5, 0.5, 0.5),
+      KSPsn(10, 0.5, 0.5),
+      KSPsn(50, 0.5, 0.5),
+      KSPsn(100, 0.5, 0.5),
       //MWP(200, 0.5, 0.5),
-      MWP(500, 0.5, 0.5)
+      KSPsn(500, 0.5, 0.5)
       //MWPn(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
       //KSPs(1,0.5, 0.5),
@@ -158,7 +158,7 @@ object StreamEstimatorPerformance extends Experiment {
       summary2.add("absmeansqerror", "%.6f".format(staticabsmeansqerror))
       summary2.add("absspeedup", "%.6f".format(staticabsspeedup))
       summary2.add("relmeansqerror", 0)
-      summary2.add("relmeansqerror", 0)
+      summary2.add("relerror", 0)
       summary2.add("relspeedup", 1)
       //summary.add("fastcpu", fastcpu)
       //summary.add("fastwall", fastwall)
