@@ -120,7 +120,7 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
     if (currentsliceSize > sliceSize) { // then release some
       val torelease = scala.util.Random.shuffle((sliceStart until sliceEnd).toList).take(currentsliceSize - sliceSize)
       torelease.foreach(x => logicalArray(dindex(x)._1) = false)
-    } else if (currentsliceSize < sliceSize) { // then reset some to true
+    } else if (currentsliceSize < sliceSize) { // then reset some to true // TODO: Seems suboptimal
       val toreset = scala.util.Random.shuffle((0 until sliceStart).toList ::: (sliceEnd until dindex.length).toList).take(sliceSize - currentsliceSize)
       toreset.foreach(x => logicalArray(dindex(x)._1) = true)
     }
