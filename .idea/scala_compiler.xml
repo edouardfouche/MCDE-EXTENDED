@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ScalaCompilerConfiguration">
     <profile name="sbt 1" modules="mcde-plus_8672" />
-    <profile name="sbt 2" modules="MCDE-PLUS">
+    <profile name="sbt 2" modules="MCDE-EXTENDED,MCDE-PLUS">
       <option name="deprecationWarnings" value="true" />
       <option name="uncheckedWarnings" value="true" />
       <option name="featureWarnings" value="true" />

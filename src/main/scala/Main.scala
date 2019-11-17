@@ -78,7 +78,7 @@ object Main extends LazyLogging {
     case "com.edouardfouche.experiments.StreamEstimatorPerformance" => StreamEstimatorPerformance.run()
     case "com.edouardfouche.experiments.StreamMiner" => StreamMiner.run()
 
-    case "com.edouardfouche.experiments.MCDE-PLUS" => {
+    case "com.edouardfouche.experiments.MCDE-EXTENDED" => {
       Contrast.run()
       PowerDiscrete.run()
       Power.run()

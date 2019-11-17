@@ -1,4 +1,4 @@
-name := "MCDE-PLUS"
+name := "MCDE-EXTENDED"
 organization:= "io.github.edouardfouche"
 
 version := "0.1.0"
