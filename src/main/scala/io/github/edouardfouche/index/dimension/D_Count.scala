@@ -25,36 +25,36 @@ import scala.collection.mutable
   */
 class D_Count(val initvalues: Array[Double]) extends DimensionIndex {
   //type T = (scala.collection.immutable.Queue[Int], Int) // First element is a queue of the index of a given value in the map, second element in the size of this queue.
-  type T = (Array[Int], Int)
+  type T = (Vector[Int], Int)
   val id = "Count"
-  var currentvalues = initvalues
+  var currentvalues = initvalues.toVector
 
   //var dindex: Array[T] = createDimensionIndex(values)
-  var dindex: mutable.Map[Double, T] = createDimensionIndex(initvalues)
+  var dindex: mutable.Map[Double, T] = createDimensionIndex(initvalues.toVector)
 
-  def apply(i: Double): (Array[Int], Int) = dindex(i)
+  def apply(i: Double): (Vector[Int], Int) = dindex(i)
 
   def refresh(): Unit = {}
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    currentvalues = currentvalues.drop(1) :+ newpoint
     dindex = createDimensionIndex(currentvalues)
   }
 
-  def createDimensionIndex(input: Array[Double]): mutable.Map[Double, T] = {
+  def createDimensionIndex(input: Vector[Double]): mutable.Map[Double, T] = {
     //Array(T_Count(
     //  collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
     //))
     //collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({ case (x, y) => (x, T_Count(y.map(_._2), y.length)) }).toSeq: _*)
 
-    val map = mutable.Map[Double, (Array[Int], Int)]()
+    val map = mutable.Map[Double, (Vector[Int], Int)]()
     for {
       x <- input.indices
     } {
-      val current: (Array[Int], Int) = map.getOrElse(input(x),
-        (Array[Int](), 0))
-      val c: Array[Int] = current._1
-      map(input(x)) = (c :+ x, current._2 + 1) // we use a queue so that we can know efficiently which to delete.
+      val current: (Vector[Int], Int) = map.getOrElse(input(x),
+        (Vector[Int](), 0))
+      val c: Vector[Int] = current._1
+      map(input(x)) = (c :+ x, current._2 + 1) // we use it like a queue so that we can know efficiently which to delete.
     }
     map.map({ case (x, y) => (x, (y._1, y._2)) })
   }

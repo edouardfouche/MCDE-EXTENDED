@@ -128,7 +128,7 @@ case class CSPn(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)
 
-      //println(s"ndegree: $ndegree, sample1size: ${sample1.size}, sample2size: ${sample2.size}, stat: $teststatistics, chsq: $chsq, restrictedcats: ${restrictedCategories mkString ","}")
+      //println(s"ndegree: $ndegree, sample1size: ${sample1.size}, sample2size: ${sample2.size}, stat: $teststatistics, chsq: $chsq")
       //println(s"restrictedcats: ${restrictedCategories.toString}")
 
       //println(s"nrestr: ${restrictedCategories.length}, ([${restrictedCategories.mkString(",")}), n1: ${sample1.size}, n2: ${sample2.size} stat: $teststatistics, chsq: $chsq")

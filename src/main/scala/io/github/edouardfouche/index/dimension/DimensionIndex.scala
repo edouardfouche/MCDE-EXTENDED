@@ -18,7 +18,7 @@ package io.github.edouardfouche.index.dimension
 
 abstract class DimensionIndex {
   val initvalues: Array[Double] // An array of values corresponding to the values in a column
-  var currentvalues: Array[Double]
+  var currentvalues: Vector[Double]
   type T // <: TupleIndex
   val id: String
   //var dindex: Object
@@ -45,5 +45,5 @@ abstract class DimensionIndex {
     * @param data An array of values corresponding to the values in a column
     * @return An index, which is also column-oriented
     */
-  protected def createDimensionIndex(data: Array[Double]): Object
+  protected def createDimensionIndex(data: Vector[Double]): Object
 }

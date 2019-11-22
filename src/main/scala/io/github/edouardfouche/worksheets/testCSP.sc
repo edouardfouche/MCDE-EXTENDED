@@ -9,7 +9,10 @@ val c = new DataSet(Independent(3, 0, "gaussian", 20).generate(1000).transpose)
 c.columns(0).groupBy(identity).mapValues(_.length)
 
 (1 to n).toArray.map(x =>
-  CSP(m).contrast(new DataSet(Independent(3, 0, "gaussian", 20).generate(1000).transpose), Set(0, 1))).sum / n
+  CSPn(m).contrast(new DataSet(Independent(3, 0, "gaussian", 0).generate(1000).transpose), Set(0, 1))).sum / n
+
+(1 to n).toArray.map(x =>
+  KSPn(m).contrast(new DataSet(Linear(20, 0, "gaussian", 0).generate(1000).transpose), (0 until 20).toSet)).sum / n
 
 
 val d = new DataSet(Independent(3, 0, "gaussian", 10).generate(1000).transpose)

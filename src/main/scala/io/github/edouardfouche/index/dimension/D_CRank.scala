@@ -34,9 +34,9 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
   //fourth element (Double) -> correction
 
   val id = "CRank"
-  var currentvalues = initvalues
+  var currentvalues = initvalues.toVector
 
-  var dindex: Array[T] = createDimensionIndex(initvalues)
+  var dindex: Array[T] = createDimensionIndex(initvalues.toVector)
 
   def apply(n: Int): T = dindex(n) // access in the index
 
@@ -45,11 +45,11 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
   def refresh(): Unit = {}
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    currentvalues = currentvalues.drop(1) :+ newpoint
     dindex = createDimensionIndex(currentvalues)
   }
 
-  def createDimensionIndex(input: Array[Double]): Array[T]= {
+  def createDimensionIndex(input: Vector[Double]): Array[T] = {
     // Create an index for each column with this shape: (original position, adjusted rank, original value)
     // They are ordered by rank
     val nonadjusted = {

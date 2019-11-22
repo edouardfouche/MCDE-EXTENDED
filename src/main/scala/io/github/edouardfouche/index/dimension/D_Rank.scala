@@ -26,9 +26,9 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
   type T = (Int, Double) // T_Rank
   // first element (Int) -> position
   // second elements (Double) -> value
-  var currentvalues = initvalues
+  var currentvalues = initvalues.toVector
 
-  var dindex: Array[T] = createDimensionIndex(initvalues)
+  var dindex: Array[T] = createDimensionIndex(initvalues.toVector)
 
   def apply(n: Int): T = dindex(n) // access in the index
 
@@ -37,18 +37,18 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
   def refresh(): Unit = {}
 
   def insert(newpoint: Double): Unit = { // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
-    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    currentvalues = currentvalues.drop(1) :+ newpoint
     dindex = createDimensionIndex(currentvalues)
   }
 
-  def createDimensionIndex(input: Array[Double]): Array[T] = {
+  def createDimensionIndex(input: Vector[Double]): Array[T] = {
     //input.zipWithIndex.sortBy(_._1).map(x => (x._2, x._1))
     // tie breaking random list
     // I had the idea for this trick from here: https://stackoverflow.com/questions/44440018/handling-scala-array-group-with-ties
     //TODO: breaks when there are NaN
     val rd = scala.util.Random.shuffle(input.indices.toList) // tie breaking random list
     input.zipWithIndex.zip(rd).map(x => (x._1._1, x._1._2, x._2)).
-      sortWith((x, y) => (x._1 < y._1) || ((x._1 == y._1) && x._3 < y._3)).map(x => (x._2, x._1))
+      sortWith((x, y) => (x._1 < y._1) || ((x._1 == y._1) && x._3 < y._3)).map(x => (x._2, x._1)).toArray
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {

@@ -54,7 +54,7 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
-    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    currentvalues = currentvalues.drop(1) :+ newpoint
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {
       @tailrec

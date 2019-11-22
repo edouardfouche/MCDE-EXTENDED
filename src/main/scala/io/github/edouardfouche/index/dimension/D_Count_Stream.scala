@@ -43,11 +43,11 @@ class D_Count_Stream(initvalues: Array[Double]) extends D_Count(initvalues) with
   }
 
   override def insert(newpoint: Double): Unit = {
-    currentvalues = currentvalues.drop(1) ++ Array(newpoint)
+    currentvalues = currentvalues.drop(1) :+ newpoint
     val todelete = queue.dequeue()
     // handle insertion
 
-    val current = dindex.getOrElseUpdate(newpoint, (Array[Int](), 0))
+    val current = dindex.getOrElseUpdate(newpoint, (Vector[Int](), 0))
     //dindex(newpoint) = (current._1.enqueue(values.length + offset),current._2 +1)
     dindex(newpoint) = (current._1 :+ (currentvalues.length + offset), current._2 + 1)
 
