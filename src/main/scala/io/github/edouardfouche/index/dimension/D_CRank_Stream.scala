@@ -73,7 +73,7 @@ class D_CRank_Stream(initvalues: Array[Double]) extends D_CRank(initvalues) with
 
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
-    currentvalues = currentvalues.drop(1) :+ newpoint
+    // currentvalues = currentvalues.drop(1) :+ newpoint // we don't need it for MWP stream
     val todelete = queue.dequeue
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {

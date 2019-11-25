@@ -43,7 +43,7 @@ class D_Count_Stream(initvalues: Array[Double]) extends D_Count(initvalues) with
   }
 
   override def insert(newpoint: Double): Unit = {
-    currentvalues = currentvalues.drop(1) :+ newpoint
+    currentvalues = currentvalues.drop(1) :+ newpoint // be careful: required for CSP
     val todelete = queue.dequeue()
     // handle insertion
 

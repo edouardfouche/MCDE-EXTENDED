@@ -54,7 +54,7 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
   //TODO: I noticed that the insertion is quite slow in case the space is discrete (randomize in some other way)
   override def insert(newpoint: Double): Unit = {
     val todelete = queue.dequeue
-    currentvalues = currentvalues.drop(1) :+ newpoint
+    // currentvalues = currentvalues.drop(1) :+ newpoint //  // we don't need it for KSP stream
 
     def binarySearch(start: Int, end: Int, value: Double): Int = {
       @tailrec
@@ -226,8 +226,8 @@ class D_Rank_Stream(initvalues: Array[Double]) extends D_Rank(initvalues) with D
     //val indextodelete = binarySearch_delete(0, dindex.length-1, todelete) // will always be pointing to an object
     //val indextoinsert = binarySearch_insert(0, dindex.length - 1, newpoint) // will always be pointing to an object or between two, in that case, the one after.
 
-    val indextodelete = binarySearch(0, dindex.length - 1, todelete) // will always be pointing to an object (the oldest one with value = todelete)
-    val indextoinsert = if (newpoint == todelete) indextodelete + 1 else binarySearch_insert(0, dindex.length - 1, newpoint) // will pointing between two objects, i.e, the one after.
+    val indextodelete: Int = binarySearch(0, dindex.length - 1, todelete) // will always be pointing to an object (the oldest one with value = todelete)
+    val indextoinsert: Int = if (newpoint == todelete) indextodelete + 1 else binarySearch_insert(0, dindex.length - 1, newpoint) // will pointing between two objects, i.e, the one after.
     //println(s"todelete: $indextodelete, toinsert: $indextoinsert")
     //println(s"todelete: ${dindex(indextodelete)} at $indextodelete, toinsert: $newpoint at $indextoinsert, currentoffset: $offset")
 
