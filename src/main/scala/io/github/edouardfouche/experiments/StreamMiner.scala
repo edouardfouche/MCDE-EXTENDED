@@ -33,7 +33,7 @@ object StreamMiner extends Experiment {
   val windowsize = 1000
   val stepsize = 50
   val gamma = 0.99
-  val nthread = 1
+  val nthread = 0 // try it out
   val test = MWP(50, 0.5, 0.5, nthread)
   val bioliqdata = bioliq_interesting
   //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
