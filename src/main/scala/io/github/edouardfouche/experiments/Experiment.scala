@@ -13,7 +13,6 @@ import org.slf4j.MDC
   * Created by fouchee on 26.07.17.
   */
 trait Experiment extends LazyLogging {
-
   // output formatting
   val output_folder: String = System.getProperty("user.dir")
   val master_experiment_folder: String = output_folder concat "/" concat "experiments"
@@ -38,10 +37,10 @@ trait Experiment extends LazyLogging {
     logger.info(s)
   }
 
-  val defaulttests: Vector[McdeStats] = Vector(MWP(50,alpha=0.5,beta=0.5),
-    KSPs(50, alpha = 0.5, beta = 0.5),
-    CSP(50,alpha=0.5,beta=0.5),
-    MCDEP(50,alpha=0.5,beta=0.5))
+  val defaulttests: Vector[McdeStats] = Vector(MWP(50, alpha = 0.5, beta = 0.5),
+    KSPmr(50, alpha = 0.5, beta = 0.5),
+    CSPmr(50, alpha = 0.5, beta = 0.5),
+    MCDEP(50, alpha = 0.5, beta = 0.5))
 
   val selected_generators: Vector[(Int, Double, String, Int) => DataGenerator] = Vector(
     Cross,
@@ -100,8 +99,6 @@ trait Experiment extends LazyLogging {
     Zinv
   )
 
-
-
   def compareContrast(generators: Vector[DataGenerator], tests: Vector[Stats], rep: Int): Unit = {
     for {
       generator <- generators.par
@@ -143,10 +140,8 @@ trait Experiment extends LazyLogging {
   }
 
   case class ExperimentSummary(attributes: List[String]) {
-    //var results: List[(String, Any)] = List()
     val results: scala.collection.mutable.Map[String, Any] = scala.collection.mutable.Map[String, Any]()
 
-    //def add(name: String, v: Any): Unit = results = results :+ (name, v)
     def add(name: String, v: Any): Unit = {
       results(name) = v
     }

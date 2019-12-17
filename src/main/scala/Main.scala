@@ -68,9 +68,6 @@ object Main extends LazyLogging {
 
   def experimentFactory(arg: String): Unit = arg match {
     case "com.edouardfouche.experiments.Contrast" => Contrast.run()
-    case "com.edouardfouche.experiments.TwoSample" => TwoSample.run()
-    case "com.edouardfouche.experiments.IndexPerfRandom" => IndexPerfRandom.run()
-    case "com.edouardfouche.experiments.IndexPerfProcess" => IndexPerfProcess.run()
     case "com.edouardfouche.experiments.PerformanceIndex" => PerformanceIndex.run()
     case "com.edouardfouche.experiments.PerformanceContrast" => PerformanceContrast.run()
     case "com.edouardfouche.experiments.Power" => Power.run()
@@ -85,6 +82,7 @@ object Main extends LazyLogging {
       PerformanceIndex.run()
       PerformanceContrast.run()
       StreamEstimatorPerformance.run()
+      StreamMiner.run()
     }
 
     case "com.edouardfouche.experiments.Performance" => {

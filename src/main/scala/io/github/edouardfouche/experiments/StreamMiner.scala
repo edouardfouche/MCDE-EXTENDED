@@ -36,77 +36,21 @@ object StreamMiner extends Experiment {
   val nthread = 0 // try it out
   val test = MWP(50, 0.5, 0.5, nthread)
   val bioliqdata = bioliq_interesting
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
 
     info(s"Starting com.edouardfouche.experiments")
 
-    /*
-    val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 1000, 0, false),
-      StreamEstimator(_, 1000, 500, 0, false),
-      StreamEstimator(_, 1000, 100, 0, false),
-      StreamEstimator(_, 1000, 50, 0, false),
-      StreamEstimator(_, 1000, 10, 0, false),
-      StreamEstimator(_, 1000, 1, 0, false)
-    )
-     */
-
-    //val ndim = 3 //
-
-    //def generateSmoothSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-    //def generateSmoothSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-    //def generateAbruptSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
-    //def generateAbruptSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
-
-    /*
-    val slowchanging: Array[Array[Double]] = (generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown).transpose
-
-    val fastchanging: Array[Array[Double]] = (generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown).transpose
-      */
-
-    //val slowchanging: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray.transpose
-    //val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
-    //  Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
-
     info("Opening data set...")
-    val dataset: DataSet = bioliqdata.open() // TODO: What is wrong with the full one?
+    val dataset: DataSet = bioliqdata.open()
     info(s"nrows: ${dataset.nrows}, ncols: ${dataset.ncols}")
 
     def runestimator(subspaces: Array[List[Int]]) = {
-      //val estimator = streamestimator(test)
-      //val subdataset = new DataSet(subspace.map(x => dataset(x)))
-      //info(s"nrows: ${subdataset.nrows}, ncols: ${subdataset.ncols}")
-      //val (slowcpu, slowwall, slowoutput: Array[Double]) = StopWatch.measureTime(estimator.run(subdataset))
-      //val (slowcpu, slowwall, slowoutput: scala.collection.mutable.Map[List[Int],Array[Double]]) = StopWatch.measureTime(estimator.runMultiple(dataset, subspaces))
-
       val initdataset = dataset.take(windowsize)
       val restdataset = dataset.drop(windowsize)
       val index: test.I = test.preprocess(initdataset, stream = true)
 
-      // First iteration
-      /*
-      for{subgroup <- subspaces.grouped(subspaces.length / nthread).toArray.par} {
-        for{sub <- subgroup} { // parallelized
-          val newcontrast =  test.contrast(index, sub.toSet)
-          val path = "data/" + s"${bioliq_full.id}-${sub mkString ";"}"
-          // write it
-          val fw = new FileWriter(experiment_folder + "/" + path,  true) ;
-          fw.write(s"${(math rint newcontrast * 1000) / 1000}") ;
-          fw.close()
-        }
-      }
-       */
-
+      // first iteration
       for {sub <- subspaces} {
         val newcontrast = test.contrast(index, sub.toSet)
         val path = "data/" + s"${bioliqdata.id}-${sub mkString ";"}"
@@ -115,7 +59,6 @@ object StreamMiner extends Experiment {
         fw.write(s"${(math rint newcontrast * 1000) / 1000}");
         fw.close()
       }
-
 
       @tailrec
       def cumulative_contrast(data: DataSet,
@@ -145,12 +88,10 @@ object StreamMiner extends Experiment {
         }
       }
 
-
       cumulative_contrast(restdataset, 0)
 
       for {sub <- subspaces} {
         val path = "data/" + s"${bioliq_full.id}-${sub mkString ";"}"
-
         val attributes = List("windowsize", "stepsize", "path", "subspace")
         val summary = ExperimentSummary(attributes)
         summary.add("windowsize", windowsize)

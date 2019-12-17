@@ -23,17 +23,16 @@ import scala.annotation.tailrec
 import scala.collection.parallel.ForkJoinTaskSupport
 
 abstract class Index[+T <: DimensionIndex] {
-  //type T <: DimensionIndex
   val data: DataSet
   val parallelize:Int
   val id: String
-
-  //type T <: DimensionIndex[_]
   val index: Vector[T] = createIndex(data)
 
+  // Convert to the same index but with stream operations.
   def toStream(): Index[T]
 
   /**
+    * Initialize the index
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
@@ -122,7 +121,6 @@ abstract class Index[+T <: DimensionIndex] {
     * @return A stream of integer close to a and greater or equal to 1
     */
   def closeSearch(a: Int, inc: Int = 1): Stream[Int] = {
-    //(a+1) #:: closeSearch(a+1)
     if (a - inc > 1) (a + inc) #:: (a - inc) #:: closeSearch(a, inc + 1)
     else (a + inc) #:: closeSearch(a, inc + 1)
   }

@@ -16,19 +16,18 @@
  */
 package io.github.edouardfouche.experiments
 
+import io.github.edouardfouche.generators.DataGenerator
 import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
-//import com.edouardfouche.generators_deprecated.{DataGenerator, GeneratorFactory, Independent}
-import io.github.edouardfouche.generators.DataGenerator
 
 
 /**
   * Created by fouchee on 12.07.17.
-  * Check the power of every approach against a selected number of generators_deprecated
+  * Check the power of every approach against a selected number of generators
   */
 object Power extends Experiment {
-  val nrep = 1000 // number of data sets we use to estimate rejection rate
+  val nrep = 1000 // number of MC iterations
   val ndims = Array(2, 3, 5, 10, 20)
   val noiseLevels = 30
   val generators: Vector[(Int, Double, String, Int) => DataGenerator] = selected_generators
@@ -41,15 +40,15 @@ object Power extends Experiment {
 
     val tests = Vector(
       MWP(1, 0.5, 0.5),
-      MWPn(1, 0.5, 0.5),
+      MWPnomr(1, 0.5, 0.5),
       MWPu(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
+      KSPemr(1, 0.5, 0.5),
+      KSPe(1, 0.5, 0.5),
+      KSPmr(1, 0.5, 0.5),
       KSP(1, 0.5, 0.5),
-      KSPn(1, 0.5, 0.5),
-      KSPs(1, 0.5, 0.5),
-      KSPsn(1, 0.5, 0.5),
-      CSP(1, 0.5, 0.5),
-      CSPn(1, 0.5, 0.5)
+      CSPmr(1, 0.5, 0.5),
+      CSP(1, 0.5, 0.5)
     )
 
     for {
@@ -63,7 +62,6 @@ object Power extends Experiment {
         val precpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
         val runcpus: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
         val contrasts: scala.collection.mutable.Map[String, List[Double]] = scala.collection.mutable.Map(tests.map(x => (x.id, List[Double]())): _*)
-        //val gen = generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
 
         for {
           test <- tests.par
@@ -71,10 +69,10 @@ object Power extends Experiment {
           for {
             rep <- 1 to nrep
           } {
-            val gen = if (test.id contains "CSP") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
+            val gen = if (test.id contains "CSPmr") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
             else generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
             val generated_data: Array[Array[Double]] = gen.generate(1000).transpose
-            val raw = new DataSet(generated_data.map(x => x.map(y => if (y.isNaN) 0.0 else y))) //TODO: Quick fix in case of NaNs (resulting from overflows or badly constructed generator I guess)
+            val raw = new DataSet(generated_data.map(x => x.map(y => if (y.isNaN) 0.0 else y))) // Quick fix in case of NaNs
             // Save data samples (debugging purpose)
             //utils.createFolderIfNotExisting(experiment_folder + "/data")
             //if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${gen.id}")
@@ -89,7 +87,7 @@ object Power extends Experiment {
         for {
           test <- tests
         } {
-          val gen = if (test.id contains "CSP") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
+          val gen = if (test.id contains "CSPmr") generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 10)
           else generator(ndim, "%.2f".format(level.toDouble / 30.0).toDouble, "gaussian", 0)
 
           val avgprecpu = precpus(test.id).sum / nrep

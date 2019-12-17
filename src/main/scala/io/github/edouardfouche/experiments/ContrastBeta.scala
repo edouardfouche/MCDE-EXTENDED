@@ -21,7 +21,7 @@ import io.github.edouardfouche.mcde._
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Test the influence of beta on the scores
   */
 object ContrastBeta extends Experiment {
   val beta_range = Vector(0.1, 0.2, 0.3, 0.5, 1)
@@ -35,9 +35,9 @@ object ContrastBeta extends Experiment {
       info(s"Starting com.edouardfouche.experiments with configuration: alpha=${0.5}, beta=${beta}")
 
       val tests = Vector(
-        MWP(1,0.5, beta),
-        KSPs(1, 0.5, beta),
-        CSP(1,0.5, beta)
+        MWP(1, 0.5, beta),
+        KSPmr(1, 0.5, beta),
+        CSPmr(1, 0.5, beta)
       )
 
       val generators = Vector(

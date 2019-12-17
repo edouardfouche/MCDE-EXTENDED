@@ -21,15 +21,15 @@ import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
-// Here the inputs may be row-oriented
+// The index for a numerical data set
 class I_Rank(val data: DataSet, val parallelize: Int = 0) extends Index[D_Rank] {
-  //override type T = D_Rank
   val id = "Rank"
-  //type T = DimensionIndex[String]
 
+  // Convert to the same index but with stream operations.
   def toStream: I_Rank_Stream = new I_Rank_Stream(data, parallelize)
 
   /**
+    * Initialize the index
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented

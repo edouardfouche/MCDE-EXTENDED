@@ -21,16 +21,15 @@ import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
-// Here the inputs may be row-oriented
+// The index for a data set with heterogenous (mixed) types of columns, with stream operations
 class I_Multi_Stream(data: DataSet, parallelize: Int = 0) extends I_Multi(data, parallelize) {
-  //override type T = DimensionIndex
   override val id = "MultiStream"
-  //type T = DimensionIndex[String]
 
   // basically, does nothing
   override def toStream: I_Multi_Stream = this
 
   /**
+    * Initialize the index
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented

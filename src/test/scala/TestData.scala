@@ -38,10 +38,10 @@ trait TestData {
 
   val mwp = MWP(100, 0.5)
   val mwpr = MWPr(100, 0.5)
-  val csp = CSP(100, 0.5)
-  val ksp = KSPs(100, 0.5)
-  val kspn = KSPsn(100, 0.5)
-  val kspp = KSP(100, 0.5)
+  val csp = CSPmr(100, 0.5)
+  val ksp = KSPmr(100, 0.5)
+  val kspn = KSP(100, 0.5)
+  val kspp = KSPemr(100, 0.5)
 
   val input = Vector(mwp, mwpr, ksp, kspn, kspp) // csp, too long because the data is continuous
 }

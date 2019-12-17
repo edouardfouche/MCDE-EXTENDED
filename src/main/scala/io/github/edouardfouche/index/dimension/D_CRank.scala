@@ -19,6 +19,7 @@ package io.github.edouardfouche.index.dimension
 import scala.annotation.tailrec
 
 /**
+  * The index for an ordinal dimension, or a numerical dimension with ties (intended for MWP)
   * Compute an adjusted, corrected rank index from a given data set
   * The rank are adjusted, which means that in the case of ties, the rank is defined as the average rank of the tying values
   * Also, a "correction for ties" is computed, as required to compute a Mann-Whitney U test
@@ -27,7 +28,7 @@ import scala.annotation.tailrec
   * @param initvalues An array of values corresponding to the values in a column
   */
 class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
-  type T = (Int, Double, Float, Double) //T_CRank
+  type T = (Int, Double, Float, Double)
   //first element (Int) -> position
   //second element (Double) -> value
   //third element (Float) -> adjustedrank
@@ -56,7 +57,7 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
       //input.zipWithIndex.sortBy(_._1).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
       // yields to java.lang.IllegalArgumentException: Comparison method violates its general contract
       //input.zipWithIndex.sortWith((x,y) => (x._1 < y._1) || ((x._1 == y._1) && math.random < 0.5)).zipWithIndex.map(y => (y._1._2, y._1._1, y._2.toFloat, y._1._1))
-      //TODO: breaks when there are NaN
+      // Note: the code above breaks when there are NaN
       val rd = scala.util.Random.shuffle(input.indices.toList) // tie breaking random list
       input.zipWithIndex.zip(rd).map(x => (x._1._1, x._1._2, x._2)).
         sortWith((x, y) => (x._1 < y._1) || ((x._1 == y._1) && x._3 < y._3)).
@@ -86,31 +87,20 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
         j += 1
       }
     }
-
     adjusted
   }
 
   override def slice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)
-    //val sliceStart = scala.util.Random.nextInt((length - sliceSize).max(1))
-
     // Performing safe cut
     val start = scala.util.Random.nextInt((length - sliceSize).max(1)) //+1)
     val sliceStart = getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
     val sliceEnd = getSafeCut(sliceEndSearchStart)
 
-
-    //val start = scala.util.Random.nextInt(length - sliceSize)//+1)
-    //val sliceStart = scala.util.Random.nextInt(length - sliceSize) //+1)//getSafeCut(start)
-    //val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
-    //val sliceEnd = (sliceStart + sliceSize).min(length) //getSafeCut(sliceEndSearchStart)
-
-
     for {x <- 0 until sliceStart} {
       logicalArray(dindex(x)._1) = false
     }
-    //for {x <- sliceStart + sliceSize until dindex.length} {
     for {x <- sliceEnd until dindex.length} {
       logicalArray(dindex(x)._1) = false
     }
@@ -120,24 +110,18 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
     if (currentsliceSize > sliceSize) { // then release some
       val torelease = scala.util.Random.shuffle((sliceStart until sliceEnd).toList).take(currentsliceSize - sliceSize)
       torelease.foreach(x => logicalArray(dindex(x)._1) = false)
-    } else if (currentsliceSize < sliceSize) { // then reset some to true // TODO: Seems suboptimal
+    } else if (currentsliceSize < sliceSize) { // then reset some to true // TODO: Seems somewhat suboptimal
       val toreset = scala.util.Random.shuffle((0 until sliceStart).toList ::: (sliceEnd until dindex.length).toList).take(sliceSize - currentsliceSize)
       toreset.foreach(x => logicalArray(dindex(x)._1) = true)
     }
 
-    //println(s"currentslicesize = $currentsliceSize, sliceSize= $sliceSize")
-
     logicalArray
   }
 
+  // This kind of slicing aim to alleviate the "border effect". Every point are equally likely to be selected
   override def uniformslice(sliceSize: Int): Array[Boolean] = {
     val logicalArray = Array.fill[Boolean](length)(true)
 
-    // Performing safe cut
-    //val start = scala.util.Random.nextInt((length - sliceSize).max(1)) //+1)
-    //val sliceStart = getSafeCut(start)
-    //val sliceEndSearchStart = (sliceStart + sliceSize).min(length - 1)
-    //val sliceEnd = getSafeCut(sliceEndSearchStart)
     val start = scala.util.Random.nextInt(length) //+1)
     val sliceStart = getSafeCut(start)
     val sliceEndSearchStart = (sliceStart + sliceSize) % length
@@ -147,7 +131,6 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
       for {x <- 0 until sliceStart} {
         logicalArray(dindex(x)._1) = false
       }
-      //for {x <- sliceStart + sliceSize until dindex.length} {
       for {x <- sliceEnd until dindex.length} {
         logicalArray(dindex(x)._1) = false
       }
@@ -155,12 +138,10 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
       for {x <- 0 until sliceEnd} {
         logicalArray(dindex(x)._1) = false
       }
-      //for {x <- sliceStart + sliceSize until dindex.length} {
       for {x <- sliceStart until dindex.length} {
         logicalArray(dindex(x)._1) = false
       }
     }
-
 
     // Correcting the slice size
     val currentsliceSize = sliceEnd - sliceStart
@@ -172,11 +153,10 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
       toreset.foreach(x => logicalArray(dindex(x)._1) = true)
     }
 
-    //println(s"currentslicesize = $currentsliceSize, sliceSize= $sliceSize")
-
     logicalArray
   }
 
+  // Helper function to avoid cutting between ties
   def getSafeCut(cut: Int): Int = {
     //require(cut >= 0 & cut <= reference.length)
     //val ref = index(reference)
@@ -194,6 +174,7 @@ class D_CRank(val initvalues: Array[Double]) extends DimensionIndex {
     cutSearch(cut, 0, this)
   }
 
+  // We break the precedent function into two alternatives: getSafeCutRight and getSafeCutLeft
   def getSafeCutRight(cut: Int): Int = {
     var i = 0
     while((cut+i+1) < this.length && this(cut)._2 == this(cut+i+1)._2) {

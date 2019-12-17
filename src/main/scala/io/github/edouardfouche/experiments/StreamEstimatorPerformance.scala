@@ -23,11 +23,10 @@ import io.github.edouardfouche.utils.StopWatch
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Test the performance of monitoring on a data stream
   */
 object StreamEstimatorPerformance extends Experiment {
-  val nrep = 50 // 10
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
+  val nrep = 50
 
   def run(): Unit = {
 
@@ -39,18 +38,7 @@ object StreamEstimatorPerformance extends Experiment {
       MWP(10, 0.5, 0.5),
       MWP(50, 0.5, 0.5),
       MWP(100, 0.5, 0.5),
-      //MWP(200, 0.5, 0.5),
       MWP(500, 0.5, 0.5)
-      //MWPn(1, 0.5, 0.5),
-      //MWPr(1,0.5, 0.5),
-      //KSPs(1,0.5, 0.5),
-      //KSPsn(1,0.5, 0.5),
-      //KSP(1, 0.5, 0.5),
-      //KSPn(1, 0.5, 0.5),
-      //KSPs(1, 0.5, 0.5),
-      //KSPsn(1, 0.5, 0.5),
-      //CSP(1, 0.5, 0.5),
-      //CSPn(1, 0.5, 0.5)
     )
 
     val estimators: Vector[(McdeStats, Boolean) => StreamEstimator] = Vector(
@@ -61,62 +49,22 @@ object StreamEstimatorPerformance extends Experiment {
       StreamEstimator(_, 1000, 10, 0.99, _),
       StreamEstimator(_, 1000, 1, 0.99, _)
     )
-    /*
-    val staticestimators: Vector[McdeStats => StreamEstimator] = Vector(
-      StreamEstimator(_, 1000, 1000, 0.99, false),
-      StreamEstimator(_, 1000, 500, 0.99, false),
-      StreamEstimator(_, 1000, 100, 0.99, false),
-      StreamEstimator(_, 1000, 50, 0.99, false),
-      StreamEstimator(_, 1000, 10, 0.99, false),
-      StreamEstimator(_, 1000, 1, 0.99, false)
-    )
-    */
 
-
-    val ndim = 3 //
-
-    //def generateSmoothSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-    //def generateSmoothSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x / 100.0, "gaussian", 0).generate(1000)).toArray
-    //def generateAbruptSlopUp: Array[Array[Double]] = (0 until 100).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
-    //def generateAbruptSlopDown: Array[Array[Double]] = (100 until 0).flatMap(x => Linear(ndim, x % 2, "gaussian", 0).generate(1000)).toArray
-
-    /*
-    val slowchanging: Array[Array[Double]] = (generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown ++
-      generateSmoothSlopUp ++ generateSmoothSlopDown).transpose
-
-    val fastchanging: Array[Array[Double]] = (generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown ++
-      generateAbruptSlopUp ++ generateAbruptSlopDown).transpose
-      */
-
-
-    //val fastchanging: Array[Array[Double]] = (Linear(ndim, 0, "gaussian", 0).generate(50000) ++
-    //  Linear(ndim, 1, "gaussian", 0).generate(50000)).transpose
+    val ndim = 3
 
     def runestimator(estimator: Boolean => StreamEstimator, data: Array[Array[Double]], rep: Int, ref: (Double, Array[Double]) = (0, Array())): (Double, Array[Double]) = {
-      //val estimator = streamestimator(test)
       val streamestimator = estimator(true)
       val staticestimator = estimator(false)
       info(s"Starting with ${streamestimator.id}")
       val (staticcpu, staticwall, staticoutput: Array[Double]) = StopWatch.measureTime(staticestimator.run(new DataSet(data)))
       val (streamcpu, streamwall, streamoutput: Array[Double]) = StopWatch.measureTime(streamestimator.run(new DataSet(data)))
 
-      //info(s"Starting with ${estimator.id} (fast)")
-      //val (fastcpu, fastwall, fastoutput: Array[Double]) = StopWatch.measureTime(estimator.run(new DataSet(fastchanging)))
-
       val streampath = "data/" + s"${streamestimator.id}"
       val staticpath = "data/" + s"${staticestimator.id}"
-      //val fastpath = "data/" + s"fast-${estimator.id}"
       if (rep == 1) {
         utils.createFolderIfNotExisting(experiment_folder + "/data")
         utils.save(streamoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + streampath)
         utils.save(staticoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + staticpath)
-        //utils.save(fastoutput.map(x => (math rint x * 1000) / 1000), experiment_folder + "/" + fastpath)
       }
 
       val relerror: Double = streamoutput.zip(staticoutput).map(x => math.abs(x._1 - x._2)).sum / streamoutput.length
@@ -142,11 +90,8 @@ object StreamEstimatorPerformance extends Experiment {
       summary.add("relerror", "%.6f".format(relerror))
       summary.add("relmeansqerror", "%.6f".format(relmeansqerror))
       summary.add("relspeedup", "%.6f".format(relspeedup))
-      //summary.add("fastcpu", fastcpu)
-      //summary.add("fastwall", fastwall)
       summary.add("path", streampath)
       summary.add("rep", rep)
-      //summary.add("fastpath", fastpath)
 
       summary.write(summaryPath)
 
@@ -160,14 +105,11 @@ object StreamEstimatorPerformance extends Experiment {
       summary2.add("relmeansqerror", 0)
       summary2.add("relerror", 0)
       summary2.add("relspeedup", 1)
-      //summary.add("fastcpu", fastcpu)
-      //summary.add("fastwall", fastwall)
       summary2.add("path", staticpath)
       summary2.add("rep", rep)
 
       summary2.write(summaryPath)
 
-      //info(s"${estimator.id}: slowcpu: $slowcpu") // , fastcpu: $fastcpu
       (staticcpu, staticoutput)
     }
 
@@ -193,15 +135,7 @@ object StreamEstimatorPerformance extends Experiment {
         }
       }
       info(s"Done with rep $rep")
-      /*
-      for {
-        staticestimator <- staticestimators.par
-      } {
-        runestimator(staticestimator(test))
-      }
-       */
     }
-
 
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")
   }

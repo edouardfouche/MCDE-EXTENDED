@@ -2,6 +2,7 @@ package io.github.edouardfouche.generators
 
 import breeze.stats.distributions.Uniform
 
+// This generator fixes a bug in the Parabola implementation of  the io.github.edouardfouche.generators package
 case class Parabola2(nDim: Int, noise: Double, noisetype: String, discretize: Int)(scale: Option[Double] = Some(1)) extends ParameterizedDataGenerator {
   override lazy val shortname = "P2"
   val s: Int = scale match {

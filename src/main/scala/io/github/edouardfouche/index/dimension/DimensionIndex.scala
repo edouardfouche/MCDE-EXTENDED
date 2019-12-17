@@ -16,20 +16,16 @@
  */
 package io.github.edouardfouche.index.dimension
 
+// The index for a dimension
 abstract class DimensionIndex {
   val initvalues: Array[Double] // An array of values corresponding to the values in a column
   var currentvalues: Vector[Double]
   type T // <: TupleIndex
   val id: String
-  //var dindex: Object
 
   def insert(newpoint: Double): Unit // Recompute the dimensionindex from scratch on the new window, DimensionIndexStream must override
 
   def refresh(): Unit // Do nothing, DimensionIndexStream must override
-
-  //def indices: Range = dindex.indices // this is supposed to give the indices of the columns
-
-  //def apply(n: Int): T = dindex(n) // access in the index
 
   def length: Int = initvalues.length
 
@@ -38,8 +34,6 @@ abstract class DimensionIndex {
   def uniformslice(sliceSize: Int): Array[Boolean]
 
   def isEmpty: Boolean = initvalues.length == 0
-
-  //override def toString: String = dindex mkString ";"
 
   /**
     * @param data An array of values corresponding to the values in a column

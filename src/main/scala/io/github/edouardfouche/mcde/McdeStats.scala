@@ -26,8 +26,6 @@ import scala.collection.parallel.ForkJoinTaskSupport
   * Created by fouchee on 07.07.17.
   */
 trait McdeStats extends Stats {
-  //type U
-  //val slicer: Slicer[U]
   type D <: DimensionIndex
   type I <: Index[D]
 
@@ -44,9 +42,6 @@ trait McdeStats extends Stats {
   require(M > 0, "M should be greater than 0")
   require(beta > 0 & beta <= 1, "beta should be greater than 0 and lower than 1")
 
-  //def contrast(m: PreprocessedData, dimensions: Set[Int]): Double
-  // I think this expected a number of records
-  //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
   def preprocess(input: DataSet, stream: Boolean = false): I
 
   def preprocess(input: Array[Array[Double]]): I = {
@@ -54,8 +49,6 @@ trait McdeStats extends Stats {
   }
   /**
     * Statistical test computation
-    *
-    *
     * @param indexSelection An array of Boolean that contains the information if a given index is in the slice
     */
   //@param reference      The vector of the reference dimension as an array of 2-Tuple. First element is the index, the second is the rank
@@ -67,7 +60,6 @@ trait McdeStats extends Stats {
 
   /**
     * Compute the contrast of a subspace
-    *
     * @param m          The indexes from the original data ordered by the rank of the points
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
@@ -96,8 +88,6 @@ trait McdeStats extends Stats {
       }).sum / M
     }
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     result
   }
 
@@ -112,8 +102,6 @@ trait McdeStats extends Stats {
     // Sanity check
     m.refresh()
     require(dimensions.forall(x => x >= 0 & x < m.ncols), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
-
-    //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
 
     val result = if (parallelize == 0) {
       (1 to M).map(i => {
@@ -136,8 +124,6 @@ trait McdeStats extends Stats {
       }).sum / M
     }
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     result
   }
 
@@ -159,8 +145,6 @@ trait McdeStats extends Stats {
 
     val result = (1 to M).map(i => twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))).sum / M //, targetSampleSize))).sum / M
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     result
   }
 
@@ -184,8 +168,6 @@ trait McdeStats extends Stats {
       twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))
     }).sum / M //, targetSampleSize))).sum / M
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     result
   }
 

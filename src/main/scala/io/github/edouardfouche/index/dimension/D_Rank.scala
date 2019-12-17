@@ -17,7 +17,7 @@
 package io.github.edouardfouche.index.dimension
 
 /**
-  * A very simple index structure will only the ranks (convenient for HiCS for example)
+  * The index for a numerical dimension (intended for KSPemr)
   *
   * @param initvalues An array of values corresponding to the values in a column
   */
@@ -45,7 +45,7 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
     //input.zipWithIndex.sortBy(_._1).map(x => (x._2, x._1))
     // tie breaking random list
     // I had the idea for this trick from here: https://stackoverflow.com/questions/44440018/handling-scala-array-group-with-ties
-    //TODO: breaks when there are NaN
+    // Note: the code above breaks when there are NaN
     val rd = scala.util.Random.shuffle(input.indices.toList) // tie breaking random list
     input.zipWithIndex.zip(rd).map(x => (x._1._1, x._1._2, x._2)).
       sortWith((x, y) => (x._1 < y._1) || ((x._1 == y._1) && x._3 < y._3)).map(x => (x._2, x._1)).toArray
@@ -60,8 +60,6 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
     for {x <- sliceStart + sliceSize until dindex.length} {
       logicalArray(dindex(x)._1) = false
     }
-
-    //println(s"sliceSize= $sliceSize")
     logicalArray
   }
 
@@ -75,7 +73,6 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
       for {x <- 0 until sliceStart} {
         logicalArray(dindex(x)._1) = false
       }
-      //for {x <- sliceStart + sliceSize until dindex.length} {
       for {x <- sliceEnd until dindex.length} {
         logicalArray(dindex(x)._1) = false
       }
@@ -83,13 +80,11 @@ class D_Rank(val initvalues: Array[Double]) extends DimensionIndex {
       for {x <- 0 until sliceEnd} {
         logicalArray(dindex(x)._1) = false
       }
-      //for {x <- sliceStart + sliceSize until dindex.length} {
       for {x <- sliceStart until dindex.length} {
         logicalArray(dindex(x)._1) = false
       }
     }
 
-    //println(s"sliceSize= $sliceSize")
     logicalArray
   }
 }

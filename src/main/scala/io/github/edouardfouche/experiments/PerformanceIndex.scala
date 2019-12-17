@@ -25,11 +25,10 @@ import io.github.edouardfouche.utils.StopWatch
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Test the runtime of index construction
   */
 object PerformanceIndex extends Experiment {
   val nrep = 100
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
@@ -42,12 +41,11 @@ object PerformanceIndex extends Experiment {
       new I_Rank(_),
       new I_Rank_Stream(_)
     )
+
     info(s"initialize indexes")
     val generators: Vector[DataGenerator] = Vector (
       Independent(3, 0, "gaussian", 10),
       Independent(3, 0, "gaussian", 10),
-      //Independent(1, 0, "gaussian", 20),
-      //Independent(1, 0, "gaussian", 20),
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
@@ -55,14 +53,11 @@ object PerformanceIndex extends Experiment {
     )
     info(s"initialize generators")
 
-    //val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(200000).transpose.head, x.id))
-
     for {
       i <- indexes.indices.par
     } {
       val index = indexes(i)
       val generator = generators(i)
-      //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
       val dummyindex = index(new DataSet(Array(Array(1, 2, 3))))
 
       // burn-in
@@ -75,21 +70,13 @@ object PerformanceIndex extends Experiment {
       }
       
       def runit(windowsize: Int, n: Int): Unit = {
-        //var initmeasures: Array[Double] = Array()
-        //var measures: Array[Double] = Array()
-        //var rmeasures: Array[Double] = Array()
-
-        val data = generator.generate(windowsize + 1) //.transpose.head
+        val data = generator.generate(windowsize + 1)
         val initdata: DataSet = new DataSet(data.transpose.map(x => x.take(windowsize)))
         val (initcpu, initwall, initalizedindex) = StopWatch.measureTime(index(initdata))
 
         val newpoint: Array[Double] = data(windowsize)
         val (cpu, wall, b) = StopWatch.measureTime(initalizedindex.insert(newpoint))
         val (rcpu, rwall, c) = StopWatch.measureTime(initalizedindex.refresh())
-        //val (rcpu, rwall, b) = StopWatch.measureTime({})
-        //initmeasures = initmeasures :+ initcpu
-        //measures = measures :+ cpu
-        //rmeasures = rmeasures :+ rcpu
 
         val attributes = List("refId", "indexId", "w", "initcpu", "cpu", "rcpu", "rep")
         val summary = ExperimentSummary(attributes)

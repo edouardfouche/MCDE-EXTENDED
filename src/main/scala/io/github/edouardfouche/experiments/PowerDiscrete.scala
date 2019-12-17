@@ -24,53 +24,45 @@ import org.slf4j.MDC
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Check the power of every approach against a selected number of generators, with discretization
   */
 object PowerDiscrete extends Experiment {
   val nrep = 1000
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
-
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
-
 
     val tests = Vector(
       MWP(1, 0.5, 0.5),
-      MWPn(1, 0.5, 0.5),
+      MWPnomr(1, 0.5, 0.5),
       MWPu(1, 0.5, 0.5),
       //MWPr(1,0.5, 0.5),
+      KSPemr(1, 0.5, 0.5),
+      KSPe(1, 0.5, 0.5),
+      KSPmr(1, 0.5, 0.5),
       KSP(1, 0.5, 0.5),
-      KSPn(1, 0.5, 0.5),
-      KSPs(1, 0.5, 0.5),
-      KSPsn(1, 0.5, 0.5),
-      CSP(1, 0.5, 0.5),
-      CSPn(1, 0.5, 0.5)
+      CSPmr(1, 0.5, 0.5),
+      CSP(1, 0.5, 0.5)
     )
-
-
-    //val tests = Vector(
-    //  MWPu(1, 0.5, 0.5),
-    //)
 
     val ndims = Array(2, 3, 5, 10, 20)
 
     val constructors: Vector[(Int, Double) => DataGenerator] = Vector(
-      // the categorical stuff
+      // the categorical data sets
       LinearCat(_, _, "gaussian", 1),
       LinearCat(_, _, "gaussian", 2),
       LinearCat(_, _, "gaussian", 3),
       LinearCat(_, _, "gaussian", 5),
       LinearCat(_, _, "gaussian", 10),
       LinearCat(_, _, "gaussian", 20),
-      // the ordinal stuff
+      // the ordinal data sets
       Linear(_, _, "gaussian", 1),
       Linear(_, _, "gaussian", 2),
       Linear(_, _, "gaussian", 3),
       Linear(_, _, "gaussian", 5),
       Linear(_, _, "gaussian", 10),
       Linear(_, _, "gaussian", 20),
-      // the numeric stuff
+      // the numeric data set
       Linear(_, _, "gaussian", 0)
     )
 

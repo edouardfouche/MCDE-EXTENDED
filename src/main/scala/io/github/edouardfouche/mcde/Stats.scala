@@ -8,10 +8,6 @@ import io.github.edouardfouche.preprocess.DataSet
   * Created by fouchee on 07.07.17.
   */
 abstract class Stats{
-  //type U = Double with Int
-  //type PreprocessedData = Index_Double //<: Index[Double] // PreprocessedData are subtypes of Index, which are column oriented structures
-  //type U = _ <: Ordered[U]
-  // type PreprocessedData = _ <: Index[U]
   type D <: DimensionIndex
   type I <: Index[D]
   val id: String
@@ -23,7 +19,6 @@ abstract class Stats{
     * @param input A data set (row oriented)
    */
   def preprocess(input: DataSet, stream: Boolean = false): I
-  //def preprocess[U](input: Array[Array[U]])(implicit ev$1: U => Ordered[U]): Index[U]
 
   /**
     * @param m A data set (row oriented)

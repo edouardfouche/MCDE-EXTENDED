@@ -18,6 +18,7 @@ package io.github.edouardfouche.index.dimension
 
 import scala.collection.mutable
 
+// The index for a dimension, with stream operations.
 trait DimensionIndexStream extends DimensionIndex {
   val queue: mutable.Queue[Double]
   var offset: Int

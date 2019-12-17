@@ -21,16 +21,12 @@ import io.github.edouardfouche.index.{I_Multi, I_Multi_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
-  * Chi-Squared test whithin the MCDE framework
+  * The MCDE Framework on heterogeneous data
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
-  * @param beta Expected share of instances in marginal restriction (reference dimension).
-  *       Added with respect to the original paper to loose the dependence of beta from alpha.
-  *
+  * @param beta  Expected share of instances in marginal restriction (reference dimension).
   */
 case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parallelize: Int = 0) extends McdeStats {
-  //type U = Double
-  //type PreprocessedData = D_Rank
   type D = DimensionIndex
   type I = I_Multi
 
@@ -53,17 +49,12 @@ case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
     * @return The contrast score, which is 1-p of the p-value of the Kolmogorov-Smirnov statistic
     */
   def twoSample(ref: DimensionIndex, indexSelection: Array[Boolean]): Double = {
-    //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
-    //ref.refresh // handled inside
     ref match {
       case x: D_Count =>
-        //println(s"$ref : CSP!")
         CSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case x: D_Rank =>
-        //println(s"$ref : KSP!")
         KSP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case x: D_CRank =>
-        //println(s"$ref : MWP!")
         MWP(M, alpha, beta, parallelize).twoSample(x, indexSelection)
       case _ => throw new Error("Unsupported DimensionIndex type")
     }

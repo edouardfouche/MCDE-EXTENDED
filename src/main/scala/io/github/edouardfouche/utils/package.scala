@@ -16,8 +16,6 @@
  */
 import java.io.{BufferedWriter, File, FileWriter}
 
-//import com.typesafe.scalalogging.LazyLogging
-
 import scala.annotation.tailrec
 
 /**

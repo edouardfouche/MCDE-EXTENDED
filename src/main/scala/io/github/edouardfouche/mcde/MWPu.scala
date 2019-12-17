@@ -25,18 +25,16 @@ import scala.annotation.tailrec
 import scala.collection.parallel.ForkJoinTaskSupport
 
 /**
-  * Compute the average accross the p-values of all the slices, but this time do the tie correction
+  * Compute the average across the p-values of all the slices, but this time do the tie correction
   * The tie correction is precomputed as a Map, which gives for each distinct rank a corresponding correction
+  * Like MWPnomr but uses uniform slicing
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
-  *              Added with respect to the original paper to loose the dependence of beta from alpha.
   */
 
 case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                 var parallelize: Int = 0) extends McdeStats {
-  //type PreprocessedData = D_CRank
-  //type U = Double
   type I = I_CRank
   type D = D_CRank
   val id = "MWPu"
@@ -82,8 +80,6 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       }).sum / M
     }
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     result
   }
 
@@ -98,43 +94,8 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     */
   def twoSample(ref: D, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
-    //val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)//+1)
-    //val start = scala.util.Random.nextInt(ref.length) //+1)
-    //val sliceStart = ref.getSafeCut(start) %ref.length
-    //val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt) % ref.length
-    //val sliceEnd = ref.getSafeCut(sliceEndSearchStart) %ref.length
-
     val sliceStart = 0
     val sliceEnd = ref.length
-
-    // Correcting the marginal restriction (?)
-    //val (sliceStart: Int, sliceEnd: Int) = if (ref(safeSliceStart)._2 == ref(safeSliceEnd - 1)._2) {
-    //  val flag = math.random() < 0.5
-    //  if (flag) if(safeSliceStart == 0) (ref.getSafeCutLeft(ref.length-1), safeSliceEnd) else (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
-    //  else (safeSliceStart, ref.getSafeCutRight(safeSliceEnd % ref.length))
-    //  //else (safeSliceStart, safeSliceEnd)
-    //} else (safeSliceStart, safeSliceEnd)
-
-    /*
-    try {
-      val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
-        if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
-        else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
-        else (safeSliceStart, safeSliceEnd)
-      } else (safeSliceStart, safeSliceEnd)
-    } catch {
-      case e: Throwable => {
-        println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd")
-        throw e
-      }
-    }
-    */
-
-
-    //println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd, sliceStart = $sliceStart, sliceEnd = $sliceEnd")
-    //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
-
-    //val ref: D_CRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
@@ -146,15 +107,6 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       lazy val cutLength = if(cutEnd > cutStart) cutEnd - cutStart else (ref.length - cutStart + cutEnd-1)
       val (r1, n1: Long) = cumulative(cutStart, 0, 0)
 
-      //if (n1 == 0){ //| n1 == cutLength) {
-      //  1 // If the inslice is empty, this just means maximal possible score.
-      //} else if (n1 == cutLength) {
-      //  0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
-      //}
-
-      //if (n1 == indexSelection.length) { // In that case the slicing process led to selecting everything, contrast is not defined
-      //  0
-      //} else
       if (n1 == 0 || n1 == cutLength) {
         1
       } else {
@@ -162,16 +114,7 @@ case class MWPu(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
         if (n1 >= 3037000499L && n2 >= 3037000499L) throw new Exception("Long type overflowed. Too many objects: Please subsample and try again with smaller data set.")
         val U1 = r1 - (n1 * (n1 - 1)) / 2 // -1 because our ranking starts from 0
 
-        //val corr = if((cutEnd == 0) & (cutStart == 0)) ref(ref.length-1)._4
-        //else if(cutEnd == 0) ref(ref.length-1)._4 - ref(cutStart - 1)._4
-        //else if(cutStart == 0) ref(cutEnd - 1)._4
-        //else if(cutEnd > cutStart) ref(cutEnd - 1)._4 - ref(cutStart - 1)._4
-        //else ref(cutEnd - 1)._4 + ref(ref.length-1)._4 - ref(cutStart - 1)._4
-
         val corr = ref(cutEnd - 1)._4
-
-        //val corrMax = if (cut End == 0) ref(ref.length-1)._4 else ref(cutEnd - 1)._4
-        //val corrMin = if (cutStart == 0) 0.0 else ref(cutStart - 1)._4
 
         val correction = corr / (cutLength.toDouble * (cutLength.toDouble - 1.0))
         val std = math.sqrt((n1.toDouble * n2.toDouble / 12.0) * (cutLength.toDouble + 1.0 - correction)) // handle ties https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test

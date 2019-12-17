@@ -21,15 +21,19 @@ import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
-// Here the inputs may be row-oriented
-// This is good but restricted to the same time for each Array
+// The index for an ordinal data set
 class I_CRank(val data: DataSet, val parallelize: Int = 0) extends Index[D_CRank] {
-  //override type T = D_CRank
   val id = "CRank"
-  //type T = D_CRank[String]
 
+  // Convert to the same index but with stream operations.
   def toStream: I_CRank = new I_CRank_Stream(data, parallelize)
 
+  /**
+    * Initialize the index
+    *
+    * @param data a data set (column-oriented!)
+    * @return An index, which is also column-oriented
+    */
   protected def createIndex(data: DataSet): Vector[D_CRank] = {
     if (parallelize == 0) {
       (0 until data.ncols).toVector.map(data(_)).map {
@@ -45,16 +49,4 @@ class I_CRank(val data: DataSet, val parallelize: Int = 0) extends Index[D_CRank
       }
     }
   }
-
-  /*
-  def f(data: Array[Array[_]]): Array[Array[_ >: Double with Int with String]] = {
-    data.map {
-      case x: Array[Double] => x
-      case x: Array[Int] => x
-      case x: Array[String] => x
-      case _ => throw new Error(s"Unsupported type")
-    }
-  }
-  */
-
 }

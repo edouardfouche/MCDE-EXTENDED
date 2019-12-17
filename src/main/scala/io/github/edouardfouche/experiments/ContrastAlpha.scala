@@ -21,12 +21,11 @@ import io.github.edouardfouche.mcde._
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Test the influence of alpha on the scores
   */
 object ContrastAlpha extends Experiment {
   val alpha_range = Vector(0.1, 0.3, 0.5, 0.7, 0.9)
   val nrep = 1000
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
 
@@ -36,9 +35,9 @@ object ContrastAlpha extends Experiment {
       info(s"Starting com.edouardfouche.experiments with configuration: alpha=${alpha}, beta=${0.5}")
 
       val tests = Vector(
-        MWP(1,alpha, 0.5),
-        KSPs(1, alpha, 0.5),
-        CSP(1,alpha, 0.5)
+        MWP(1, alpha, 0.5),
+        KSPmr(1, alpha, 0.5),
+        CSPmr(1, alpha, 0.5)
       )
 
       val generators = Vector(

@@ -24,11 +24,10 @@ import io.github.edouardfouche.utils.StopWatch
 
 /**
   * Created by fouchee on 12.07.17.
-  * Test the influence of M on the scores
+  * Test the runtime of contrast estimation
   */
 object PerformanceContrast extends Experiment {
   val nrep = 100
-  //override val data: Vector[DataRef] = Vector(Linear) // those are a selection of subspaces of different dimensionality and noise
 
   def run(): Unit = {
     info(s"Starting com.edouardfouche.experiments ${this.getClass.getSimpleName}")
@@ -43,33 +42,26 @@ object PerformanceContrast extends Experiment {
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0),
       Independent(3, 0, "gaussian", 0)
-      //Independent(1, 0, "gaussian", 0)
     )
+
     info(s"initialize generators")
     val tests: Vector[McdeStats] = Vector(
-      CSPn(1, 0.5, 0.5),
+      CSP(1, 0.5, 0.5),
       MWP(1, 0.5, 0.5),
-      KSPn(1, 0.5, 0.5),
-      KSPsn(1, 0.5, 0.5),
-      CSPn(50, 0.5, 0.5),
+      KSPe(1, 0.5, 0.5),
+      KSP(1, 0.5, 0.5),
+      CSP(50, 0.5, 0.5),
       MWP(50, 0.5, 0.5),
-      KSPn(50, 0.5, 0.5),
-      KSPsn(50, 0.5, 0.5)
-      //CSP(1, 0.5, 0.5),
-      //MWPn(50, 0.5, 0.5),
+      KSPe(50, 0.5, 0.5),
+      KSP(50, 0.5, 0.5)
     )
     info(s"initialize generators")
-
-    //val datasets: Vector[(Array[Double], String)] = generators.map(x => (x.generate(200000).transpose.head, x.id))
 
     for {
       i <- tests.indices.par
     } {
       val generator = generators(i)
       val test: McdeStats = tests(i)
-      //MDC.put("path", s"$experiment_folder/${this.getClass.getSimpleName.init}")
-
-      //val dataset = generator.generate(200000)
 
       // burn-in
       runit(100, 0)
@@ -85,8 +77,6 @@ object PerformanceContrast extends Experiment {
         val (prepcpu, prepwall, initalizedindex) = StopWatch.measureTime(test.preprocess(initdata))
 
         val (cpu, wall, contrast) = StopWatch.measureTime(test.contrast(initalizedindex, Set(0, 1, 2)))
-        //cpumeasures = cpumeasures :+ cpu
-        //prepmeasures = prepmeasures :+ prepcpu
 
         val attributes = List("refId", "testId", "M", "w", "cpu", "prepcpu", "rep")
         val summary = ExperimentSummary(attributes)
@@ -96,12 +86,6 @@ object PerformanceContrast extends Experiment {
         summary.add("w", windowsize)
         summary.add("cpu", "%.6f".format(cpu))
         summary.add("prepcpu", "%.6f".format(prepcpu))
-        //summary.add("rep", n)
-        //summary.add("avg_wall", "%.6f".format(wall))
-        //summary.add("avg_wall", "%.6f".format(wallmeasures.sum / wallmeasures.length))
-        //summary.add("std_cpu", "%.6f".format(breeze.stats.stddev(cpumeasures)))
-        //summary.add("std_wall", "%.6f".format(breeze.stats.stddev(wallmeasures)))
-        //summary.add("rwall", "%.6f".format(rwall))
         summary.add("rep", n)
         summary.write(summaryPath)
       }

@@ -149,73 +149,13 @@ object Preprocess extends Preprocessing {
     new DataSet(resultData)
   }
 
-
-    /*
-      /**
-    * Open an Arff file as a 2-D Array of Double
-    *
-    * @param path Path to the file in the current filesystem
-    * @param dropClass Whether to drop the "class" column if there is one
-    * @param max1000 cap the opened data to 1000 rows. If the original data has more rows, sample 1000 without replacement
-    * @return A 2-D Array of Double containing the values for each numerical columns (row-oriented)
-    * @note This method is inspired from the work of Fabian Keller
-    */
-  def openArff(path: String, dropClass: Boolean = true, max1000: Boolean = false): Array[Array[_]] = {
-    val source = scala.io.Source.fromFile(path)
-    val lines = source.getLines.toArray
-    source.close()
-    val numAttr = lines.count(x => x.toLowerCase.startsWith("@attribute"))
-    //val attrNames = lines.filter(x => x.startsWith("@attribute")).map(line => line.split(" ")(1))
-
-    val linesData = lines.drop(lines.indexWhere(x => x.toLowerCase == "@data") + 1).filter(x => x.split(",").length == numAttr)
-    val numInst = linesData.length
-
-    val matrix = Array.ofDim[_](numInst, numAttr)
-
-    var i = 0
-    for (line <- linesData) {
-      val fields = line.split(",")
-      var j = 0
-      for (el <- fields) {
-        if (el == "'no'") matrix(i)(j) = 0.0
-        else if (el == "'yes'") matrix(i)(j) = 1.0
-        else matrix(i)(j) = el.toFloat
-        j += 1
-      }
-      i += 1
-    }
-
-    val data = matrix.transpose
-
-    val droppedData = if(!dropClass) data
-    else {
-      val attributes = lines.filter(x => x.toLowerCase.startsWith("@attribute")).map(_.split(" ")(1))
-      //print(s"attributes: ${attributes mkString ","}")
-      if (attributes.exists(_.toLowerCase contains "class") | attributes.exists(_.toLowerCase contains "outlier")) data.init
-      else data
-    }
-
-    val resultData = if(!max1000) droppedData
-    else {
-      if(droppedData(0).length < 1000) droppedData
-      else {
-        val indexes = scala.util.Random.shuffle(droppedData(0).indices.toList).take(1000).toArray
-        droppedData.map(x => indexes.map(x(_)))
-      }
-    }
-
-    resultData.transpose
-  }
-  */
-
-
   /**
     * Return the rank index structure (as in HiCS).
     *
     * Note that the numbers might be different in the case of ties, in comparison with other implementations.
     *
     * @param input A 2-D Array of Double (data set).
-    * @return A 2-D Array of 2-D Tuple, where the first element is the original index, the second is its value (actually not in used for the KSPs test)
+    * @return A 2-D Array of 2-D Tuple, where the first element is the original index, the second is its value (actually not in used for the KSPmr test)
     */
   def ksRank(input: Array[Array[Double]], parallelize: Int = 0): Array[Array[(Int, Float)]] = {
     //if (parallelize == 0) input.map(_.zipWithIndex.sortBy(_._1).map(x => (x._2, x._1.toFloat, x._1)))

@@ -19,17 +19,15 @@ package io.github.edouardfouche.index.dimension
 import scala.collection.mutable
 
 /**
-  * A very simple index structure will only the ranks and values(convenient for HiCS for example)
+  * The index for a categorical dimension (intended for CSPmr)
   *
   * @param initvalues An array of values corresponding to the values in a column
   */
 class D_Count(val initvalues: Array[Double]) extends DimensionIndex {
-  //type T = (scala.collection.immutable.Queue[Int], Int) // First element is a queue of the index of a given value in the map, second element in the size of this queue.
   type T = (Vector[Int], Int)
   val id = "Count"
   var currentvalues = initvalues.toVector
 
-  //var dindex: Array[T] = createDimensionIndex(values)
   var dindex: mutable.Map[Double, T] = createDimensionIndex(initvalues.toVector)
 
   def apply(i: Double): (Vector[Int], Int) = dindex(i)
@@ -42,11 +40,6 @@ class D_Count(val initvalues: Array[Double]) extends DimensionIndex {
   }
 
   def createDimensionIndex(input: Vector[Double]): mutable.Map[Double, T] = {
-    //Array(T_Count(
-    //  collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({case (x,y) => (x,(y.map(_._2),y.length))}).toSeq: _*)
-    //))
-    //collection.mutable.Map(values.zipWithIndex.groupBy(_._1).map({ case (x, y) => (x, T_Count(y.map(_._2), y.length)) }).toSeq: _*)
-
     val map = mutable.Map[Double, (Vector[Int], Int)]()
     for {
       x <- input.indices
@@ -78,27 +71,6 @@ class D_Count(val initvalues: Array[Double]) extends DimensionIndex {
   }
 
   def uniformslice(sliceSize: Int): Array[Boolean] = slice(sliceSize)
-
-  /*
-  def selectCategories(sliceSize: Int): Array[Double] = {
-    val shuffledCategories: List[Double] = scala.util.Random.shuffle(dindex.keys.toList) //.take(sliceSize)
-
-    @scala.annotation.tailrec
-    def cumulative(current: Int, categories: List[Double], selectedCategories: List[Double]): List[Double] = {
-      // make sure there is a least one category that is not selected
-      if(categories.length == 1) selectedCategories
-      if(current < sliceSize) {
-        if(selectedCategories.isEmpty // make sure we select at least one category
-          || (math.abs(current + dindex(categories.head)._2 - sliceSize) < math.abs(current - sliceSize))) // make sure we get the closest match to the desired sliceSize
-        {
-          cumulative(current + dindex(categories.head)._2, categories.tail, selectedCategories :+ categories.head)
-        } else selectedCategories
-      } else selectedCategories
-    }
-    cumulative(0, shuffledCategories, List[Double]()).toArray
-  }
-  */
-
 
   def selectSlice(sliceSize: Int): Array[Double] = {
     val ratio = sliceSize.toDouble / initvalues.length.toDouble

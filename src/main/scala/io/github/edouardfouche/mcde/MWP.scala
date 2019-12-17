@@ -24,18 +24,16 @@ import io.github.edouardfouche.utils.HalfGaussian
 import scala.annotation.tailrec
 
 /**
-  * Compute the average accross the p-values of all the slices, but this time do the tie correction
+  * Compute the average across the p-values of all the slices, but this time do the tie correction
   * The tie correction is precomputed as a Map, which gives for each distinct rank a corresponding correction
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
-  *        Added with respect to the original paper to loose the dependence of beta from alpha.
+  *              Added with respect to the original paper to loose the dependence of beta from alpha.
   */
 
 case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
                   var parallelize: Int = 0) extends McdeStats {
-  //type PreprocessedData = D_CRank
-  //type U = Double
   type I = I_CRank
   type D = D_CRank
   val id = "MWP"
@@ -51,9 +49,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
   }
 
   /**
-    * Compute a statistical test based on  Mann-Whitney U test using a reference vector (the indices of a dimension
-    * ordered by the rank) and a set of Int that correspond to the intersection of the position of the element in the
-    * slices in the other dimensions.
+    * Compute a statistical test based on  Mann-Whitney U test
     *
     * @param ref            The original position of the elements of a reference dimension ordered by their rank
     * @param indexSelection An array of Boolean where true means the value is part of the slice
@@ -66,49 +62,12 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
     val sliceEndSearchStart = (safeSliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     val safeSliceEnd = ref.getSafeCut(sliceEndSearchStart)
 
-    /*
-    try {
-      val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
-        if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
-        else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
-        else (safeSliceStart, safeSliceEnd)
-      } else (safeSliceStart, safeSliceEnd)
-    } catch {
-      case e: Throwable => {
-        println(s"start: $start, safeSliceStart: $safeSliceStart, sliceEndSearchStart: $sliceEndSearchStart, safeSliceEnd: $safeSliceEnd")
-        println(s"indexSelection.length: ${indexSelection.length}, beta: $beta")
-        throw e
-      }
-    }
-     */
-
     val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
       if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
       else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
       else (safeSliceStart, safeSliceEnd)
     } else (safeSliceStart, safeSliceEnd)
 
-
-    /*
-    try {
-      val (sliceStart: Int, sliceEnd: Int) = if(ref(safeSliceStart)._2 == ref(safeSliceEnd-1)._2) {
-        if(safeSliceStart > 0) (ref.getSafeCutLeft(safeSliceStart - 1), safeSliceEnd)
-        else if(safeSliceEnd < ref.length) (safeSliceStart, ref.getSafeCutRight(safeSliceEnd))
-        else (safeSliceStart, safeSliceEnd)
-      } else (safeSliceStart, safeSliceEnd)
-    } catch {
-      case e: Throwable => {
-        println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd")
-        throw e
-      }
-    }
-    */
-
-
-    //println(s"ref.length: ${ref.length}, start = $start, safeStart = $safeSliceStart, safeEnd = $safeSliceEnd, sliceStart = $sliceStart, sliceEnd = $sliceEnd")
-    //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
-
-    //val ref: D_CRank[String] = index(reference)
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Long): (Double, Long) = {
@@ -120,15 +79,6 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,
       lazy val cutLength = cutEnd - cutStart
       val (r1, n1:Long) = cumulative(cutStart, 0, 0)
 
-      //if (n1 == 0){ //| n1 == cutLength) {
-      //  1 // If the inslice is empty, this just means maximal possible score.
-      //} else if (n1 == cutLength) {
-      //  0 // If the outslice is empty, then the process led to selecting all dimensions, and contrast is meaningless
-      //}
-
-      //if (n1 == indexSelection.length) { // In that case the slicing process led to selecting everything, contrast is not defined
-      //  0
-      //} else
       if (n1 == 0 || n1 == cutLength) {
         1
       } else {

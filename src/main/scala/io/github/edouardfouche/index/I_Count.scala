@@ -21,15 +21,15 @@ import io.github.edouardfouche.preprocess.DataSet
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
-// Here the inputs may be row-oriented
+// The index for a categorical data set
 class I_Count(val data: DataSet, val parallelize: Int = 0) extends Index[D_Count] {
-  //override type T = D_Count
   val id = "Count"
-  //type T = D_Count[String]
 
+  // Convert to the same index but with stream operations.
   def toStream: I_Count_Stream = new I_Count_Stream(data, parallelize)
 
   /**
+    * Initialize the index
     *
     * @param data a data set (column-oriented!)
     * @return An index, which is also column-oriented
