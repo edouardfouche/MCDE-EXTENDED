@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,7 +21,6 @@ import io.github.edouardfouche.index._
 import io.github.edouardfouche.index.dimension._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
-
 
 /**
   * Created by fouchee on 12.07.17.
@@ -89,12 +88,6 @@ object PerformanceIndex extends Experiment {
         //summary.add("rwall", "%.6f".format(rwall))
         summary.add("rep", n)
         summary.write(summaryPath)
-        /*
-        if (windowsize % 1000 == 0) {
-          info(s"Avg ins cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(measures.sum / measures.length))
-          info(s"Avg ref cpu w=$windowsize: ${dummyindex.id} -> " + "%.6f".format(rmeasures.sum / rmeasures.length))
-        }
-         */
       }
     }
     info(s"End of experiment ${this.getClass.getSimpleName} - ${formatter.format(java.util.Calendar.getInstance().getTime)}")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -117,8 +117,6 @@ object Preprocess extends Preprocessing {
       result.slice(1, result.length + 1)
     }
     bufferedSource.close()
-
-    // This could be improved a bit, because toDouble is done twice
 
     val parser = result.map(x => Some(x.map(_.toDouble)))
     //val data: Array[Array[Any]] = parser.collect{

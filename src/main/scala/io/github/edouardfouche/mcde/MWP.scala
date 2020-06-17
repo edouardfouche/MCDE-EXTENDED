@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,8 +24,7 @@ import io.github.edouardfouche.utils.HalfGaussian
 import scala.annotation.tailrec
 
 /**
-  * Compute the average across the p-values of all the slices, but this time do the tie correction
-  * The tie correction is precomputed as a Map, which gives for each distinct rank a corresponding correction
+  * Mann-Withney-P, as described in "Monte Carlo Dependency Estimation" (Fouché & Böhm, 2019)
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).

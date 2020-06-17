@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,13 +21,12 @@ import io.github.edouardfouche.mcde._
 import io.github.edouardfouche.preprocess.DataSet
 import io.github.edouardfouche.utils.StopWatch
 
-
 /**
   * Created by fouchee on 12.07.17.
   * Check the power of every approach against a selected number of generators
   */
 object Power extends Experiment {
-  val nrep = 1000 // number of MC iterations
+  val nrep = 1000
   val ndims = Array(2, 3, 5, 10, 20)
   val noiseLevels = 30
   val generators: Vector[(Int, Double, String, Int) => DataGenerator] = selected_generators

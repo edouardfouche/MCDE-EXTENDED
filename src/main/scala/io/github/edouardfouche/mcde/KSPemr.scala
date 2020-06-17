@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -26,7 +26,7 @@ import scala.math.pow
 /**
   * This is a re-implementation  of the contrast measure as proposed in HiCS, that is fitting the MCDE framework
   * Use the Kolmogorov-Smirnov test as basis. Compute the exact p-values (whenever there are no ties)
-  * Use marginal restriction
+  * Use marginal restriction ("mr")
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).

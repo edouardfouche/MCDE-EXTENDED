@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -72,7 +72,6 @@ case class KSPe(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var parall
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
       if (n == theref.length) currentMax
       else {
-        //if (indexSelection(ref(n).position))
         if (theref(n))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
         else

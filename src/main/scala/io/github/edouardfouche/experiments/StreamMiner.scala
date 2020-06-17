@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,7 @@ object StreamMiner extends Experiment {
   val gamma = 0.99
   val nthread = 0 // try it out
   val test = MWP(50, 0.5, 0.5, nthread)
-  val bioliqdata = bioliq_interesting
+  val bioliqdata = bioliq // replace with your own data set, see also "experiments/Data".
 
   def run(): Unit = {
 
@@ -67,7 +67,6 @@ object StreamMiner extends Experiment {
           if (acc % 1000 == 0) println(s"${formatter.format(java.util.Calendar.getInstance().getTime)}, reached $acc")
 
           if (acc % stepsize == 0) {
-            //println("insert with contrast computation")
             index.insert(data.head)
 
             for {sub <- subspaces} { // How to parallelize that?
@@ -80,7 +79,6 @@ object StreamMiner extends Experiment {
             }
             cumulative_contrast(data.tail, acc + 1)
           } else {
-            //println("insert without contrast computation")
             index.insert(data.head)
             // Do nothing
             cumulative_contrast(data.tail, acc + 1)
@@ -91,7 +89,7 @@ object StreamMiner extends Experiment {
       cumulative_contrast(restdataset, 0)
 
       for {sub <- subspaces} {
-        val path = "data/" + s"${bioliq_full.id}-${sub mkString ";"}"
+        val path = "data/" + s"${bioliq.id}-${sub mkString ";"}"
         val attributes = List("windowsize", "stepsize", "path", "subspace")
         val summary = ExperimentSummary(attributes)
         summary.add("windowsize", windowsize)

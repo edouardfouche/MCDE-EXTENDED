@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,7 +25,7 @@ import scala.math.{E, pow, sqrt}
 
 /**
   * This is a re-implementation  of the contrast measure as proposed in HiCS, that is fitting the MCDE framework
-  * Use the Kolmogorov-Smirnov test as basis. Approximate the p-value via marsaglia algorithm.
+  * Use the Kolmogorov-Smirnov test as basis. Approximate the p-value via Marsaglia's algorithm.
   * Does not use marginal restriction
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
@@ -72,7 +72,6 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
     @tailrec def cumulative(n: Int, acc1: Double, acc2: Double, currentMax: Double): Double = {
       if (n == theref.length) currentMax
       else {
-        //if (indexSelection(ref(n).position))
         if (theref(n))
           cumulative(n + 1, acc1 + selectIncrement, acc2, currentMax max math.abs(acc2 - (acc1 + selectIncrement)))
         else
@@ -105,7 +104,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
 
     def exp(k: Int): Double = pow(-1, k - 1) * pow(E, -2 * pow(k, 2) * pow(z, 2))
 
-    def infi_exp(k: Int): Double = pow(-1, k - 1) * pow(E, 2 * pow(k, 2) * pow(D, 2)) // in case lim n1, n2 -> infi
+    def infi_exp(k: Int): Double = pow(-1, k - 1) * pow(E, 2 * pow(k, 2) * pow(D, 2))
 
     // TODO: The part inside the summation could be done easily in parallel
     @tailrec
@@ -114,7 +113,7 @@ case class KSP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paralle
       else loop(f(i) + summation, i + 1, end, f)
     }
 
-    if (n1 >= 3037000499L && n2 >= 3037000499L) 1 - 2 * loop(0, 1, 1000, infi_exp) // squaring n1,n2 will reach the limit of Long
+    if (n1 >= 3037000499L && n2 >= 3037000499L) 1 - 2 * loop(0, 1, 1000, infi_exp) // squaring n1,n2 may reach the limit of Long
     else 1 - 2 * loop(0, 1, 1000, exp)
   }
 }

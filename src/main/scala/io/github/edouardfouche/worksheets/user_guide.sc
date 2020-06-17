@@ -1,7 +1,22 @@
+/*
+ * Copyright (C) 2020 Edouard Fouché
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 /**
   * ###### Using MCDE in your code ######
   */
-
 
 /**
   * ### Importing ###
@@ -85,7 +100,7 @@ println(mwp.contrast(linear_4, Set(0, 1, 2, 3))) // Note that MWP should generat
 println(mwp.contrast(independent, Set(0, 1, 2, 3, 4))) // Note that MWP should generate values around to 0.5
 
 println(mwp.contrast(linear_4, Set(0, 3))) // Include only a subspace of your dimensions e.g. only attribute 1 and 4
-println(mwp.contrast(linear_4, linear_4(0).indices.toSet)) // Include all dimensions without explicitly specifying
+println(mwp.contrast(linear_4, linear_4.columns.indices.toSet)) // Include all dimensions without explicitly specifying
 
 /**
   * Calling the contrastMatrix() computes the dependencie matrix including all dimensions (one to one dependencies)
@@ -93,7 +108,7 @@ println(mwp.contrast(linear_4, linear_4(0).indices.toSet)) // Include all dimens
   * @m:Array[Array[Double]] data (row oriented)
   */
 
-val scoreMatrix:Array[Array[Double]] = mwp.contrastMatrix(m = linear_4)
+val scoreMatrix: Array[Array[Double]] = mwp.contrastMatrix(m = linear_4)
 println(mwp.contrastMatrix(independent))
 
 
@@ -102,14 +117,11 @@ println(mwp.contrastMatrix(independent))
   * Everything works equivalently for the other variations of MWP
   */
 
-// MWPi: Like MWP but not adjusting for ties (but still adjusting for ranks)
-// val mwpi = MWPi()
+// MWPnomr: Like MWP but without marginal restriction
+// val mwpi = MWPnomr()
 
 // MWPr: Like MWP but not adjusting and not correcting for ties (see Paper, Algorithm description)
 val mwpr = MWPr()
-
-// MWPs: Like MWP but also adjusting for ties in the slicing process
-// val mwps = MWPs()
 
 // MWPu: Like MWP but without border effects
 // val mwpu = MWPu()
@@ -123,5 +135,5 @@ val mwpr = MWPr()
   */
 
 val ksp = KSPmr(alpha = 0.1, beta = 1.0)
-println(ksp.contrast(linear_4, linear_4(0).indices.toSet))
-println(ksp.contrast(independent, independent(0).indices.toSet))
+println(ksp.contrast(linear_4, linear_4.columns.indices.toSet))
+println(ksp.contrast(independent, independent.columns.indices.toSet))

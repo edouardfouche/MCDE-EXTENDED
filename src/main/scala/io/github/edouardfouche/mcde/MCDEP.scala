@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -30,7 +30,8 @@ case class MCDEP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
   type D = DimensionIndex
   type I = I_Multi
 
-  override def getDIndexConstruct: Array[Double] => DimensionIndex = new D_Rank(_) // because whatever...
+  override def getDIndexConstruct: Array[Double] => DimensionIndex = new D_Rank(_)
+
   override def getIndexConstruct: DataSet => I_Multi = new I_Multi(_)
 
   def preprocess(input: DataSet, stream: Boolean = false): I = {

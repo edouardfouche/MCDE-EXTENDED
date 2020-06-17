@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -34,7 +34,7 @@ trait McdeStats extends Stats {
 
   val id: String
   val alpha: Double
-  val beta: Double // Added to loose the dependence of beta from alpha
+  val beta: Double
   val M: Int
   var parallelize: Int
 
@@ -143,7 +143,10 @@ trait McdeStats extends Stats {
 
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m(0).length).ceil.toInt /// WARNING: Do not forget -1
 
-    val result = (1 to M).map(i => twoSample(m(referenceDim), m.randomSlice(dimensions, referenceDim, sliceSize))).sum / M //, targetSampleSize))).sum / M
+    val result = (1 to M).map { i =>
+      val indexreference = m.randomSlice(dimensions, referenceDim, sliceSize)
+      twoSample(m(referenceDim), indexreference)
+    }.sum / M //, targetSampleSize))).sum / M
 
     result
   }

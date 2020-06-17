@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,10 +24,8 @@ import io.github.edouardfouche.mcde._
   * Check the distribution of contrast of various estimators
   */
 object Contrast extends Experiment {
-  val nrep = 10000
-
+  val nrep = 10000 // reduce if too large
   def run(): Unit = {
-
     info(s"Starting com.edouardfouche.experiments")
 
     val tests = Vector(

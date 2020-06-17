@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,9 +25,7 @@ import scala.annotation.tailrec
 import scala.collection.parallel.ForkJoinTaskSupport
 
 /**
-  * Compute the average across the p-values of all the slices, but this time do the tie correction
-  * The tie correction is precomputed as a Map, which gives for each distinct rank a corresponding correction
-  * Like MWPnomr but uses uniform slicing
+  * Like MWPnomr but uses uniform slicing (i.e., slicing "rolls over" when reaching the end of the domain)
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).

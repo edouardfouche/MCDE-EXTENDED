@@ -1,34 +1,26 @@
+/*
+ * Copyright (C) 2020 Edouard Fouché
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package io.github.edouardfouche.experiments
 
 import io.github.edouardfouche.preprocess.DataRef
 
-
 object Data {
-  lazy val bioliq20 = DataRef("bioliq", home + "/data/bioliq/bioliq-I-07-2016/bioliq_1wx20.csv", 1, ",", "bioliq")
-  lazy val bioliq_full = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_full.csv", 1, ",", "bioliq")
-  lazy val bioliq_interesting = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_interesting.csv", 1, ",", "bioliq")
+  // possibly replace with your own data set
+  lazy val bioliq = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_interesting.csv", 1, ",", "bioliq")
   val currentdir: String = System.getProperty("user.dir")
   val home: String = System.getProperty("user.home")
-
-  // helper function to get the relative path to resources
-  def fetch(path: String): String = try {
-    val fullpath = currentdir + "/data" + path
-    val s = scala.io.Source.fromFile(fullpath)
-    s.close()
-    fullpath
-  } catch {
-    case _: Throwable => {
-      try {
-        val fullpath2 = currentdir + "/git/docLOF/data" + path
-        val s = scala.io.Source.fromFile(fullpath2)
-        s.close()
-        fullpath2
-      } catch {
-        case _: Throwable => {
-          val message = s"Tried ${currentdir + "/data" + path} and ${currentdir + "/git/docLOF/data" + path}"
-          throw new Error(message)
-        }
-      }
-    }
-  }
 }

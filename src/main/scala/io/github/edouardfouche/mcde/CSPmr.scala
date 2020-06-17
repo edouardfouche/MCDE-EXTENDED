@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,7 +22,7 @@ import io.github.edouardfouche.index.{I_Count, I_Count_Stream}
 import io.github.edouardfouche.preprocess.DataSet
 
 /**
-  * Chi-Squared P within the MCDE framework, with marginal restriction
+  * Chi-Squared P within the MCDE framework, with marginal restriction ("mr")
   *
   * @param alpha Expected share of instances in slice (independent dimensions).
   * @param beta  Expected share of instances in marginal restriction (reference dimension).
@@ -80,7 +80,7 @@ case class CSPmr(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5, var paral
       val teststatistics = statistics.sum
 
       //val ndegree = math.pow(restrictedCategories.size - 1,2)
-      // Note: In some extreme cases, ndegree becomes 0, (because restricting on only one categorie, in that case, this is a one-way chi-squared test
+      // Note: In some extreme cases, ndegree becomes 0, (because restricting on only one category, in that case, this is a one-way chi-squared test
       val ndegree = (restrictedCategories.length - 1).max(1)
 
       val chsq = ChiSquared(ndegree).cdf(teststatistics)

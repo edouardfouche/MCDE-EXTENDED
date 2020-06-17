@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -84,8 +84,8 @@ object PowerDiscrete extends Experiment {
         } {
           val raw = new DataSet(generator.generate(1000).transpose, types = (1 to generator.nDim).toArray.map(x => "c"))
           // Save data samples (debugging purpose)
-          utils.createFolderIfNotExisting(experiment_folder + "/data")
-          if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
+          //utils.createFolderIfNotExisting(experiment_folder + "/data")
+          //if (rep == 1) utils.saveDataSet(raw.columns.transpose, experiment_folder + "/data/" + s"${generator.id}")
           for {
             test <- tests
           } {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,13 +18,10 @@ import com.typesafe.scalalogging.LazyLogging
 import io.github.edouardfouche.experiments._
 import io.github.edouardfouche.utils.StopWatch
 
-
 /**
   * Created by fouchee on 01.06.17.
   */
 
-
-// this is a nice table: http://www.normaltable.com/
 object Main extends LazyLogging {
   def main(args: Array[String]): Unit = {
     val unit = "ms"
@@ -84,13 +81,11 @@ object Main extends LazyLogging {
       StreamEstimatorPerformance.run()
       StreamMiner.run()
     }
-
     case "com.edouardfouche.experiments.Performance" => {
       PerformanceIndex.run()
       PerformanceContrast.run()
       StreamEstimatorPerformance.run()
     }
-
     case _ => throw new Error(s"Unknown experiment $arg")
   }
 

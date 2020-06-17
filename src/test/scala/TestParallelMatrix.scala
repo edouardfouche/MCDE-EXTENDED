@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Edouard Fouché
+ * Copyright (C) 2020 Edouard Fouché
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 import io.github.edouardfouche.generators.Independent
 import io.github.edouardfouche.mcde.MWP
-import org.scalatest.FunSuite
 import io.github.edouardfouche.preprocess.DataSet
+import org.scalatest.FunSuite
 
 /**
   * Created by fouchee on 10.07.17.
