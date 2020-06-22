@@ -16,7 +16,7 @@ it is partially frozen at the time of publication.
 
 This repository is released under the AGPLv3 license. Please see the [LICENSE.md](LICENSE.md) file. 
 
-See also [MCDE](https://github.com/edouardfouche/MCDE) or [MCDE-experiments](https://github.com/edouardfouche/MCDE-experiments), as well as the following publication: 
+See also the following repositories: [MCDE](https://github.com/edouardfouche/MCDE), [MCDE-experiments](https://github.com/edouardfouche/MCDE-experiments), as well as the following publication: 
 
 -  Edouard Fouché & Klemens Böhm. 2019. Monte Carlo Dependency Estimation. In 31st International Conference on Scientific and Statistical Database Management (SSDBM ’19), July 23–25, 2019, Santa Cruz, CA, USA. ACM, New York, NY, USA, 12 pages. https://doi.org/10.1145/3335783.3335795
 
@@ -148,7 +148,7 @@ For questions and comments, please contact `edouard.fouche@kit.edu`, or open an 
 
 ## Related Projects
 
-- We propose a standalone, deployment-ready version of MCDE in this [repository](https://github.com/edouardfouche/MCDE).
+- We propose a standalone, deployment-ready version of MCDE in this [repository](https://github.com/edouardfouche/MCDE) and previous experiments [here](https://github.com/edouardfouche/MCDE-experiments).
 
 - We developed a data generator for these experiments, which we released independently [here](https://github.com/edouardfouche/DataGenerator).
 
