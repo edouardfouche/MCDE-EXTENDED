@@ -20,7 +20,7 @@ import io.github.edouardfouche.preprocess.DataRef
 
 object Data {
   // possibly replace with your own data set
-  lazy val bioliq = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_interesting.csv", 1, ",", "bioliq")
+  lazy val bioliq = DataRef("bioliq", home + "/data/bioliq/bioliq_1w_MCDE.csv", 1, ",", "bioliq")
   val currentdir: String = System.getProperty("user.dir")
   val home: String = System.getProperty("user.home")
 }

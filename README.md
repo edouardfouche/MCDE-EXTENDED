@@ -56,13 +56,14 @@ You may find examples of usage of the estimators in `src/scala/io/githubedouardf
 ## Reproducing the experiments
 
 In this section, we explain how to reproduce the experiments from our paper. 
-The experiments create about 1.7G of data and require about 5 days on a server with 20 cores at 2.2 Ghz and 32GB RAM, 
+The experiments create about 1.7G of data and require about 5 days on a server with 64 cores at 3.0 Ghz and 128GB RAM, 
 using Java Open-JDK 8 and Scala 2.12.8. Results are saved in the folder `experiments` as `.csv` files, along with logs.
 
 ### Contrast
 
 Evaluate the distribution of contrast values of MCDE (MWP, KSP, CSP and variants) against continuous, 
 categorical and ordinal data. This experiment creates much data, but one may reduce the number of repetitions. 
+See `io.github.edouardfouche.experiments.Contrast`. 
 
 ```
 sbt "run com.edouardfouche.experiments.Contrast"  # ~ 0.5 hour, 1.5GB data
@@ -118,6 +119,13 @@ Estimate the quality of contrast monitoring w.r.t. increasing number of iteratio
 ```
 sbt "run com.edouardfouche.experiments.StreamEstimatorPerformance" # ~ 21 hours, 42MB data
 ```
+
+## Data for our case study
+
+We attach the data that we used for our case study (it is a sample from data produced by the [Bioliq](https://www.bioliq.de/) power plant) in the root of this repository. 
+See `bioliq_1w_MCDE.7z`. Simply decompressed the archive and place the `.csv` file into `<HOME_FOLDER>/data/bioliq/`. 
+Adjust the hard-coded path in `io.github.edouardfouche.experiments.Data` if necessary.  
+Note that we plan to release more data from the Bioliq plant in the future. 
 
 ## Visualize the results
 
